@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Net;
 using System.Text;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 
 namespace Galaxy.Conqueror.Client.Utils
@@ -59,7 +60,8 @@ namespace Galaxy.Conqueror.Client.Utils
 
                     if (authCodeMatcher.Success)
                     {
-                        string authCode = authCodeMatcher.Groups[1].Value;
+                        string encodedCode = authCodeMatcher.Groups[1].Value;
+                        string authCode = Uri.UnescapeDataString(encodedCode);
                         if (string.IsNullOrEmpty(authCode))
                         {
                             success = false;
@@ -71,17 +73,21 @@ namespace Galaxy.Conqueror.Client.Utils
 
                             // TODO: Make POST request
 
-                            // var httpClient = new HttpClient();
-                            // var postData = new StringContent(
-                            //     $"code={authCode}",
-                            //     Encoding.UTF8,
-                            //     "application/x-www-form-urlencoded"
-                            // );
+                            var httpClient = new HttpClient();
+                            var requestBody = new
+                            {
+                                authCode = authCode
+                            };
 
-                            // var response = await httpClient.PostAsync(
-                            //     "https://your-api-url.com/oauth/token",
-                            //     postData
-                            // );
+                            var json = JsonSerializer.Serialize(requestBody);
+                            var postData = new StringContent(json, Encoding.UTF8, "application/json");
+
+                            var response = await httpClient.PostAsync("https://localhost:7292/api/auth/login", postData);
+
+                            // TODO Ensure this is successful
+                            // TODO Get response content and save the JWT from this content
+                            var responseContent = await response.Content.ReadAsStringAsync();
+
 
                             // if (response != null && response.StatusCode == HttpStatusCode.OK)
                             // {
