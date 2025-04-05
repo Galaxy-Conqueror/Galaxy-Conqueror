@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Galaxy.Conqueror.API", "Galaxy.Conqueror.API.csproj", "{15DBE601-F7D6-4288-A76F-FE48CEB57C1F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Galaxy.Conqueror.Client", "..\..\client\Galaxy.Conqueror.Client\Galaxy.Conqueror.Client.csproj", "{D7066198-5FD2-4A2A-91DE-A5DC9BAB628A}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{15DBE601-F7D6-4288-A76F-FE48CEB57C1F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{15DBE601-F7D6-4288-A76F-FE48CEB57C1F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{15DBE601-F7D6-4288-A76F-FE48CEB57C1F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{15DBE601-F7D6-4288-A76F-FE48CEB57C1F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D7066198-5FD2-4A2A-91DE-A5DC9BAB628A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D7066198-5FD2-4A2A-91DE-A5DC9BAB628A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D7066198-5FD2-4A2A-91DE-A5DC9BAB628A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D7066198-5FD2-4A2A-91DE-A5DC9BAB628A}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

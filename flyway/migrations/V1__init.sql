@@ -1,0 +1,7 @@
+CREATE TABLE IF NOT EXISTS planets (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    resources INT NOT NULL DEFAULT 100,
+    attack INT NOT NULL DEFAULT 1,
+    defense INT NOT NULL DEFAULT 1
+);
