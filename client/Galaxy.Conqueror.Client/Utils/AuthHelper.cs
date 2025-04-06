@@ -3,6 +3,7 @@ using System.Net;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using Galaxy.Conqueror.Client.Models;
 
 namespace Galaxy.Conqueror.Client.Utils
 {
@@ -86,7 +87,41 @@ namespace Galaxy.Conqueror.Client.Utils
 
                             // TODO Ensure this is successful
                             // TODO Get response content and save the JWT from this content
+
                             var responseContent = await response.Content.ReadAsStringAsync();
+                            var options = new JsonSerializerOptions
+                            {
+                                PropertyNameCaseInsensitive = true
+                            };
+                            var loginResponse = JsonSerializer.Deserialize<LoginResponse>(responseContent, options);
+
+                            Console.WriteLine(loginResponse.User.Id);
+                            Console.WriteLine(loginResponse.User.GoogleId);
+                            Console.WriteLine(loginResponse.User.Email);
+                            Console.WriteLine(loginResponse.User.Username);
+                            Console.WriteLine(loginResponse.JWT);
+
+                            var userRequest = new HttpRequestMessage(HttpMethod.Get, "https://localhost:7292/api/user");
+                            userRequest.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", loginResponse.JWT);
+
+                            var userResponse = await httpClient.SendAsync(userRequest);
+
+                            // Ensure the request was successful
+                            if (userResponse.IsSuccessStatusCode)
+                            {
+                                var userResponseContent = await userResponse.Content.ReadAsStringAsync();
+                                var user = JsonSerializer.Deserialize<User>(userResponseContent, options);
+
+                                Console.WriteLine("User details:");
+                                Console.WriteLine($"User ID: {user.Id}");
+                                Console.WriteLine($"Google ID: {user.GoogleId}");
+                                Console.WriteLine($"Email: {user.Email}");
+                                Console.WriteLine($"Username: {user.Username}");
+                            }
+                            else
+                            {
+                                Console.WriteLine("Failed to retrieve user data");
+                            }
 
 
                             // if (response != null && response.StatusCode == HttpStatusCode.OK)

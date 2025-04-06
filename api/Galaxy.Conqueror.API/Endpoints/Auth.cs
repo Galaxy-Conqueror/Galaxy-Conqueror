@@ -26,12 +26,13 @@ public static class Auth
         ct.ThrowIfCancellationRequested();
         ArgumentNullException.ThrowIfNull(request?.AuthCode);
 
-        var response = await googleAuthService.ExchangeAuthCodeForTokens(request?.AuthCode);
+        var response = await googleAuthService.Login(request?.AuthCode);
+
         if (response == null)
         {
             return Results.NoContent();
         }
-        return Results.Ok(response.id_token);
+        return Results.Ok(response);
 
     }
 
