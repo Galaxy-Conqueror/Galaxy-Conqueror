@@ -2,3 +2,5 @@
 using Galaxy.Conqueror.Client.Utils;
 
 await AuthHelper.Authenticate();
+
+Console.ReadKey();
