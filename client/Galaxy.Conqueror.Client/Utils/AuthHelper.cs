@@ -12,9 +12,9 @@ namespace Galaxy.Conqueror.Client.Utils
         private const string CLIENT_ID =
             "281509747189-8hu7g0egsp28dv5q7mhfgksu802mo03v.apps.googleusercontent.com";
         private const string REDIRECT_URI = "http://localhost:9090/callback/";
-        public static string jwtToken = "";
+        private static string jwtToken = "";
 
-        public static string getJwt()
+        public static string GetJwt()
         {
             return jwtToken;
         }
@@ -44,7 +44,7 @@ namespace Galaxy.Conqueror.Client.Utils
             return;
         }
 
-        public static async Task GetJwtTokenAsync()
+        private static async Task GetJwtTokenAsync()
         {
             bool success = false;
             var callbackServer = new HttpListener();
@@ -63,83 +63,73 @@ namespace Galaxy.Conqueror.Client.Utils
                     {
                         string encodedCode = authCodeMatcher.Groups[1].Value;
                         string authCode = Uri.UnescapeDataString(encodedCode);
-                        if (string.IsNullOrEmpty(authCode))
+
+                        if (!string.IsNullOrEmpty(authCode))
                         {
-                            success = false;
-                        }
-                        else
-                        {
-                            Console.WriteLine("Auth Code: " + authCode);
-                            success = true;
+                            OutputHelper.DebugPrint("AUTH CODE: " + authCode);
 
-                            // TODO: Make POST request
-
-                            var httpClient = new HttpClient();
-                            var requestBody = new
-                            {
-                                authCode = authCode
-                            };
-
-                            var json = JsonSerializer.Serialize(requestBody);
-                            var postData = new StringContent(json, Encoding.UTF8, "application/json");
-
-                            var response = await httpClient.PostAsync("https://localhost:7292/api/auth/login", postData);
-
+                            var requestBody = new { authCode = authCode };
+                            var response = await RequestHelper.UnauthedPostRequestAsync(
+                                "/api/auth/login",
+                                "",
+                                JsonSerializer.Serialize(requestBody)
+                            );
                             // TODO Ensure this is successful
-                            // TODO Get response content and save the JWT from this content
 
                             var responseContent = await response.Content.ReadAsStringAsync();
-                            var options = new JsonSerializerOptions
+
+                            if (response.IsSuccessStatusCode)
                             {
-                                PropertyNameCaseInsensitive = true
-                            };
-                            var loginResponse = JsonSerializer.Deserialize<LoginResponse>(responseContent, options);
+                                var options = new JsonSerializerOptions
+                                {
+                                    PropertyNameCaseInsensitive = true
+                                };
+                                var loginResponse = JsonSerializer.Deserialize<LoginResponse>(
+                                    responseContent,
+                                    options
+                                );
 
-                            Console.WriteLine(loginResponse.User.Id);
-                            Console.WriteLine(loginResponse.User.GoogleId);
-                            Console.WriteLine(loginResponse.User.Email);
-                            Console.WriteLine(loginResponse.User.Username);
-                            Console.WriteLine(loginResponse.JWT);
+                                OutputHelper.DebugPrint("USER ID: " + loginResponse?.User.Id);
+                                OutputHelper.DebugPrint(
+                                    "GOOGLE ID: " + loginResponse?.User.GoogleId
+                                );
+                                OutputHelper.DebugPrint("USER EMAIL: " + loginResponse?.User.Email);
+                                OutputHelper.DebugPrint(
+                                    "USERNAME: " + loginResponse?.User.Username
+                                );
+                                OutputHelper.DebugPrint("JWT: " + loginResponse?.JWT);
 
-                            var userRequest = new HttpRequestMessage(HttpMethod.Get, "https://localhost:7292/api/user");
-                            userRequest.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", loginResponse.JWT);
+                                jwtToken = loginResponse != null ? loginResponse.JWT : "";
+                                success = true;
 
-                            var userResponse = await httpClient.SendAsync(userRequest);
+                                var userResponse = await RequestHelper.GetRequestAsync(
+                                    "/api/user",
+                                    ""
+                                );
 
-                            // Ensure the request was successful
-                            if (userResponse.IsSuccessStatusCode)
-                            {
-                                var userResponseContent = await userResponse.Content.ReadAsStringAsync();
-                                var user = JsonSerializer.Deserialize<User>(userResponseContent, options);
+                                if (userResponse.IsSuccessStatusCode)
+                                {
+                                    var userResponseContent =
+                                        await userResponse.Content.ReadAsStringAsync();
+                                    var user = JsonSerializer.Deserialize<User>(
+                                        userResponseContent,
+                                        options
+                                    );
 
-                                Console.WriteLine("User details:");
-                                Console.WriteLine($"User ID: {user.Id}");
-                                Console.WriteLine($"Google ID: {user.GoogleId}");
-                                Console.WriteLine($"Email: {user.Email}");
-                                Console.WriteLine($"Username: {user.Username}");
+                                    Console.WriteLine("User details:");
+                                    Console.WriteLine($"User ID: {user?.Id}");
+                                    Console.WriteLine($"Google ID: {user?.GoogleId}");
+                                    Console.WriteLine($"Email: {user?.Email}");
+                                    Console.WriteLine($"Username: {user?.Username}");
+                                }
+                                else
+                                {
+                                    Console.WriteLine("Failed to retrieve user data");
+                                }
                             }
-                            else
-                            {
-                                Console.WriteLine("Failed to retrieve user data");
-                            }
-
-
-                            // if (response != null && response.StatusCode == HttpStatusCode.OK)
-                            // {
-                            //     jwtToken = await response.Content.ReadAsStringAsync();
-                            //     success = true;
-                            // }
-                            // else
-                            // {
-                            //     success = false;
-                            // }
                         }
                     }
-                    else
-                        success = false;
                 }
-                else
-                    success = false;
             }
             catch (Exception)
             {
@@ -147,17 +137,18 @@ namespace Galaxy.Conqueror.Client.Utils
             }
             finally
             {
-                string browserResponse = "";
+                string browserResponse;
                 if (success)
                 {
-                    browserResponse = "Login successful";
+                    browserResponse = "Login successful, you may now close this window";
                     Console.WriteLine("Login successful");
                     Console.WriteLine("JWT Token: " + jwtToken);
                 }
                 else
                 {
-                    browserResponse = "Login unsuccessful";
-                    Console.WriteLine("Login unsuccessful");
+                    browserResponse =
+                        "Login unsuccessful, you may now close this window and try again";
+                    Console.WriteLine("Login unsuccessful, try again");
                 }
                 var responseOutput = context.Response;
                 responseOutput.StatusCode = 200;
