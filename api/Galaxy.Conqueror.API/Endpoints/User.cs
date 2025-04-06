@@ -1,31 +1,47 @@
 ﻿namespace Galaxy.Conqueror.API.Endpoints;
 
+using System.Security.Claims;
 using Galaxy.Conqueror.API.Models.Requests;
 using Galaxy.Conqueror.API.Services;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc;
 
 public static class User
 {
-    public static IEndpointRouteBuilder GetUserById(this IEndpointRouteBuilder endpoint)
+    public static IEndpointRouteBuilder GetCurrentUser(this IEndpointRouteBuilder endpoint)
     {
-        endpoint.MapGet("api/user", GetUserByIdHandler)
+        endpoint.MapGet("api/user", GetCurrentUserHandler)
             .Produces(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status400BadRequest)
+            .Produces(StatusCodes.Status404NotFound)
             .Produces(StatusCodes.Status500InternalServerError)
             .RequireAuthorization();
         return endpoint;
     }
 
-    public static async Task<IResult> GetUserByIdHandler(
-        //[FromRoute] Guid userId,
+    public static async Task<IResult> GetCurrentUserHandler(
         [FromServices] UserService userService,
         HttpContext context,
         CancellationToken ct
     )
     {
-        var user2 = context.User;
-        var user = await userService.GetUserById(new Guid("1bafe6fc-1c69-4377-b9f6-78a07f98d4b1"));
-        return Results.Ok(user);
+        try
+        {
+            var email = context.User.FindFirst(ClaimTypes.Email)?.Value;
+            if (string.IsNullOrEmpty(email)) 
+                return Results.BadRequest("Email claim not found in token.");
+
+            var user = await userService.GetUserByEmail(email);
+            if (user == null) 
+                return Results.NotFound("User not found.");
+
+            return Results.Ok(user);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error retrieving user: {ex}");
+            return Results.StatusCode(StatusCodes.Status500InternalServerError);
+        }
     }
 
 

@@ -9,7 +9,7 @@ public static class ApplicationConfiguration
         app.LoginEndpoint();
         
         //app.GetUsers();
-        app.GetUserById();
+        app.GetCurrentUser();
         app.UpdateUser();
 
         return app;

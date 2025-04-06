@@ -14,6 +14,12 @@ public class UserService(IDbConnection db)
         return await _db.QuerySingleOrDefaultAsync<User>(sql, new { Id = id });
     }
 
+    public async Task<User> GetUserByEmail(string email)
+    {
+        const string sql = "SELECT * FROM users WHERE email = @Email";
+        return await _db.QuerySingleOrDefaultAsync<User>(sql, new { Email = email });
+    }
+   
     public async Task<IEnumerable<User>> GetUsers()
     {
         const string sql = "SELECT * FROM users";
