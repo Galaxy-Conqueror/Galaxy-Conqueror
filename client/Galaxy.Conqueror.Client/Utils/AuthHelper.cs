@@ -142,7 +142,6 @@ namespace Galaxy.Conqueror.Client.Utils
                 {
                     browserResponse = "Login successful, you may now close this window";
                     Console.WriteLine("Login successful");
-                    Console.WriteLine("JWT Token: " + jwtToken);
                 }
                 else
                 {
