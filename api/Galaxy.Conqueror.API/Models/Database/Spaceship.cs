@@ -4,11 +4,12 @@ public class Spaceship
 {
     public int Id { get; set; }
     public Guid UserId { get; set; }
-    public int WeoponLevel { get; set; }
-    public float FuelLevel { get; set; }
-    public int FuelCapacity { get; set; }
-    public float ResourceCapacity { get; set; }
-    public float? X { get; set; }
-    public float? Y { get; set; }
-
+    public string? Design { get; set; }
+    public string? Description { get; set; }
+    public int Level { get; set; } = 1;
+    public int CurrentFuel { get; set; }
+    public int CurrentHealth { get; set; }
+    public int ResourceReserve { get; set; }
+    public int X { get; set; }
+    public int Y { get; set; }
 }
