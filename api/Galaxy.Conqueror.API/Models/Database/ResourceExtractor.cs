@@ -4,6 +4,5 @@ public class ResourceExtractor
 {
     public int Id { get; set; }
     public int PlanetId { get; set; }
-    public int Level { get; set; }
-    public int Rate { get; set; }
+    public int Level { get; set; } = 1;
 }
