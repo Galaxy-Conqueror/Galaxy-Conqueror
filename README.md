@@ -1,65 +1,159 @@
-# Local Development
+# 🌌 Galaxy Conqueror
 
-## Docker Setup - Docker Desktop
+**Galaxy Conqueror** is a multiplayer game where players compete to dominate the galaxy. Each player starts with a single planet and a spaceship. Players mine resources, upgrade defenses, and battle others to conquer enemy planets and rise to galactic supremacy.
 
-### Commands:
+---
 
-1. "docker-compose up"
-2. "docker-compose up -d" (preferred)
-3. "docker-compose down"
-4. "docker-compose down -v" (preferred)
+## 🚀 Local Development
 
-### Functions:
+### 🐳 Docker Setup (via Docker Desktop)
 
-1. Test Flyway migrations
-2. Connect to the Database through PG Admin
-3. Connect to the Database through Galaxy Conqueror API
+To get started locally, use Docker and Docker Compose:
 
-# Galaxy Conqueror
+#### 🔧 Commands
 
-In "Galaxy Conqueror," each player starts with a single planet that generates resources over time. The goal is to manage your resources, upgrade your planet's defences, or build forces to attack other players' planets. You can mine resources with workers, which you then use to strengthen your planet or create ships and weapons for attacking other players.
+```bash
+# Start services in foreground
+docker-compose up
 
-Players can challenge each other in turn-based battles, and the winner takes over the defeated player's planet. The game focuses on simple resource management, upgrades, and battles with the aim of becoming the most powerful player in the galaxy.
+# Start services in detached mode (recommended)
+docker-compose up -d
 
-## MVP
+# Stop all services
+docker-compose down
 
-### Player
+# Stop and remove all volumes (recommended clean shutdown)
+docker-compose down -v
+```
 
-- Upon joining, a player is given a single planet with a basic defensive mechanism, a resource extractor, and a spaceship with a basic offensive weapon.
-- A player will only be allowed to have one planet.
-- A player will only have one spaceship.
-- A player's planet will be generated automatically and placed in a random spot when they register.
+### 🧪 Features
 
-### Planet
+- Test Flyway migrations
+- Connect to the database via PG Admin
+- Interact with the database via the Galaxy Conqueror API
 
-- A planet has an infinite resource supply, which can be extracted and processed.
+## 🧬 MVP (Minimum Viable Product)
 
-### Defensive Mechanism
+### 👨‍🚀 Player
 
-- One defensive mechanism per planet which can be upgraded.
-- It should be able to shoot an enemy spaceship when shot at.
-- If attacked, its health will be decreased whenever it is shot.
-- Once it has been destroyed, its health will be restored after attack.
+Upon joining, a player:
 
-### Resource Extractor
+- Sets a username
+- Is assigned a randomly located planet
+- Is given a basic spaceship and planet defenses
 
-- A device that extracts resources. It can be upgraded to yield more resources over time.
+Each player:
 
-### Spaceship
+- Can own only one planet
+- Can use only one spaceship
 
-- Used to roam the galaxy and conquer planets.
-- It has an upgradable weapon for combat and requires fuel (resources) to travel, refuelling at its origin planet.
+### 🪐 Planet
 
-### Spaceship Weapon
+Each planet:
 
-- An upgradable weapon used for attacking planets during combat.
+- Has infinite resources
+- Can only be owned by one player
+- Has upgradable defensive mechanisms
 
-## Gameplay
+### 🛡️ Defensive Mechanism
 
-### A Player Attacks a Planet
+- Defends planet during battle
+- Takes damage from incoming attacks
+- Is automatically restored after battle
 
-1. A player will fly their spaceship to an enemy planet.
-2. A player will initiate an attack.
-3. A Space Invaders-styled game will begin where the player needs to shoot the enemy planet's defence mechanism. The defence mechanism will shoot bullets at the player's spaceship.
-4. The battle is concluded when either the spaceship or the enemy defence mechanism has been sufficiently damaged.
-5. The player will then load the enemy resources into their spaceship (as much as it can hold) and deposit the resources back at their own planet.
+### ⛏️ Resource Extractor
+
+- Extracts resources over time
+- Can be upgraded to improve efficiency
+
+### 🛸 Spaceship
+
+- Roams the galaxy, enabling attacks
+- Has an upgradable weapon
+- Requires fuel to travel
+- Can only be refueled at the player's home planet
+
+### 🔫 Spaceship Weapon
+
+- Used to attack enemy planets
+- Upgradable for increased combat strength
+
+## 🕹️ Gameplay Loop
+
+### 🌌 Attacking a Planet
+
+1. Travel to an enemy planet.
+2. Initiate battle.
+3. Engage in a Space Invaders-style minigame:
+   - Shoot at enemy defenses
+   - Dodge incoming bullets
+4. Win by destroying defenses before the spaceship is destroyed.
+5. Collect enemy resources and return to your home planet.
+
+## 👾 New Player User Story
+
+### 🌟 On Joining the Game
+
+- Set a username
+- Receive a randomly placed planet
+- Name the planet
+- Start with level 1 in:
+  - Planet
+  - Spaceship
+  - Defenses
+  - Resource extractor
+
+### 🧭 Gameplay Overview
+
+- View a description of your planet (maybe with ASCII art!)
+- View a galaxy map with symbols and legend
+
+### 🌐 Global Commands
+
+- Fly to Another Planet
+  - If fuel runs out → spaceship respawns at home planet (reset to level 1)
+- View Battle History (Phase 2)
+- View Player Stats (Phase 2)
+- View Leaderboard (Phase 2)
+
+### 🏠 At Your Home Planet
+
+- Upgrades
+  - Show cost for all available upgrades
+  - Require user confirmation
+- Actions:
+  - Upgrade resource extractor
+  - Upgrade turret
+  - Upgrade spaceship
+  - Repair spaceship
+  - Deposit resources
+  - Refuel
+
+### 🚩 At an Enemy Planet
+
+- Observe Planet
+  - See owner, name, description, (optional: masked stats)
+- Attack Planet
+  - Pull necessary data and initiate battle
+- Recon (Phase 2)
+  - Use fuel to inspect planet's defense strength
+
+### ⚔️ In Battle
+
+- Move spaceship
+- Shoot defenses
+- Dodge bullets
+- Forfeit battle
+- Battle ends automatically after timeout
+
+### 🏆 If You Win
+
+- Load planet resources into spaceship (limited to max capacity)
+- Deduct resources from the defeated planet
+- Enemy turret health is restored
+- Planet enters a shielded state temporarily
+
+### 💀 If You Lose
+
+- Respawn at home planet (reset spaceship to level 1)
+- Enemy defenses are restored automatically
