@@ -17,6 +17,7 @@ public static class ApplicationConfiguration
         app.ViewSpaceshipDetails();
         app.ViewSpaceshipUpgradeDetails();
         app.UpgradeSpaceship();
+        app.Battle();
 
         return app;
     }

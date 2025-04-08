@@ -2,6 +2,7 @@
 using Dapper;
 using Galaxy.Conqueror.API.Configuration.Database;
 using Galaxy.Conqueror.API.Models.Database;
+using Galaxy.Conqueror.API.Utils;
 
 namespace Galaxy.Conqueror.API.Services;
 
@@ -31,8 +32,8 @@ public class SpaceshipService(IDbConnectionFactory connectionFactory)
             // Design
             // Description
             Level = 1,
-            CurrentFuel = 100, // set to max fuel based on level and config values
-            CurrentHealth = 400, // set to max health based on level and config values
+            CurrentFuel = Calculations.getSpaceshipMaxFuel(1), // set to max fuel based on level and config values
+            CurrentHealth = Calculations.getSpaceshipMaxhealth(1), // set to max health based on level and config values
             ResourceReserve = 0,
             X = planet.X,
             Y = planet.Y + 1,

@@ -1,5 +1,7 @@
 ﻿using Galaxy.Conqueror.API.Models.Database;
 using Galaxy.Conqueror.API.Services;
+using Galaxy.Conqueror.API.Utils;
+
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
@@ -78,12 +80,10 @@ public static class Spaceship
 
             var spaceship = await spaceshipService.GetSpaceshipByUserId(user.Id);
 
-            var upgradeCost = 1000; // config upgrade amount for level etc
-            var upgradeEffect = 50; // config upgrade amount for level etc
             Dictionary<string, string> dict = new Dictionary<string, string>
             {
-                ["upgradeCost"] = upgradeCost.ToString(),
-                ["upgradeEffect"] = upgradeEffect.ToString()
+                ["upgradeCost"] = Calculations.getSpaceshipUpgradeCost(spaceship.Level).ToString(),
+                ["upgradeEffect"] = Calculations.getSpaceshipUpgradeEffect(spaceship.Level).ToString()
             };
 
             return Results.Ok(dict);
@@ -141,8 +141,7 @@ public static class Spaceship
                 return Results.BadRequest("Error upgrading spaceship: Planet out of range");
             }
 
-            // Calculate the level up cost based on config
-            var upgradeCost = 40;
+            var upgradeCost = Calculations.getSpaceshipUpgradeCost(spaceship.Level);
 
             // Validation to check if planet has enough resources for upgrade
             if (planet.ResourceReserve < upgradeCost)
