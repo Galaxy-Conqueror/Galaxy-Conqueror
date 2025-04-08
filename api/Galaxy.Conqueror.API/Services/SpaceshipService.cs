@@ -1,4 +1,5 @@
-﻿using Dapper;
+﻿using System.Data.Common;
+using Dapper;
 using Galaxy.Conqueror.API.Configuration.Database;
 using Galaxy.Conqueror.API.Models.Database;
 
@@ -13,10 +14,36 @@ public class SpaceshipService(IDbConnectionFactory connectionFactory)
         return await connection.QuerySingleOrDefaultAsync<Spaceship>(sql, new { UserId = userId });
     }
 
+    public async Task<Spaceship> CreateSpaceship(Guid userId, Planet planet, DbTransaction? transaction = null)
+    {
+        using var connection = transaction?.Connection ?? connectionFactory.CreateConnection();
+
+        if (connection.State != System.Data.ConnectionState.Open)
+            await connection.OpenAsync();
+
+        const string sql = @"
+            INSERT INTO spaceships (user_id)
+            VALUES (@UserId)
+            RETURNING *";
+        var shapeship = new Spaceship()
+        {
+            UserId = userId,
+            // Design
+            // Description
+            Level = 1,
+            CurrentFuel = 100, // set to max fuel based on level and config values
+            CurrentHealth = 400, // set to max health based on level and config values
+            ResourceReserve = 0,
+            X = planet.X,
+            Y = planet.Y + 1,
+        };
+        return await connection.QuerySingleAsync<Spaceship>(sql, shapeship, transaction: transaction);
+    }
+
     public async Task<Spaceship> UpdateSpaceship(int spaceshipId, int planetId, int cost)
     {
         using var connection = connectionFactory.CreateConnection();
-        connection.Open();
+        await connection.OpenAsync();
         using var transaction = connection.BeginTransaction();
         try
         {
@@ -47,13 +74,13 @@ public class SpaceshipService(IDbConnectionFactory connectionFactory)
                 throw new Exception("Spaceship not found or update failed.");
             }
 
-            transaction.Commit();
+            await transaction.CommitAsync();
 
             return upgradedSpaceship;
         }
         catch
         {
-            transaction.Rollback();
+            await transaction.RollbackAsync();
             throw;
         }
     }

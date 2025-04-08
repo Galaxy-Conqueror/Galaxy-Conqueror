@@ -1,4 +1,5 @@
-﻿using Dapper;
+﻿using System.Data.Common;
+using Dapper;
 using Galaxy.Conqueror.API.Configuration.Database;
 using Galaxy.Conqueror.API.Models.Database;
 
@@ -27,19 +28,24 @@ public class PlanetService(IDbConnectionFactory connectionFactory)
         return await connection.QuerySingleOrDefaultAsync<Planet>(sql, new { UserId = userId });
     }
 
-    public async Task<Planet> CreatePlanet(Guid userId)
+    public async Task<Planet> CreatePlanet(Guid userId, DbTransaction? transaction = null)
     {
-        using var connection = connectionFactory.CreateConnection();
+        using var connection = transaction?.Connection ?? connectionFactory.CreateConnection();
+
+        if (connection.State != System.Data.ConnectionState.Open)
+            await connection.OpenAsync();
+
         const string sql = @"
             INSERT INTO planets (user_id)
             VALUES (@UserId)
-            RETURNING *";
-        var planet = new Planet()
-        {
-            UserId = userId,
-            // add defaults settings for planets (awaiting the database desing)
-        };
-        return await connection.QuerySingleAsync<Planet>(sql, planet);
+            RETURNING *;
+        ";
+
+        return await connection.QuerySingleAsync<Planet>(
+            sql,
+            new { UserId = userId },
+            transaction: transaction
+        );
     }
 
 }
