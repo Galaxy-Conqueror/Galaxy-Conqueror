@@ -82,8 +82,8 @@ public static class Spaceship
 
             Dictionary<string, string> dict = new Dictionary<string, string>
             {
-                ["upgradeCost"] = Calculations.getSpaceshipUpgradeCost(spaceship.Level).ToString(),
-                ["upgradeEffect"] = Calculations.getSpaceshipUpgradeEffect(spaceship.Level).ToString()
+                ["upgradeCost"] = Calculations.GetSpaceshipUpgradeCost(spaceship.Level).ToString(),
+                ["upgradeEffect"] = Calculations.GetSpaceshipUpgradeEffect(spaceship.Level).ToString()
             };
 
             return Results.Ok(dict);
@@ -141,7 +141,7 @@ public static class Spaceship
                 return Results.BadRequest("Error upgrading spaceship: Planet out of range");
             }
 
-            var upgradeCost = Calculations.getSpaceshipUpgradeCost(spaceship.Level);
+            var upgradeCost = Calculations.GetSpaceshipUpgradeCost(spaceship.Level);
 
             // Validation to check if planet has enough resources for upgrade
             if (planet.ResourceReserve < upgradeCost)

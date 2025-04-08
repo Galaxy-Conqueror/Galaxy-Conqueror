@@ -1,14 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Galaxy.Conqueror.API.Services;
 using Galaxy.Conqueror.API.Utils;
-
+using Galaxy.Conqueror.API.Models.Requests;
 
 namespace Galaxy.Conqueror.API.Endpoints;
 
-//Attack Planet
-//Pull necessary data and initiate battle
-
-public static class AttackPlanet
+public static class Battles
 {
     public static IEndpointRouteBuilder Battle(this IEndpointRouteBuilder endpoint)
     {
@@ -60,12 +57,12 @@ public static class AttackPlanet
             Dictionary<string, string> dict = new Dictionary<string, string>
             {
                 ["planetResourceReserve"] = planet.ResourceReserve.ToString(),
-                ["turretHealth"] = Calculations.getTurretHealth(turret.Level).ToString(),
-                ["turretDamage"] = Calculations.getTurretDamage(turret.Level).ToString(),
-                ["spaceshipMaxResources"] = Calculations.getSpaceshipMaxResources(spaceship.Level).ToString(),
+                ["turretHealth"] = Calculations.GetTurretHealth(turret.Level).ToString(),
+                ["turretDamage"] = Calculations.GetTurretDamage(turret.Level).ToString(),
+                ["spaceshipMaxResources"] = Calculations.GetSpaceshipMaxResources(spaceship.Level).ToString(),
                 ["spaceshipResourceReserve"] = (spaceship.ResourceReserve).ToString(),
                 ["spaceshipHealth"] = (spaceship.CurrentHealth).ToString(),
-                ["spaceshipDamage"] = Calculations.getSpaceshipDamage(spaceship.Level).ToString(),
+                ["spaceshipDamage"] = Calculations.GetSpaceshipDamage(spaceship.Level).ToString(),
                 ["spaceshipDesign"] = (spaceship.Design)
             };
             return Results.Ok(dict);
@@ -77,12 +74,54 @@ public static class AttackPlanet
         }
     }
 
-        public static async Task<IResult> BattleLogHandler(
-        [FromRoute] int planetId
-        )
+    public static async Task<IResult> BattleLogHandler(
+    [FromRoute] int planetId,
+    [FromBody] BattleLogRequest battleLog,
+    [FromServices] UserService userService,
+    [FromServices] SpaceshipService spaceshipService,
+    [FromServices] PlanetService planetService,
+    [FromServices] BattleService battleService,
+    HttpContext context,
+    CancellationToken ct
+    )
     {
-        Console.WriteLine(planetId);
-        await Task.Delay(1000);
-        return Results.BadRequest("Not Implemented");
+
+        //var email = context.User.FindFirst(ClaimTypes.Email)?.Value;
+        //if (string.IsNullOrEmpty(email))
+        //    return Results.BadRequest("Email claim not found in token.");
+        // testing '
+        var email = "user1@example.com";
+
+        var user = await userService.GetUserByEmail(email);
+        if (user == null)
+            return Results.NotFound("User not found.");
+        var spaceship = await spaceshipService.GetSpaceshipByUserId(user.Id);
+        if (spaceship == null)
+            return Results.NotFound("Spaceship not found.");
+        var planet = await planetService.GetPlanetById(planetId);
+        if (planet == null)
+            return Results.NotFound("Planet not found.");
+        var turret = await planetService.GetTurretByPlanetId(planetId);
+        if (turret == null)
+            return Results.NotFound("Planet has no defenses");
+        bool attackerWon = (Calculations.GetTurretHealth(turret.Level) - battleLog.DamageToTurret) == 0;
+
+        Console.WriteLine($"Planet ID: {planetId}");
+        Console.WriteLine($"Started At: {battleLog.StartedAt}");
+        Console.WriteLine($"Ended At: {battleLog.EndedAt}");
+        Console.WriteLine($"Damage to Spaceship: {battleLog.DamageToSpaceship}");
+        Console.WriteLine($"Spaceship health: {spaceship.CurrentHealth}");
+        Console.WriteLine($"Damage to Turret: {battleLog.DamageToTurret}");
+        Console.WriteLine($"Turret health: {Calculations.GetTurretHealth(turret.Level)}");
+        Console.WriteLine($"Resources Looted: {battleLog.ResourcesLooted}");
+
+        Console.WriteLine($"Attacker Won: {attackerWon}");
+
+        if (attackerWon) {
+            spaceshipService.LootResources(spaceship.Id, planetId, battleLog.ResourcesLooted);
+        }
+        var battle = await battleService.CreateBattle(user.Id, spaceship.Id, planetId, battleLog, attackerWon);
+        return Results.Ok(battle);
+
     }
 }

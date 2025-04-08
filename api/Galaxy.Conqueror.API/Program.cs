@@ -39,6 +39,7 @@ builder.Services.AddHttpClient<GoogleAuthService>();
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<SpaceshipService>();
 builder.Services.AddScoped<PlanetService>();
+builder.Services.AddScoped<BattleService>();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

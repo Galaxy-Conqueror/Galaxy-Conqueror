@@ -32,8 +32,8 @@ public class SpaceshipService(IDbConnectionFactory connectionFactory)
             // Design
             // Description
             Level = 1,
-            CurrentFuel = Calculations.getSpaceshipMaxFuel(1), // set to max fuel based on level and config values
-            CurrentHealth = Calculations.getSpaceshipMaxhealth(1), // set to max health based on level and config values
+            CurrentFuel = Calculations.GetSpaceshipMaxFuel(1), // set to max fuel based on level and config values
+            CurrentHealth = Calculations.GetSpaceshipMaxHealth(1), // set to max health based on level and config values
             ResourceReserve = 0,
             X = planet.X,
             Y = planet.Y + 1,
@@ -84,6 +84,46 @@ public class SpaceshipService(IDbConnectionFactory connectionFactory)
             await transaction.RollbackAsync();
             throw;
         }
+    }
+
+    public async Task<Spaceship> LootResources(int spaceshipId, int planetId, int resourcesLooted, DbTransaction? transaction = null)
+    {
+        using var connection = transaction?.Connection ?? connectionFactory.CreateConnection();
+
+        if (connection.State != System.Data.ConnectionState.Open)
+            await connection.OpenAsync();
+
+            const string updatePlanetSql = @"
+                UPDATE planets
+                SET resource_reserve = resource_reserve - @ResourcesLooted
+                WHERE id = @Id
+                RETURNING *;
+            ";
+
+            var affectedRows = await connection.ExecuteAsync(updatePlanetSql, new { Id = planetId, ResourcesLooted = resourcesLooted }, transaction);
+
+            if (affectedRows == 0)
+            {
+                throw new Exception("Insufficient resources or planet not found.");
+            }
+
+            const string updateSpaceshipSql = @"
+                UPDATE spaceships
+                SET resource_reserve = resource_reserve + @ResourcesLooted
+                WHERE id = @Id
+                RETURNING *;
+            ";
+
+            var upgradedSpaceship = await connection.QuerySingleOrDefaultAsync<Spaceship>(updateSpaceshipSql, new { Id = spaceshipId, ResourcesLooted = resourcesLooted }, transaction: transaction);
+
+            if (upgradedSpaceship == null)
+            {
+                throw new Exception("Spaceship not found or update failed.");
+            }
+
+            return upgradedSpaceship;
+
+
     }
 
 }
