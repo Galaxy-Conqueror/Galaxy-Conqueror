@@ -1,8 +1,8 @@
-﻿using System.Data;
+﻿using System.Data.Common;
 
 namespace Galaxy.Conqueror.API.Configuration.Database;
 
 public interface IDbConnectionFactory
 {
-    IDbConnection CreateConnection();
+    DbConnection CreateConnection();
 }

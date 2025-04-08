@@ -1,5 +1,5 @@
 ﻿using Npgsql;
-using System.Data;
+using System.Data.Common;
 
 namespace Galaxy.Conqueror.API.Configuration.Database;
 
@@ -12,7 +12,7 @@ public class NpgsqlConnectionFactory : IDbConnectionFactory
         _connectionString = config.GetConnectionString("DefaultConnection");
     }
 
-    public IDbConnection CreateConnection()
+    public DbConnection CreateConnection()
     {
         return new NpgsqlConnection(_connectionString);
     }
