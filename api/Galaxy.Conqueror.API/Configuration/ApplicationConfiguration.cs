@@ -12,6 +12,12 @@ public static class ApplicationConfiguration
         app.GetCurrentUser();
         app.UpdateUser();
 
+
+
+        app.ViewSpaceshipDetails();
+        app.ViewSpaceshipUpgradeDetails();
+        app.UpgradeSpaceship();
+
         return app;
     }
 }

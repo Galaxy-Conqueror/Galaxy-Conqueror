@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Galaxy.Conqueror.API.Configuration;
 using Galaxy.Conqueror.API.Services;
+using Galaxy.Conqueror.API.Configuration.Database;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,6 +17,8 @@ builder.Services.AddScoped<IDbConnection>(sp =>
     var config = sp.GetRequiredService<IConfiguration>();
     return new NpgsqlConnection(config.GetConnectionString("DefaultConnection"));
 });
+builder.Services.AddScoped<IDbConnectionFactory, NpgsqlConnectionFactory>();
+
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -34,6 +37,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 builder.Services.AddAuthorization();
 builder.Services.AddHttpClient<GoogleAuthService>();
 builder.Services.AddScoped<UserService>();
+builder.Services.AddScoped<SpaceshipService>();
+builder.Services.AddScoped<PlanetService>();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
