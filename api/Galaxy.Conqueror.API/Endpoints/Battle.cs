@@ -2,6 +2,7 @@
 using Galaxy.Conqueror.API.Services;
 using Galaxy.Conqueror.API.Utils;
 using Galaxy.Conqueror.API.Models.Requests;
+using Galaxy.Conqueror.API.Models.Database;
 
 namespace Galaxy.Conqueror.API.Endpoints;
 
@@ -118,7 +119,14 @@ public static class Battles
         Console.WriteLine($"Attacker Won: {attackerWon}");
 
         if (attackerWon) {
-            spaceshipService.LootResources(spaceship.Id, planetId, battleLog.ResourcesLooted);
+            await spaceshipService.LootResources(spaceship.Id, planetId, battleLog.ResourcesLooted);
+            await spaceshipService.UpdateSpaceshipHealth(spaceship.Id, battleLog.DamageToSpaceship);
+        } else {
+            var attackerPlanet = await planetService.GetPlanetBySpaceshipId(spaceship.Id);
+            if (attackerPlanet == null) {
+                throw new Exception("No planet found for spaceship");
+            }
+            await spaceshipService.ResetSpaceship(spaceship.Id, attackerPlanet );
         }
         var battle = await battleService.CreateBattle(user.Id, spaceship.Id, planetId, battleLog, attackerWon);
         return Results.Ok(battle);
