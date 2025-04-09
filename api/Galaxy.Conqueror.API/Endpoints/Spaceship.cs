@@ -160,4 +160,187 @@ public static class Spaceship
         }
     }
 
+    public static IEndpointRouteBuilder Refuel(this IEndpointRouteBuilder endpoint)
+    {
+        endpoint.MapGet("api/spaceship/refuel", RefuelPriceHandler)
+            .Produces(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status400BadRequest)
+            .Produces(StatusCodes.Status404NotFound)
+            .Produces(StatusCodes.Status500InternalServerError);
+
+        endpoint.MapPut("api/spaceship/refuel", RefuelSpaceshipHandler)
+            .Produces<string>(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status204NoContent)
+            .Produces(StatusCodes.Status500InternalServerError);
+
+        return endpoint;
+
+    }
+
+    public static async Task<IResult> RefuelPriceHandler(
+        [FromServices] UserService userService,
+        [FromServices] SpaceshipService spaceshipService,
+        HttpContext context,
+        CancellationToken ct
+    )
+    {
+        try
+        {
+            //var email = context.User.FindFirst(ClaimTypes.Email)?.Value;
+            //if (string.IsNullOrEmpty(email))
+            //    return Results.BadRequest("Email claim not found in token.");
+            // testing '
+            var email = "user1@example.com";
+            var user = await userService.GetUserByEmail(email);
+
+            var spaceship = await spaceshipService.GetSpaceshipByUserId(user.Id);
+
+            if (spaceship == null)
+                return Results.BadRequest("Spaceship not found.");
+
+            return Results.Ok(Calculations.GetSpaceshipRefuelCost(spaceship.Level, spaceship.CurrentFuel));
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error refueling spaceship: {ex}");
+            return Results.StatusCode(StatusCodes.Status500InternalServerError);
+        }
+    }
+
+    public static async Task<IResult> RefuelSpaceshipHandler(
+        [FromServices] UserService userService,
+        [FromServices] SpaceshipService spaceshipService,
+        [FromServices] PlanetService planetService,
+        HttpContext context,
+        CancellationToken ct
+    )
+    {
+        try
+        {
+            //var email = context.User.FindFirst(ClaimTypes.Email)?.Value;
+            //if (string.IsNullOrEmpty(email))
+            //    return Results.BadRequest("Email claim not found in token.");
+            // testing '
+            var email = "user1@example.com";
+            var user = await userService.GetUserByEmail(email);
+
+            var spaceship = await spaceshipService.GetSpaceshipByUserId(user.Id);
+
+            if (spaceship == null)
+                return Results.BadRequest("Spaceship not found.");
+
+            var planet = await planetService.GetPlanetByUserID(user.Id);
+
+            if (planet == null)
+                return Results.BadRequest("Planet not found.");
+
+            int planetResources = planet.ResourceReserve;
+            int refuelCost = Calculations.GetSpaceshipRefuelCost(spaceship.Level, spaceship.CurrentFuel);
+
+            if (refuelCost > planetResources) {
+                return Results.BadRequest("Not enough resources to refuel");
+            }
+
+            var refueledSpaceship = await spaceshipService.Refuel(spaceship.Id, planet.Id, refuelCost, Calculations.GetSpaceshipMaxFuel(spaceship.Level) - spaceship.CurrentFuel);
+
+            return Results.Ok(refueledSpaceship);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error refueling spaceship: {ex}");
+            return Results.StatusCode(StatusCodes.Status500InternalServerError);
+        }
+    }
+
+    public static IEndpointRouteBuilder Repair(this IEndpointRouteBuilder endpoint)
+    {
+        endpoint.MapGet("api/spaceship/repair", RepairPriceHandler)
+            .Produces(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status400BadRequest)
+            .Produces(StatusCodes.Status404NotFound)
+            .Produces(StatusCodes.Status500InternalServerError);
+
+        endpoint.MapPut("api/spaceship/repair", RepairSpaceshipHandler)
+            .Produces<string>(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status500InternalServerError);
+
+        return endpoint;
+
+    }
+
+    public static async Task<IResult> RepairPriceHandler(
+        [FromServices] UserService userService,
+        [FromServices] SpaceshipService spaceshipService,
+        HttpContext context,
+        CancellationToken ct
+    )
+    {
+        try
+        {
+            //var email = context.User.FindFirst(ClaimTypes.Email)?.Value;
+            //if (string.IsNullOrEmpty(email))
+            //    return Results.BadRequest("Email claim not found in token.");
+            // testing '
+            var email = "user1@example.com";
+            var user = await userService.GetUserByEmail(email);
+
+            var spaceship = await spaceshipService.GetSpaceshipByUserId(user.Id);
+
+            if (spaceship == null)
+                return Results.BadRequest("Spaceship not found.");
+
+            return Results.Ok(Calculations.GetSpaceshipRepairCost(spaceship.Level, spaceship.CurrentHealth));
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error repairing spaceship: {ex}");
+            return Results.StatusCode(StatusCodes.Status500InternalServerError);
+        }
+    }
+
+    public static async Task<IResult> RepairSpaceshipHandler(
+        [FromServices] UserService userService,
+        [FromServices] SpaceshipService spaceshipService,
+        [FromServices] PlanetService planetService,
+        HttpContext context,
+        CancellationToken ct
+    )
+    {
+        try
+        {
+            //var email = context.User.FindFirst(ClaimTypes.Email)?.Value;
+            //if (string.IsNullOrEmpty(email))
+            //    return Results.BadRequest("Email claim not found in token.");
+            // testing '
+            var email = "user1@example.com";
+            var user = await userService.GetUserByEmail(email);
+
+            var spaceship = await spaceshipService.GetSpaceshipByUserId(user.Id);
+
+            if (spaceship == null)
+                return Results.BadRequest("Spaceship not found.");
+
+            var planet = await planetService.GetPlanetByUserID(user.Id);
+
+            if (planet == null)
+                return Results.BadRequest("Planet not found.");
+
+            int planetResources = planet.ResourceReserve;
+            int repairCost = Calculations.GetSpaceshipRepairCost(spaceship.Level, spaceship.CurrentHealth);
+
+            if (repairCost > planetResources) {
+                return Results.BadRequest("Not enough resources to refuel");
+            }
+
+            var repairedSpaceship = await spaceshipService.Repair(spaceship.Id, planet.Id, repairCost, Calculations.GetSpaceshipMaxHealth(spaceship.Level) - spaceship.CurrentHealth);
+
+            return Results.Ok(repairedSpaceship);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error refueling spaceship: {ex}");
+            return Results.StatusCode(StatusCodes.Status500InternalServerError);
+        }
+    }
+
 }

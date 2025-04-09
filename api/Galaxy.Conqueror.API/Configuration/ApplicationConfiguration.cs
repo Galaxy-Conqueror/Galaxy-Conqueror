@@ -17,6 +17,9 @@ public static class ApplicationConfiguration
         app.ViewSpaceshipDetails();
         app.ViewSpaceshipUpgradeDetails();
         app.UpgradeSpaceship();
+        app.Refuel();
+        app.Repair();
+
         app.Battle();
 
         return app;
