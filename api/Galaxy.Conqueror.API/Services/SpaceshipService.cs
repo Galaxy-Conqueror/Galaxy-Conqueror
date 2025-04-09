@@ -179,4 +179,95 @@ public class SpaceshipService(IDbConnectionFactory connectionFactory)
 
     }
 
+    public async Task<Spaceship> Refuel (int spaceshipId, int planetId, int cost, int fuelAmount)
+    {
+        using var connection = connectionFactory.CreateConnection();
+        await connection.OpenAsync();
+        using var transaction = connection.BeginTransaction();
+        try
+        {
+            const string updatePlanetSql = @"
+                UPDATE planets
+                SET resource_reserve = resource_reserve - @Cost
+                WHERE id = @Id
+            ";
+
+            var affectedRows = await connection.ExecuteAsync(updatePlanetSql, new { Id = planetId, Cost = cost }, transaction);
+
+            if (affectedRows == 0)
+            {
+                throw new Exception("Insufficient resources or planet not found.");
+            }
+
+            const string refuelSpaceshipSql = @"
+                UPDATE spaceships
+                SET current_fuel = current_fuel + @FuelAmount
+                WHERE id = @Id
+                RETURNING *;
+            ";
+
+            var refueledSpaceship = await connection.QuerySingleOrDefaultAsync<Spaceship>(refuelSpaceshipSql, new { Id = spaceshipId , FuelAmount = fuelAmount}, transaction);
+
+            if (refueledSpaceship == null)
+            {
+                throw new Exception("Spaceship not found or refuel failed.");
+            }
+
+            await transaction.CommitAsync();
+
+            return refueledSpaceship;
+        }
+        catch
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
+    }
+
+
+    public async Task<Spaceship> Repair (int spaceshipId, int planetId, int cost, int healthAmount)
+    {
+        using var connection = connectionFactory.CreateConnection();
+        await connection.OpenAsync();
+        using var transaction = connection.BeginTransaction();
+        try
+        {
+            const string updatePlanetSql = @"
+                UPDATE planets
+                SET resource_reserve = resource_reserve - @Cost
+                WHERE id = @Id
+            ";
+
+            var affectedRows = await connection.ExecuteAsync(updatePlanetSql, new { Id = planetId, Cost = cost }, transaction);
+
+            if (affectedRows == 0)
+            {
+                throw new Exception("Insufficient resources or planet not found.");
+            }
+
+            const string repairSpaceshipSql = @"
+                UPDATE spaceships
+                SET current_health = current_health + @HealthAmount
+                WHERE id = @Id
+                RETURNING *;
+            ";
+
+            var repairedSpaceship = await connection.QuerySingleOrDefaultAsync<Spaceship>(repairSpaceshipSql, new { Id = spaceshipId , HealthAmount = healthAmount}, transaction);
+
+            if (repairedSpaceship == null)
+            {
+                throw new Exception("Spaceship not found or repair failed.");
+            }
+
+            await transaction.CommitAsync();
+
+            return repairedSpaceship;
+        }
+        catch
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
+    }
+
 }
