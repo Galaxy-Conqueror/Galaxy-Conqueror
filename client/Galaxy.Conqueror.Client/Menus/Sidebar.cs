@@ -1,5 +1,6 @@
 ﻿using Galaxy.Conqueror.Client.Managers;
 using Galaxy.Conqueror.Client.Models;
+using Galaxy.Conqueror.Client.Utils;
 
 
 namespace Galaxy.Conqueror.Client.Menus;
@@ -7,32 +8,33 @@ namespace Galaxy.Conqueror.Client.Menus;
 public static class Sidebar
 {
     public static List<MenuItem> sidebarItems = new List<MenuItem>();
-    private static readonly char[,] sidebar = new char[ StateManager.MAP_WIDTH, StateManager.MAP_HEIGHT];
+    private static readonly Dictionary<Vector2I, char> sidebar = new();
     public static bool stale = true;
 
-    public static char[,] GetSidebar()
+    public static Dictionary<Vector2I, char> GetSidebar()
     {
         MockMenu();
 
-        stale = true;
+        stale = false;
 
         return sidebar;
     }
 
-
     public static void MockMenu()
     {
-        for (int y = 0; y <  StateManager.MAP_HEIGHT; y++)
+        var maxY = (StateManager.MAP_SCREEN_HEIGHT / 2) - StateManager.MENU_MARGIN;
+
+        for (int y = 0; y <  maxY; y++)
         {
-            for (int x = 0; x <  StateManager.MAP_WIDTH; x++)
+            for (int x = 0; x <  StateManager.MENU_WIDTH; x++)
             {
-                if (x ==  StateManager.MAP_WIDTH - 1 || x == 0)
+                if (x ==  StateManager.MENU_WIDTH - 1 || x == 0)
                 {
-                    sidebar[x, y] = '|';
+                    sidebar[new Vector2I(x, y)] = '|';
                 }
-                else if (y ==  StateManager.MAP_HEIGHT - 1 || y == 0)
+                else if (y == maxY - 1 || y == 0)
                 {
-                    sidebar[x, y] = '-';
+                    sidebar[new Vector2I(x, y)] = '-';
                 }
 
             }
@@ -44,11 +46,21 @@ public static class Sidebar
 
     private static void WriteMenuLine(int index, string line)
     {
-        if (line.Length +  StateManager.MENU_MARGIN <  StateManager.MAP_WIDTH)
+        if (line.Length +  StateManager.MENU_MARGIN <  StateManager.MENU_WIDTH)
         {
             for (int i = 0; i < line.Length; i++)
             {
-                sidebar[ StateManager.MENU_MARGIN + i, index] = line[i];
+                var position = new Vector2I(StateManager.MENU_MARGIN + i, index);
+
+                if (sidebar.ContainsKey(position)) 
+                {
+                    sidebar[position] = line[i];
+                }
+                else
+                {
+                    sidebar.Add(position, line[i]);
+                }
+                    
             }
         }
     }

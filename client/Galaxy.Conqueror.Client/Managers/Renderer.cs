@@ -1,182 +1,139 @@
-﻿using System.Collections.Generic;
-using System.Text;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using Galaxy.Conqueror.Client.Menus;
 using Galaxy.Conqueror.Client.Models.GameModels;
 using Galaxy.Conqueror.Client.Utils;
+
 namespace Galaxy.Conqueror.Client.Managers;
 
 public static class Renderer
 {
-    private static readonly char[,] canvas = new char[StateManager.canvasWidth, StateManager.canvasHeight];
-    private static readonly char[,] previousCanvas = new char[StateManager.canvasWidth, StateManager.canvasHeight];
+    private static readonly Dictionary<Vector2I, char> canvas = new();
 
-    public static bool stale = true;
+    private static int bufferWidth;
+    private static int bufferHeight;
+    private static Vector2I camera = Vector2I.ZERO;
+    private static Vector2I previousCamera = Vector2I.ZERO;
 
-    private static readonly StringBuilder outputBuffer = new StringBuilder(StateManager.canvasWidth * StateManager.canvasHeight * 2);
+    private static readonly HashSet<int> visibleEntityIds = new();
 
-    private static readonly int bufferWidth = Console.BufferWidth;
-    private static readonly int bufferHeight = Console.BufferHeight;
+    public static bool Stale { get; set; } = true;
 
-    public static void DrawCanvas(char[,] gameScreen, char[,] sidebar)
+    public static void DrawCanvas(Dictionary<Vector2I, char> gameScreen, Dictionary<Vector2I, char>? sidebar)
     {
+        bufferWidth = Console.BufferWidth;
+        bufferHeight = Console.BufferHeight;
 
-        if (gameScreen != null)
+        var playerShip = EntityManager.Entities.FirstOrDefault(x => x.Id == StateManager.PlayerShipID);
+        if (playerShip == null) return;
+
+        previousCamera = camera;
+        camera = playerShip.Position;
+        bool cameraChanged = !camera.Equals(previousCamera);
+
+        if (Stale || cameraChanged)
         {
-            AddGameScreenToCanvas(gameScreen);
-            MapView.stale = false;
+            Console.Clear();
+
+            if (sidebar != null)
+            {
+                RenderSidebar(sidebar);
+            }
+            
+            RenderGameScreen(gameScreen);
+            RenderEntities();
+
+            Stale = false;
         }
-
-        if (sidebar != null)
-        {
-            AddSidebarToCanvas(sidebar);
-            Sidebar.stale = false;
-        }
-
-        if (stale)
-        {
-            DisableConsoleScrolling();
-            RenderChanges();
-
-            Buffer.BlockCopy(canvas, 0, previousCanvas, 0, sizeof(char) * canvas.Length);
-            stale = false;
-        }
-
-        RenderEntities();
     }
 
-    private static void RenderChanges()
+    private static void RenderGameScreen(Dictionary<Vector2I, char> gameScreen)
     {
-        int lastX = -1, lastY = -1;
+        int minX = camera.X - (StateManager.MAP_SCREEN_WIDTH / 2);
+        int maxX = camera.X + (StateManager.MAP_SCREEN_WIDTH / 2);
+        int minY = camera.Y - (StateManager.MAP_SCREEN_HEIGHT / 2);
+        int maxY = camera.Y + (StateManager.MAP_SCREEN_HEIGHT / 2);
 
-        for (int y = 0; y < StateManager.canvasHeight; y++)
+        foreach (var (position, glyph) in gameScreen)
         {
-            for (int x = 0; x < StateManager.canvasWidth; x++)
+            if (position.X < minX || position.X > maxX ||
+                position.Y < minY || position.Y > maxY)
+                continue;
+
+            var canvasX = ((position.X - camera.X) * 2) + StateManager.MAP_SCREEN_WIDTH;
+            var canvasY = (position.Y - camera.Y) + StateManager.MAP_SCREEN_HEIGHT / 4;
+
+            if (IsInCanvas(canvasX, canvasY))
             {
-                var currentGlyph = canvas[x, y];
-                var previousGlyph = previousCanvas[x, y];
+                Console.SetCursorPosition(canvasX, canvasY);
+                ConsolePrinter.Print(glyph + " ", ConsolePrinter.WHITE);
+            }
+        }
+    }
 
-                if (currentGlyph != previousGlyph)
-                {
-                    int adjustedX = x < StateManager.MAP_WIDTH ? x * 2 : x + StateManager.MAP_WIDTH;
+    private static void RenderSidebar(Dictionary<Vector2I, char> sidebar)
+    {
+        int minX = 0;
+        int maxX = StateManager.MAP_WIDTH;
+        int minY = 0;
+        int maxY = StateManager.MAP_SCREEN_HEIGHT;
 
-                    if (adjustedX < bufferWidth && y < bufferHeight)
-                    {
-                        if (adjustedX != lastX || y != lastY)
-                        {
-                            Console.SetCursorPosition(adjustedX, y);
-                            lastX = adjustedX;
-                            lastY = y;
-                        }
+        foreach (var (position, glyph) in sidebar)
+        {
+            if (position.X < minX || position.X > maxX ||
+                position.Y < minY || position.Y > maxY)
+                continue;
 
-                        char displayChar = currentGlyph == 'P' ? '*' : currentGlyph;
-                        string color = ConsolePrinter.WHITE;
-                        ConsolePrinter.Print(displayChar + " ", color);
+            var canvasX = position.X + StateManager.MAP_SCREEN_WIDTH * 2 + StateManager.MENU_MARGIN;
+            var canvasY = position.Y;
 
-                        lastX += 2;
-                    }
-                }
+            if (IsInCanvas(canvasX, canvasY))
+            {
+                Console.SetCursorPosition(canvasX, canvasY);
+                ConsolePrinter.Print(glyph + " ", ConsolePrinter.WHITE);
             }
         }
     }
 
     private static void RenderEntities()
     {
-        int bufferWidth = Console.BufferWidth;
-        int bufferHeight = Console.BufferHeight;
+        visibleEntityIds.Clear();
 
-        EntityManager.Entities.ForEach(entity =>
+        int minX = camera.X - (StateManager.MAP_SCREEN_WIDTH / 2);
+        int maxX = camera.X + (StateManager.MAP_SCREEN_WIDTH / 2);
+        int minY = camera.Y - (StateManager.MAP_SCREEN_HEIGHT / 2);
+        int maxY = camera.Y + (StateManager.MAP_SCREEN_HEIGHT / 2);
+
+        foreach (var entity in EntityManager.Entities)
         {
-            char displayChar = entity.glyph;
-            string color = ConsolePrinter.YELLOW;
-            Vector2I previousPosition;
+            if (entity.Position.X < minX || entity.Position.X > maxX ||
+                entity.Position.Y < minY || entity.Position.Y > maxY)
+                continue;
 
-            var noPrevPosition = !EntityManager.PrevEntityPositions.TryGetValue(entity.id, out previousPosition);
+            var canvasX = ((entity.Position.X - camera.X) * 2) + StateManager.MAP_SCREEN_WIDTH;
+            var canvasY = (entity.Position.Y - camera.Y) + StateManager.MAP_SCREEN_HEIGHT / 4;
 
-            if (noPrevPosition) previousPosition = Vector2I.MAX;
-
-            if (previousPosition != entity.position)
-            { 
-                Console.SetCursorPosition(entity.position.X * 2, entity.position.Y);
-                ConsolePrinter.Print(displayChar.ToString(), color);
-
-                RefreshTile(previousPosition);
-
-                EntityManager.PrevEntityPositions[entity.id] = new Vector2I(entity.position);
-            }
-        });
-
-    }
-
-    private static void RefreshTile(Vector2I position)
-    {
-        int adjustedX = position.X < StateManager.MAP_WIDTH ? position.X * 2 : position.X + StateManager.MAP_WIDTH;
-
-        if (adjustedX < bufferWidth && position.Y < bufferHeight)
-        {
-
-            char displayChar = canvas[position.X, position.Y] == 'P' ? '*' : canvas[position.X, position.Y];
-            string color = ConsolePrinter.WHITE;
-
-            Console.SetCursorPosition(position.X * 2, position.Y);
-            ConsolePrinter.Print(displayChar + " ", color);
-        }
-    }
-
-    private static void AddGameScreenToCanvas(char[,] gameScreen)
-    {
-        for (int y = 0; y < StateManager.MAP_HEIGHT; y++)
-        {
-            for (int x = 0; x < StateManager.MAP_WIDTH; x++)
+            if (IsInCanvas(canvasX, canvasY))
             {
-                if (canvas[x, y] != gameScreen[x, y])
-                {
-                    canvas[x, y] = gameScreen[x, y];
-                    stale = true;
-                }
+                Console.SetCursorPosition(canvasX, canvasY);
+                ConsolePrinter.Print(entity.Glyph.ToString(), ConsolePrinter.YELLOW);
+
+                visibleEntityIds.Add(entity.Id);
+
+                EntityManager.PrevEntityPositions[entity.Id] = entity.Position;
+                entity.Stale = false;
             }
         }
     }
 
-    private static void AddSidebarToCanvas(char[,] sidebar)
+    public static bool IsInCanvas(int x, int y)
     {
-        int baseX = StateManager.MAP_WIDTH + StateManager.MENU_MARGIN;
-        for (int y = 0; y < StateManager.MAP_HEIGHT; y++)
-        {
-            for (int x = 0; x < StateManager.MENU_WIDTH; x++)
-            {
-                int canvasX = baseX + x;
-                if (canvas[canvasX, y] != sidebar[x, y])
-                {
-                    canvas[canvasX, y] = sidebar[x, y];
-                    stale = true;
-                }
-            }
-        }
+        return x >= 0 && x < bufferWidth && y >= 0 && y < bufferHeight;
     }
 
-    private static void DisableConsoleScrolling()
+    public static bool IsInCanvas(Vector2I position)
     {
-        try
-        {
-            int requiredWidth = StateManager.canvasWidth + 5;
-            int requiredHeight = StateManager.canvasHeight + 2;
-            int largestWidth = Console.LargestWindowWidth;
-            int largestHeight = Console.LargestWindowHeight;
-
-            int targetWidth = Math.Min(requiredWidth, largestWidth);
-            int targetHeight = Math.Min(requiredHeight, largestHeight);
-
-            if (Console.WindowWidth != targetWidth || Console.WindowHeight != targetHeight)
-            {
-                Console.SetWindowSize(targetWidth, targetHeight);
-                Console.SetBufferSize(targetWidth, targetHeight);
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Could not adjust console: {ex.Message}");
-            Thread.Sleep(2000);
-            Console.Clear();
-        }
+        return IsInCanvas(position.X, position.Y);
     }
 }
