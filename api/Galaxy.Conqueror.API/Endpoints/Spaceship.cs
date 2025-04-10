@@ -234,6 +234,10 @@ public static class Spaceship
             if (planet == null)
                 return Results.BadRequest("Planet not found.");
 
+            if (!Calculations.IsInRange(spaceship.X, spaceship.Y, planet.X, planet.Y, 1)) {
+                return Results.BadRequest("Not close enough to home planet");
+            }
+
             int planetResources = planet.ResourceReserve;
             int refuelCost = Calculations.GetSpaceshipRefuelCost(spaceship.Level, spaceship.CurrentFuel);
 
@@ -325,6 +329,10 @@ public static class Spaceship
             if (planet == null)
                 return Results.BadRequest("Planet not found.");
 
+            if (!Calculations.IsInRange(spaceship.X, spaceship.Y, planet.X, planet.Y, 1)) {
+                return Results.BadRequest("Not close enough to home planet");
+            }
+
             int planetResources = planet.ResourceReserve;
             int repairCost = Calculations.GetSpaceshipRepairCost(spaceship.Level, spaceship.CurrentHealth);
 
@@ -389,6 +397,60 @@ public static class Spaceship
         catch (Exception ex)
         {
             Console.WriteLine($"Error moving spaceship: {ex}");
+            return Results.StatusCode(StatusCodes.Status500InternalServerError);
+        }
+    }
+
+
+
+    public static IEndpointRouteBuilder Deposit(this IEndpointRouteBuilder endpoint)
+    {
+        endpoint.MapPut("api/spaceship/deposit", DepositResourcesHandler)
+            .Produces<string>(StatusCodes.Status200OK)
+            .Produces<string>(StatusCodes.Status400BadRequest)
+            .Produces(StatusCodes.Status500InternalServerError);
+
+        return endpoint;
+
+    }
+    public static async Task<IResult> DepositResourcesHandler(
+        [FromServices] UserService userService,
+        [FromServices] SpaceshipService spaceshipService,
+        [FromServices] PlanetService planetService,
+        HttpContext context,
+        CancellationToken ct
+    )
+    {
+        try
+        {
+            //var email = context.User.FindFirst(ClaimTypes.Email)?.Value;
+            //if (string.IsNullOrEmpty(email))
+            //    return Results.BadRequest("Email claim not found in token.");
+            // testing '
+            var email = "user1@example.com";
+            var user = await userService.GetUserByEmail(email);
+
+            var spaceship = await spaceshipService.GetSpaceshipByUserId(user.Id);
+
+            if (spaceship == null)
+                return Results.BadRequest("Spaceship not found.");
+
+            var planet = await planetService.GetPlanetByUserID(user.Id);
+
+            if (planet == null)
+                return Results.BadRequest("Planet not found.");
+
+            if (!Calculations.IsInRange(spaceship.X, spaceship.Y, planet.X, planet.Y, 1)) {
+                return Results.BadRequest("Not close enough to home planet");
+            }
+
+            var planetWithDeposit = await spaceshipService.Deposit(spaceship.Id, planet.Id, spaceship.ResourceReserve);
+
+            return Results.Ok(planetWithDeposit);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error refueling spaceship: {ex}");
             return Results.StatusCode(StatusCodes.Status500InternalServerError);
         }
     }

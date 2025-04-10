@@ -31,5 +31,5 @@ public class Calculations
 
     // ***** GENERAL *****
     public static int GetFuelUsed(int startX, int startY, int endX, int endY) => (int) Math.Ceiling(Math.Sqrt(Math.Pow(endX - startX, 2) + Math.Pow(endY - startY, 2)));
-
+    public static bool IsInRange(int x1, int y1, int x2, int y2, int maxDistance) => Math.Sqrt(Math.Pow(x1 - x2, 2) + Math.Pow(y1 - y2, 2)) <= maxDistance;
 }

@@ -295,4 +295,49 @@ public class SpaceshipService(IDbConnectionFactory connectionFactory)
     
     }
 
+    public async Task<Spaceship> Deposit (int spaceshipId, int planetId, int spaceshipResourceReserve)
+    {
+        using var connection = connectionFactory.CreateConnection();
+        await connection.OpenAsync();
+        using var transaction = connection.BeginTransaction();
+        try
+        {
+            const string updatePlanetSql = @"
+                UPDATE planets
+                SET resource_reserve = resource_reserve + @SpaceshipResourceReserve
+                WHERE id = @Id
+            ";
+
+            var affectedRows = await connection.ExecuteAsync(updatePlanetSql, new { Id = planetId, SpaceshipResourceReserve = spaceshipResourceReserve }, transaction);
+
+            if (affectedRows == 0)
+            {
+                throw new Exception("Planet not found, or update failed");
+            }
+
+            const string updateSpaceshipSql = @"
+                UPDATE spaceships
+                SET resource_reserve = resource_reserve - @SpaceshipResourceReserve
+                WHERE id = @Id
+                RETURNING *;
+            ";
+
+            var updatedSpaceship = await connection.QuerySingleOrDefaultAsync<Spaceship>(updateSpaceshipSql, new { Id = spaceshipId, SpaceshipResourceReserve = spaceshipResourceReserve}, transaction);
+
+            if (updatedSpaceship == null)
+            {
+                throw new Exception("Spaceship not found or deposit failed.");
+            }
+
+            await transaction.CommitAsync();
+
+            return updatedSpaceship;
+        }
+        catch
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
+    }
+
 }
