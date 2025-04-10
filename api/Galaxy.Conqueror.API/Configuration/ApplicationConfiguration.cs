@@ -19,6 +19,7 @@ public static class ApplicationConfiguration
         app.UpgradeSpaceship();
         app.Refuel();
         app.Repair();
+        app.Deposit();
         app.Move();
 
         app.Battle();
