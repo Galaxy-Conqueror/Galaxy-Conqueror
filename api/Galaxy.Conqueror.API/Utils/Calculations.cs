@@ -29,4 +29,7 @@ public class Calculations
     // ***** RESOURCE EXTRACTORS *****
     public static int GetResourceGenAmount(int extractorLevel) => extractorLevel * 50;
 
+    // ***** GENERAL *****
+    public static int GetFuelUsed(int startX, int startY, int endX, int endY) => (int) Math.Ceiling(Math.Sqrt(Math.Pow(endX - startX, 2) + Math.Pow(endY - startY, 2)));
+
 }

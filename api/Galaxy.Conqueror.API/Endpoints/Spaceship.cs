@@ -343,4 +343,54 @@ public static class Spaceship
         }
     }
 
+    public static IEndpointRouteBuilder Move(this IEndpointRouteBuilder endpoint)
+    {
+        endpoint.MapPut("api/spaceship/move", MoveSpaceshipHandler)
+            .Produces<string>(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status500InternalServerError);
+
+        return endpoint;
+    }
+
+    public static async Task<IResult> MoveSpaceshipHandler(
+        [FromServices] UserService userService,
+        [FromServices] SpaceshipService spaceshipService,
+        [FromServices] PlanetService planetService,
+        [FromQuery] int x,
+        [FromQuery] int y,
+        HttpContext context,
+        CancellationToken ct
+    )
+    {
+        try
+        {
+            //var email = context.User.FindFirst(ClaimTypes.Email)?.Value;
+            //if (string.IsNullOrEmpty(email))
+            //    return Results.BadRequest("Email claim not found in token.");
+            // testing '
+            var email = "user1@example.com";
+            var user = await userService.GetUserByEmail(email);
+
+            var spaceship = await spaceshipService.GetSpaceshipByUserId(user.Id);
+
+            if (spaceship == null)
+                return Results.BadRequest("Spaceship not found.");
+
+            int fuelUsed = Calculations.GetFuelUsed(spaceship.X, spaceship.Y, x, y);
+            if (fuelUsed > spaceship.CurrentFuel)
+            {
+                return Results.BadRequest("Not enough fuel to reach destination");
+            }
+
+            var movedSpaceship = await spaceshipService.MoveSpaceship(spaceship.Id, fuelUsed, x, y);
+
+            return Results.Ok(movedSpaceship);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error moving spaceship: {ex}");
+            return Results.StatusCode(StatusCodes.Status500InternalServerError);
+        }
+    }
+
 }
