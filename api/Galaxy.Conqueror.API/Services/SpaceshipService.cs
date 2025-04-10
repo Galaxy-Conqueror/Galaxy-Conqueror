@@ -270,4 +270,29 @@ public class SpaceshipService(IDbConnectionFactory connectionFactory)
         }
     }
 
+    public async Task<Spaceship> MoveSpaceship(int spaceshipId, int fuelUsed, int newX, int newY)
+    {
+        using var connection = connectionFactory.CreateConnection();
+        await connection.OpenAsync();
+
+            const string moveSpaceshipSql = @"
+                UPDATE spaceships
+                SET current_fuel = current_fuel - @FuelUsed,
+                x = @NewX,
+                y = @NewY
+                WHERE id = @Id
+                RETURNING *;
+            ";
+
+            var movedSpaceship = await connection.QuerySingleOrDefaultAsync<Spaceship>(moveSpaceshipSql, new { Id = spaceshipId, FuelUsed = fuelUsed, NewX = newX, NewY = newY });
+
+            if (movedSpaceship == null)
+            {
+                throw new Exception("Spaceship not found or move failed.");
+            }
+
+            return movedSpaceship;
+    
+    }
+
 }
