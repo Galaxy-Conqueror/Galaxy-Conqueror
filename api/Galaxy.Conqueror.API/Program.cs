@@ -41,6 +41,8 @@ builder.Services.AddScoped<SpaceshipService>();
 builder.Services.AddScoped<PlanetService>();
 builder.Services.AddScoped<BattleService>();
 
+builder.Services.AddHostedService<ResourceUpdaterService>();
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
