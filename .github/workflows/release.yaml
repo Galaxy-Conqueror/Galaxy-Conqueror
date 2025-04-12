@@ -3,7 +3,7 @@ name: Build and push Docker image to ECR (.NET C#)
 on:
   push:
     branches:
-      - release
+      - deploymentIntegration
 
 jobs:
   build-and-deploy:
