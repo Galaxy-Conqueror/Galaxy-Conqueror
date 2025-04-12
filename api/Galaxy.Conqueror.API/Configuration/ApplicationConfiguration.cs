@@ -12,10 +12,7 @@ public static class ApplicationConfiguration
         app.GetCurrentUser();
         app.UpdateUser();
 
-
-
-        app.ViewSpaceshipDetails();
-        app.ViewSpaceshipUpgradeDetails();
+        app.GetSpaceshipDetails();
         app.UpgradeSpaceship();
         app.Refuel();
         app.Repair();
@@ -23,8 +20,8 @@ public static class ApplicationConfiguration
         app.Move();
 
         app.PlanetDetails();
-        app.ResourceExtractors();
-        app.Turrets();
+        app.ResourceExtractor();
+        app.Turret();
 
         app.Battle();
 
