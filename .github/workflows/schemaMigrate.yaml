@@ -1,4 +1,4 @@
-name: Migrate New DB Schema
+name: Run Flyway Migrations on Fargate
 
 on:
   push:
@@ -6,32 +6,51 @@ on:
       - migrations
 
 jobs:
-  name:
-    name: Run Flyway Migrations
+  migrate:
+    name: Build + Run Flyway Migration
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v4
 
-      - name: Set up Java (required for Flyway)
-        uses: actions/setup-java@v3
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
         with:
-          distribution: 'temurin'
-          java-version: '17'
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: ${{ vars.AWS_REGION }}
 
-      - name: Install Flyway CLI
-        run: |
-          curl -L https://repo1.maven.org/maven2/org/flywaydb/flyway-commandline/9.22.3/flyway-commandline-9.22.3-linux-x64.tar.gz -o flyway.tar.gz
-          tar -xzf flyway.tar.gz
-          sudo mv flyway-9.22.3 /opt/flyway
-          sudo ln -s /opt/flyway/flyway /usr/local/bin/flyway
+      - name: Login to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v1
 
-      - name: Run Flyway Migrations
+      - name: Build and Push Flyway Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./flyway
+          file: ./flyway/Dockerfile
+          push: true
+          tags: |
+            ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ vars.AWS_REGION }}.amazonaws.com/${{ vars.ECR_REPO_NAME }}:flyway
+
+      - name: Get ECS Network Configuration
+        id: ecs-net
         run: |
-          flyway \
-            -url="jdbc:postgresql://${{ secrets.DB_HOST }}:5432/${{ secrets.DB_NAME }}" \
-            -user="${{ secrets.DB_USERNAME }}" \
-            -password="${{ secrets.DB_PASSWORD }}" \
-            -locations="filesystem:./flyway/migrations" \
-            migrate
+          SERVICE_DESC=$(aws ecs describe-services \
+            --cluster ${{ vars.CLUSTER_NAME }} \
+            --services ${{ vars.SERVICE_NAME }})
+
+          SUBNET=$(echo "$SERVICE_DESC" | jq -r '.services[0].networkConfiguration.awsvpcConfiguration.subnets[0]')
+          SG=$(echo "$SERVICE_DESC" | jq -r '.services[0].networkConfiguration.awsvpcConfiguration.securityGroups[0]')
+
+          echo "subnet_id=$SUBNET" >> $GITHUB_OUTPUT
+          echo "security_group_id=$SG" >> $GITHUB_OUTPUT
+
+      - name: Run Flyway Task on ECS Fargate
+        run: |
+          aws ecs run-task \
+            --cluster ${{ vars.CLUSTER_NAME }} \
+            --launch-type FARGATE \
+            --network-configuration "awsvpcConfiguration={subnets=[${{ steps.ecs-net.outputs.subnet_id }}],securityGroups=[${{ steps.ecs-net.outputs.security_group_id }}],assignPublicIp=ENABLED}" \
+            --task-definition flyway-task
