@@ -21,11 +21,11 @@ jobs:
 
       - name: Restore Dependencies
         run: dotnet restore
-        working-directory: ./Galaxy.Conqueror.API
+        working-directory: ./api/Galaxy.Conqueror.API
 
       - name: Build App
         run: dotnet build --no-restore --configuration Release
-        working-directory: ./Galaxy.Conqueror.API
+        working-directory: ./api/Galaxy.Conqueror.API
 
       # Optional: Remove if your Dockerfile handles publish step
       - name: Publish App
