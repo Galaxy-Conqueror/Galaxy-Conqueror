@@ -1,1 +1,6 @@
 .vs/
+api/obj/*
+api/bin/*
+*/.terraform/providers*
+*/bootstrap/.terraform/providers
+deployRdsAndCSServer.sln

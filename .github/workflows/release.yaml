@@ -1,0 +1,66 @@
+name: Build and push Docker image to ECR (.NET C#)
+
+on:
+  push:
+    branches:
+      - deploymentIntegration
+
+jobs:
+  build-and-deploy:
+    name: Build and Deploy to ECS Fargate
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Restore Dependencies
+        run: dotnet restore
+        working-directory: ./Galaxy.Conqueror.API
+
+      - name: Build App
+        run: dotnet build --no-restore --configuration Release
+        working-directory: ./Galaxy.Conqueror.API
+
+      # Optional: Remove if your Dockerfile handles publish step
+      - name: Publish App
+        run: dotnet publish -c Release -o out
+        working-directory: ./Galaxy.Conqueror.API
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Login to ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Get short commit hash
+        id: get-commit-sha
+        run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+
+      - name: Build and Push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./Galaxy.Conqueror.API
+          file: ./Galaxy.Conqueror.API/Dockerfile
+          push: true
+          tags: |
+            ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ vars.AWS_REGION }}.amazonaws.com/${{ vars.ECR_REPO_NAME }}:latest
+            ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ vars.AWS_REGION }}.amazonaws.com/${{ vars.ECR_REPO_NAME }}:${{ steps.get-commit-sha.outputs.sha_short }}
+
+      - name: Force update ECS Service
+        run: |
+          aws ecs update-service \
+            --cluster ${{ vars.CLUSTER_NAME }} \
+            --service ${{ vars.SERVICE_NAME }} \
+            --force-new-deployment
