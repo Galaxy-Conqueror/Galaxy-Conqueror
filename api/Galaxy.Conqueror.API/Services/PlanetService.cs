@@ -35,13 +35,6 @@ public class PlanetService(IDbConnectionFactory connectionFactory)
         return await connection.QuerySingleOrDefaultAsync<Planet>(sql, new { SpaceshipId = spaceshipId });
     }
 
-    public async Task<Turret?> GetTurretByPlanetId(int planetId)
-    {
-        using var connection = connectionFactory.CreateConnection();
-        const string sql = "SELECT t.* FROM planets p JOIN turrets t ON p.id = t.planet_id WHERE t.planet_id = @PlanetId";
-        return await connection.QuerySingleOrDefaultAsync<Turret>(sql, new { PlanetId = planetId });
-    }
-
     public async Task<Planet> CreatePlanet(Guid userId, DbTransaction? transaction = null)
     {
         using var connection = transaction?.Connection ?? connectionFactory.CreateConnection();

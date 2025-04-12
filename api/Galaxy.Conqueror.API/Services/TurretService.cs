@@ -24,6 +24,13 @@ public class TurretService(IDbConnectionFactory connectionFactory)
         return await connection.QuerySingleOrDefaultAsync<Turret>(sql, new { UserId = userId });
     }
 
+    public async Task<Turret?> GetTurretByPlanetId(int planetId)
+    {
+        using var connection = connectionFactory.CreateConnection();
+        const string sql = "SELECT t.* FROM planets p JOIN turrets t ON p.id = t.planet_id WHERE t.planet_id = @PlanetId";
+        return await connection.QuerySingleOrDefaultAsync<Turret>(sql, new { PlanetId = planetId });
+    }
+
     public async Task<Turret> UpgradeTurret(int turretId, int planetId, int cost)
     {
         using var connection = connectionFactory.CreateConnection();
