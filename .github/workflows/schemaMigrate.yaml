@@ -7,7 +7,7 @@ on:
 
 jobs:
   migrate:
-    name: Build + Run Flyway Migration
+    name: Run Flyway Migrations
     runs-on: ubuntu-latest
 
     steps:
@@ -37,20 +37,16 @@ jobs:
       - name: Get ECS Network Configuration
         id: ecs-net
         run: |
-          SERVICE_DESC=$(aws ecs describe-services \
-            --cluster ${{ vars.CLUSTER_NAME }} \
-            --services ${{ vars.SERVICE_NAME }})
+          curl -L https://repo1.maven.org/maven2/org/flywaydb/flyway-commandline/9.22.3/flyway-commandline-9.22.3-linux-x64.tar.gz -o flyway.tar.gz
+          tar -xzf flyway.tar.gz
+          sudo mv flyway-9.22.3 /opt/flyway
+          sudo ln -s /opt/flyway/flyway /usr/local/bin/flyway
 
-          SUBNET=$(echo "$SERVICE_DESC" | jq -r '.services[0].networkConfiguration.awsvpcConfiguration.subnets[0]')
-          SG=$(echo "$SERVICE_DESC" | jq -r '.services[0].networkConfiguration.awsvpcConfiguration.securityGroups[0]')
-
-          echo "subnet_id=$SUBNET" >> $GITHUB_OUTPUT
-          echo "security_group_id=$SG" >> $GITHUB_OUTPUT
-
-      - name: Run Flyway Task on ECS Fargate
+      - name: Run Flyway Migrations
         run: |
-          aws ecs run-task \
-            --cluster ${{ vars.CLUSTER_NAME }} \
-            --launch-type FARGATE \
-            --network-configuration "awsvpcConfiguration={subnets=[${{ steps.ecs-net.outputs.subnet_id }}],securityGroups=[${{ steps.ecs-net.outputs.security_group_id }}],assignPublicIp=ENABLED}" \
-            --task-definition flyway-task
+          flyway \
+            -url="jdbc:postgresql://${{ secrets.DB_HOST }}:5432/${{ secrets.DB_NAME }}" \
+            -user="${{ secrets.DB_USERNAME }}" \
+            -password="${{ secrets.DB_PASSWORD }}" \
+            -locations="filesystem:./flyway/migrations" \
+            migrate
