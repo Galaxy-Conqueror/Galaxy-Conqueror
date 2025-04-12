@@ -22,6 +22,10 @@ public static class ApplicationConfiguration
         app.Deposit();
         app.Move();
 
+        app.PlanetDetails();
+        app.ResourceExtractors();
+        app.Turrets();
+
         app.Battle();
 
         return app;

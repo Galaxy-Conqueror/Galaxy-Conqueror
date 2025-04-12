@@ -25,9 +25,10 @@ public class Calculations
     public static int GetSpaceshipRepairCost(int spaceshipLevel, int currentHealth) => GetSpaceshipHealthCost(spaceshipLevel, GetSpaceshipMaxHealth(spaceshipLevel) - currentHealth);
 
 
-
     // ***** RESOURCE EXTRACTORS *****
     public static int GetResourceGenAmount(int extractorLevel) => extractorLevel * 50;
+    public static int GetExtractorUpgradeCost(int extractorLevel) => extractorLevel * 100;
+
 
     // ***** GENERAL *****
     public static int GetFuelUsed(int startX, int startY, int endX, int endY) => (int) Math.Ceiling(Math.Sqrt(Math.Pow(endX - startX, 2) + Math.Pow(endY - startY, 2)));
