@@ -6,7 +6,7 @@ on:
       - migrations
 
 jobs:
-  name:
+  migrate:
     name: Run Flyway Migrations
     runs-on: ubuntu-latest
 
@@ -27,11 +27,30 @@ jobs:
           sudo mv flyway-9.22.3 /opt/flyway
           sudo ln -s /opt/flyway/flyway /usr/local/bin/flyway
 
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Fetch DB credentials from Secrets Manager
+        id: fetch-db-creds
+        run: |
+          secret=$(aws secretsmanager get-secret-value --secret-id galaxy-conqueror-rds-db-secrets --query SecretString --output text)
+          echo "$secret"
+          username=$(echo $secret | jq -r .username)
+          password=$(echo $secret | jq -r .password)
+
+          echo "DB_USERNAME=$username" >> $GITHUB_ENV
+          echo "DB_PASSWORD=$password" >> $GITHUB_ENV
+
       - name: Run Flyway Migrations
         run: |
           flyway \
             -url="jdbc:postgresql://${{ secrets.DB_HOST }}:5432/${{ secrets.DB_NAME }}" \
-            -user="${{ secrets.DB_USERNAME }}" \
-            -password="${{ secrets.DB_PASSWORD }}" \
+            -user="${{ env.DB_USERNAME }}" \
+            -password="${{ env.DB_PASSWORD }}" \
             -locations="filesystem:./flyway/migrations" \
             migrate
