@@ -1,3 +1,4 @@
+using Galaxy.Conqueror.API.Configuration.Database;
 using Galaxy.Conqueror.API.Models;
 using Galaxy.Conqueror.API.Models.Requests;
 using Galaxy.Conqueror.API.Services;
@@ -60,6 +61,7 @@ public class BattleHandlers {
     public static async Task<IResult> BattleLogHandler(
         [FromRoute] int planetId,
         [FromBody] BattleLogRequest battleLog,
+        [FromServices] IDbConnectionFactory connectionFactory,
         [FromServices] UserService userService,
         [FromServices] SpaceshipService spaceshipService,
         [FromServices] PlanetService planetService,
@@ -69,6 +71,10 @@ public class BattleHandlers {
         CancellationToken ct
     )
     {
+
+        using var connection = connectionFactory.CreateConnection();
+        await connection.OpenAsync(ct);
+        using var transaction = connection.BeginTransaction();
 
         try
         {
@@ -91,21 +97,24 @@ public class BattleHandlers {
 
             bool attackerWon = (Calculations.GetTurretHealth(turret.Level) - battleLog.DamageToTurret) == 0;
             if (attackerWon) {
-                await spaceshipService.LootResources(spaceship.Id, planetId, battleLog.ResourcesLooted);
-                await spaceshipService.UpdateSpaceshipHealth(spaceship.Id, battleLog.DamageToSpaceship);
+                await spaceshipService.LootResources(spaceship.Id, planetId, battleLog.ResourcesLooted, transaction);
+                await spaceshipService.UpdateSpaceshipHealth(spaceship.Id, battleLog.DamageToSpaceship,transaction);
             } else {
                 var attackerPlanet = await planetService.GetPlanetBySpaceshipId(spaceship.Id);
                 if (attackerPlanet == null)
                     throw new Exception("No planet found for spaceship");
 
-                await spaceshipService.ResetSpaceship(spaceship.Id, attackerPlanet);
+                await spaceshipService.ResetSpaceship(spaceship.Id, attackerPlanet, transaction);
             }
-            var battle = await battleService.CreateBattle(user.Id, spaceship.Id, planetId, battleLog, attackerWon);
+            var battle = await battleService.CreateBattle(spaceship.Id, planetId, battleLog, attackerWon, transaction);
+
+            await transaction.CommitAsync(ct);
             return Results.Ok(battle);
         }
         catch (Exception ex)
-        {
+        {                
             Console.WriteLine($"Error logging battle details: {ex}");
+            await transaction.RollbackAsync(ct);
             return Results.StatusCode(StatusCodes.Status500InternalServerError);
         }
     }
