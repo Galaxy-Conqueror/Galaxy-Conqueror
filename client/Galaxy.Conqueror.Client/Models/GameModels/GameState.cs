@@ -8,6 +8,8 @@ namespace Galaxy.Conqueror.Client.Models.GameModels;
 
 public enum GameState
 {
-    RUNNING,
+    MAP_VIEW,
     QUIT_REQUESTED,
+    IDLE,
+    PLANET_MANAGEMENT,
 }

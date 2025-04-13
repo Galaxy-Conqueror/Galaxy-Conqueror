@@ -1,25 +1,26 @@
 using Galaxy.Conqueror.Client;
 using Galaxy.Conqueror.Client.Managers;
+using Galaxy.Conqueror.Client.Models;
 using Galaxy.Conqueror.Client.Models.GameModels;
 using Galaxy.Conqueror.Client.Utils;
 using System;
 using System.Collections.Generic;
 using System.Threading;
 
-public class MapView
+public class MapView: IView
 {
     private static readonly Dictionary<Vector2I, char> map = new();
 
     public static bool stale = true;
 
-    public static void InitialiseMap()
+    public static void Initialise()
     {
         InitMap();
 
         stale = true;
     }
 
-    public static Dictionary<Vector2I, char> GetMap()
+    public static Dictionary<Vector2I, char> GetScreen()
     {
         return map;
     }
