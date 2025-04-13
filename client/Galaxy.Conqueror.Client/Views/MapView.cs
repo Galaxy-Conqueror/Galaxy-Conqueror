@@ -8,7 +8,7 @@ using System.Threading;
 
 public class MapView
 {
-    private static readonly Dictionary<Vector2I, char> map = new();
+    private static readonly Dictionary<Vector2I, Glyph> map = new();
 
     public static bool stale = true;
 
@@ -19,7 +19,7 @@ public class MapView
         stale = true;
     }
 
-    public static Dictionary<Vector2I, char> GetMap()
+    public static Dictionary<Vector2I, Glyph> GetMap()
     {
         return map;
     }
@@ -29,9 +29,9 @@ public class MapView
         const double starDensity = 0.05;
         Random rand = new();
 
-        for (int y = 0; y <  StateManager.MAP_HEIGHT; y++)
-        { 
-            for (int x = 0; x <  StateManager.MAP_WIDTH; x++)
+        for (int y = 0; y < StateManager.MAP_HEIGHT; y++)
+        {
+            for (int x = 0; x < StateManager.MAP_WIDTH; x++)
             {
                 //if (x == 0 || x == StateManager.MAP_WIDTH - 1 || y == 0 || y == StateManager.MAP_HEIGHT - 1)
                 //{
@@ -39,8 +39,8 @@ public class MapView
                 //}
                 if (rand.Next(1, 100) / 100.0 < starDensity)
                 {
-                    map.Add(new Vector2I(x, y), '.');
-               }
+                    map.Add(new Vector2I(x, y), new Glyph('.', ConsoleColor.White));
+                }
             }
         }
     }

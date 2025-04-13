@@ -20,8 +20,8 @@ public static class Client
 
     public static async Task Run()
     {
-        Dictionary<Vector2I, char> gameScreen = MapView.GetMap();
-        Dictionary<Vector2I, char> sidebar = Sidebar.GetSidebar();
+        Dictionary<Vector2I, Glyph> gameScreen = MapView.GetMap();
+        Dictionary<Vector2I, Glyph> sidebar = Sidebar.GetSidebar();
 
         Console.SetWindowSize(StateManager.CanvasWidth, StateManager.CanvasHeight);
         Console.SetBufferSize(StateManager.CanvasWidth, StateManager.CanvasHeight);
@@ -43,9 +43,6 @@ public static class Client
                 UserInputHandler.HandleInput(key);
             }
 
-
-
-
             if (prevBufferWidth != Console.BufferWidth || prevBufferHeight != Console.BufferHeight)
             {
                 MapView.stale = true;
@@ -59,16 +56,16 @@ public static class Client
             if (Sidebar.stale)
             {
                 Renderer.DrawCanvas(gameScreen, sidebar);
-            } 
+            }
             else
             {
                 Renderer.DrawCanvas(gameScreen, null);
             }
 
-               
+
 
             Thread.Sleep(50);
-            
+
         }
     }
 }

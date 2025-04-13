@@ -10,12 +10,11 @@ namespace Galaxy.Conqueror.Client.Models.GameModels
 {
     public class Spaceship : Entity
     {
-        public Spaceship(int id, string name, char glyph, Color color, Vector2I position) : base(id, name, glyph, color, position)
+        public Spaceship(int id, string name, Glyph glyph, Vector2I position) : base(id, name, glyph, position)
         {
             this.Id = id;
             this.Name = name;
             this.Glyph = glyph;
-            this.Color = color;
             this.Position = position;
         }
     }
