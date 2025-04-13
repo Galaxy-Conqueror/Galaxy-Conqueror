@@ -1,3 +1,4 @@
+using Galaxy.Conqueror.API.Models.Responses;
 using Galaxy.Conqueror.API.Services;
 using Galaxy.Conqueror.API.Utils;
 using Microsoft.AspNetCore.Mvc;
@@ -24,15 +25,17 @@ public class ResourceExtractorHandlers {
             if (resourceExtractor == null)
                 return Results.NotFound("Resource extractor not found.");
 
-            Dictionary<string, string> dict = new Dictionary<string, string>
+            ResourceExtractorDetailResponse response = new()
             {
-                ["level"] = resourceExtractor.Level.ToString(),
-                ["resourceGen"] = Calculations.GetResourceGenAmount(resourceExtractor.Level).ToString(),
-                ["upgradeCost"] = Calculations.GetExtractorUpgradeCost(resourceExtractor.Level).ToString(),
-                ["upgradedResourceGen"] = Calculations.GetResourceGenAmount(resourceExtractor.Level + 1).ToString()
+                Id = resourceExtractor.Id,
+                PlanetId = resourceExtractor.PlanetId,
+                Level = resourceExtractor.Level,
+                ResourceGen = Calculations.GetResourceGenAmount(resourceExtractor.Level),
+                UpgradedResourceGen = Calculations.GetResourceGenAmount(resourceExtractor.Level + 1),
+                UpgradeCost = Calculations.GetExtractorUpgradeCost(resourceExtractor.Level)
             };
 
-            return Results.Ok(dict);
+            return Results.Ok(response);
         }
         catch (Exception ex)
         {
