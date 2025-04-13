@@ -22,15 +22,14 @@ public class DepositHandlers {
 
             var spaceship = await spaceshipService.GetSpaceshipByUserId(user.Id);
             if (spaceship == null)
-                return Results.BadRequest("Spaceship not found.");
+                return Results.NotFound("Spaceship not found.");
 
             var planet = await planetService.GetPlanetByUserID(user.Id);
             if (planet == null)
-                return Results.BadRequest("Planet not found.");
+                return Results.NotFound("Planet not found.");
 
-            if (!Calculations.IsInRange(spaceship.X, spaceship.Y, planet.X, planet.Y, 1)) {
+            if (!Calculations.IsInRange(spaceship.X, spaceship.Y, planet.X, planet.Y, 1))
                 return Results.BadRequest("Not close enough to home planet");
-            }
 
             var planetWithDeposit = await spaceshipService.Deposit(spaceship.Id, planet.Id, spaceship.ResourceReserve);
 

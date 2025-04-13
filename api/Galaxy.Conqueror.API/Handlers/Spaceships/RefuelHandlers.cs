@@ -1,3 +1,4 @@
+using Galaxy.Conqueror.API.Models;
 using Galaxy.Conqueror.API.Services;
 using Galaxy.Conqueror.API.Utils;
 using Microsoft.AspNetCore.Mvc;
@@ -21,7 +22,7 @@ public class RefuelHandlers {
 
             var spaceship = await spaceshipService.GetSpaceshipByUserId(user.Id);
             if (spaceship == null)
-                return Results.BadRequest("Spaceship not found.");
+                return Results.NotFound("Spaceship not found.");
 
             return Results.Ok(Calculations.GetSpaceshipRefuelCost(spaceship.Level, spaceship.CurrentFuel));
         }
@@ -48,26 +49,29 @@ public class RefuelHandlers {
 
             var spaceship = await spaceshipService.GetSpaceshipByUserId(user.Id);
             if (spaceship == null)
-                return Results.BadRequest("Spaceship not found.");
+                return Results.NotFound("Spaceship not found.");
 
             var planet = await planetService.GetPlanetByUserID(user.Id);
             if (planet == null)
-                return Results.BadRequest("Planet not found.");
+                return Results.NotFound("Planet not found.");
 
-            if (!Calculations.IsInRange(spaceship.X, spaceship.Y, planet.X, planet.Y, 1)) {
+            if (!Calculations.IsInRange(spaceship.X, spaceship.Y, planet.X, planet.Y, 1))
                 return Results.BadRequest("Not close enough to home planet");
-            }
 
-            int planetResources = planet.ResourceReserve;
             int refuelCost = Calculations.GetSpaceshipRefuelCost(spaceship.Level, spaceship.CurrentFuel);
-
-            if (refuelCost > planetResources) {
+            if (refuelCost > planet.ResourceReserve)
                 return Results.BadRequest("Not enough resources to refuel");
-            }
 
-            var refueledSpaceship = await spaceshipService.Refuel(spaceship.Id, planet.Id, refuelCost, Calculations.GetSpaceshipMaxFuel(spaceship.Level) - spaceship.CurrentFuel);
+            int fuelAmount = Calculations.GetSpaceshipMaxFuel(spaceship.Level) - spaceship.CurrentFuel;
+            var refueledSpaceship = await spaceshipService.Refuel(spaceship.Id, planet.Id, refuelCost, fuelAmount);
 
-            return Results.Ok(refueledSpaceship);
+            SpaceshipRefuelResponse refueledSpaceshipResponse = new()
+            {
+                CurrentFuel = refueledSpaceship.CurrentFuel,
+                PlanetResourceReserve = planet.ResourceReserve - refuelCost
+            };
+
+            return Results.Ok(refueledSpaceshipResponse);
         }
         catch (Exception ex)
         {
