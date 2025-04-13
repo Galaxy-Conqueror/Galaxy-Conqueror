@@ -80,6 +80,8 @@ public static class Client
             {
                 Renderer.DrawCanvas(gameScreen, null);
             }
+
+            Renderer.DrawCanvas(gameScreen, sidebar);
         }
     }
 }
