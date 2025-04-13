@@ -10,12 +10,11 @@ namespace Galaxy.Conqueror.Client.Models.GameModels
     {
         public bool landed { get; set; } = false;
 
-        public Spaceship(int id, string name, char glyph, Color color, Vector2I position) : base(id, name, glyph, color, position)
+        public Spaceship(int id, string name, Glyph glyph, Vector2I position) : base(id, name, glyph, position)
         {
             Id = id;
             Name = name;
             Glyph = glyph;
-            Color = color;
             Position = position;
         }
 
@@ -29,7 +28,7 @@ namespace Galaxy.Conqueror.Client.Models.GameModels
             }
             else if (isNextToPlanet)
             {
-                
+
                 menuItems.Add(new MenuItem("Land on planet", LandOnPlanet));
             }
 

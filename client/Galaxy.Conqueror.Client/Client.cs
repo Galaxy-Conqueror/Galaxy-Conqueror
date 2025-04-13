@@ -20,8 +20,8 @@ public static class Client
 
     public static async Task Run()
     {
-        Dictionary<Vector2I, char> gameScreen = MapView.GetScreen();
-        Dictionary<Vector2I, char> sidebar = Sidebar.GetSidebar();
+        Dictionary<Vector2I, Glyph> gameScreen = MapView.GetScreen();
+        Dictionary<Vector2I, Glyph> sidebar = Sidebar.GetSidebar();
 
         PlanetView.Initialise();
 
@@ -60,12 +60,12 @@ public static class Client
                 if (MapView.stale)
                 {
                     gameScreen = MapView.GetScreen();
-                }            
+                }
             }
             else if (StateManager.State == GameState.PLANET_MANAGEMENT && PlanetView.Stale)
             {
                 Renderer.Stale = true;
-                gameScreen = PlanetView.GetScreen();
+                // gameScreen = PlanetView.GetScreen();
             }
 
 
@@ -78,12 +78,8 @@ public static class Client
 
             if (StateManager.State == GameState.PLANET_MANAGEMENT && prevGameState != GameState.PLANET_MANAGEMENT)
             {
-                Console.Clear();
+                Renderer.DrawCanvas(gameScreen, null);
             }
-
-            Renderer.DrawCanvas(gameScreen, sidebar);
-
-            prevGameState = StateManager.State;
         }
     }
 }
