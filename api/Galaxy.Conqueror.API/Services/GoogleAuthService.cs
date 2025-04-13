@@ -1,5 +1,5 @@
 ﻿using System.Text.Json;
-using Galaxy.Conqueror.API.Models;
+using Galaxy.Conqueror.API.Models.Database;
 
 namespace Galaxy.Conqueror.API.Services;
 

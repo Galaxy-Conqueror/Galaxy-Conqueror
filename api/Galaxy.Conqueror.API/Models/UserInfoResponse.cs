@@ -1,4 +1,4 @@
-﻿namespace Galaxy.Conqueror.API.Models;
+﻿namespace Galaxy.Conqueror.API.Models.Database;
 
 // Response from google auth to get user details
 public class UserInfoResponse

@@ -1,4 +1,4 @@
-﻿namespace Galaxy.Conqueror.API.Models;
+﻿namespace Galaxy.Conqueror.API.Models.Database;
 
 // Send back user info and JWT to user on login
 public class LoginResponse
