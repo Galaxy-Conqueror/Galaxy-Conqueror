@@ -1,10 +1,11 @@
 ﻿using System.Data;
 using Dapper;
+using Galaxy.Conqueror.API.Models.Database;
 using Galaxy.Conqueror.API.Models;
 
 namespace Galaxy.Conqueror.API.Services;
 
-public class UserService(IDbConnection db)
+public class UserService(IDbConnection db, SetupService setupService)
 {
     private readonly IDbConnection _db = db;
 
@@ -51,19 +52,8 @@ public class UserService(IDbConnection db)
             return existingUser;
         }
 
-        const string insertSql = @"
-        INSERT INTO users (email, google_id, username)
-        VALUES (@Email, @GoogleId, @Username)
-        RETURNING *";
-
-        var newUser = new
-        {
-            Email = email,
-            GoogleId = googleId,
-            Username = username
-        };
-
-        return await _db.QuerySingleAsync<User>(insertSql, newUser);
+        var user = await setupService.SetupPlayerDefaults(email, googleId, username);
+        return user;
     }
 
     public async Task<User?> UpdateUser(Guid id, string username)
