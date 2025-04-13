@@ -1,3 +1,4 @@
+using System.Data.Common;
 using Dapper;
 using Galaxy.Conqueror.API.Configuration.Database;
 using Galaxy.Conqueror.API.Models.Database;
@@ -68,5 +69,25 @@ public class ResourceExtractorService(IDbConnectionFactory connectionFactory)
             await transaction.RollbackAsync();
             throw;
         }
+    }
+
+    public async Task<ResourceExtractor> CreateResourceExtractor(int planetId, DbTransaction? transaction = null)
+    {
+        using var connection = transaction?.Connection ?? connectionFactory.CreateConnection();
+
+        if (connection.State != System.Data.ConnectionState.Open)
+            await connection.OpenAsync();
+
+        const string sql = @"
+            INSERT INTO resource_extractors (planet_id, level)
+            VALUES (@PlanetId, @Level)
+            RETURNING *;
+        ";
+
+        return await connection.QuerySingleAsync<ResourceExtractor>(
+            sql,
+            new { PlanetId = planetId, Level = 1 },
+            transaction: transaction
+        );
     }
 }

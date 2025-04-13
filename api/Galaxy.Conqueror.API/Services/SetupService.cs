@@ -5,6 +5,8 @@ namespace Galaxy.Conqueror.API.Services;
 public class SetupService(
     IDbConnectionFactory connectionFactory,
     PlanetService planetService,
+    ResourceExtractorService resourceExtractorService,
+    TurretService turretService,
     SpaceshipService spaceshipService,
     ILogger<SetupService> logger)
 {
@@ -16,8 +18,10 @@ public class SetupService(
 
         try
         {
+            // TODO generate random position for planet
             var planet = await planetService.CreatePlanet(userId, transaction);
-            //var resourceExtractor = await  // Transaction -- create user planet resource extractor
+            var resourceExtractor = await resourceExtractorService.CreateResourceExtractor(planet.Id, transaction);
+            var turret = turretService.CreateTurret(planet.Id, transaction);
             var spaceship = await spaceshipService.CreateSpaceship(userId, planet, transaction);
 
             await transaction.CommitAsync();

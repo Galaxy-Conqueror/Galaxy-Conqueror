@@ -1,3 +1,4 @@
+using System.Data.Common;
 using Dapper;
 using Galaxy.Conqueror.API.Configuration.Database;
 using Galaxy.Conqueror.API.Models.Database;
@@ -6,6 +7,27 @@ namespace Galaxy.Conqueror.API.Services;
 
 public class TurretService(IDbConnectionFactory connectionFactory)
 {
+
+    public async Task<Turret> CreateTurret(int planetId, DbTransaction? transaction = null)
+    {
+        using var connection = transaction?.Connection ?? connectionFactory.CreateConnection();
+
+        if (connection.State != System.Data.ConnectionState.Open)
+            await connection.OpenAsync();
+
+        const string sql = @"
+            INSERT INTO turrets (planet_id, level)
+            VALUES (@PlanetId, @Level)
+            RETURNING *;
+        ";
+
+        return await connection.QuerySingleAsync<Turret>(
+            sql,
+            new { PlanetId = planetId, Level = 1 },
+            transaction: transaction
+        );
+    }
+
     public async Task<Turret?> GetTurretById(int id)
     {
         using var connection = connectionFactory.CreateConnection();
