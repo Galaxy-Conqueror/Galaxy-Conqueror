@@ -12,15 +12,16 @@ public static class ApplicationConfiguration
         app.GetCurrentUser();
         app.UpdateUser();
 
-
-
-        app.ViewSpaceshipDetails();
-        app.ViewSpaceshipUpgradeDetails();
+        app.GetSpaceshipDetails();
         app.UpgradeSpaceship();
         app.Refuel();
         app.Repair();
         app.Deposit();
         app.Move();
+
+        app.PlanetDetails();
+        app.ResourceExtractor();
+        app.Turret();
 
         app.Battle();
 
