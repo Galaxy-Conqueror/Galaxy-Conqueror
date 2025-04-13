@@ -1,3 +1,4 @@
+using Galaxy.Conqueror.API.Models;
 using Galaxy.Conqueror.API.Services;
 using Galaxy.Conqueror.API.Utils;
 using Microsoft.AspNetCore.Mvc;
@@ -9,7 +10,6 @@ public class MoveHandlers {
     public static async Task<IResult> MoveSpaceshipHandler(
         [FromServices] UserService userService,
         [FromServices] SpaceshipService spaceshipService,
-        [FromServices] PlanetService planetService,
         [FromQuery] int x,
         [FromQuery] int y,
         HttpContext context,
@@ -24,7 +24,7 @@ public class MoveHandlers {
 
             var spaceship = await spaceshipService.GetSpaceshipByUserId(user.Id);
             if (spaceship == null)
-                return Results.BadRequest("Spaceship not found.");
+                return Results.NotFound("Spaceship not found.");
 
             int fuelUsed = Calculations.GetFuelUsed(spaceship.X, spaceship.Y, x, y);
             if (fuelUsed > spaceship.CurrentFuel)
