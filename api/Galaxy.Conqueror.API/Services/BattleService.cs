@@ -55,9 +55,11 @@ public class BattleService(IDbConnectionFactory connectionFactory)
             ResourcesLooted = battleLog.ResourcesLooted
         };
 
+        var battleResponse = await connection.QuerySingleAsync<Battle>(sql, battle, transaction: transaction);
+
         if (transaction == null)
             await connection.DisposeAsync();
 
-        return await connection.QuerySingleAsync<Battle>(sql, battle, transaction: transaction);
+        return battleResponse;
     }
 }
