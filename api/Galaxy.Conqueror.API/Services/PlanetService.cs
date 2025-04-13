@@ -55,4 +55,21 @@ public class PlanetService(IDbConnectionFactory connectionFactory)
         );
     }
 
+    public async Task<Planet?> UpdatePlanetName(Guid userId, string newName)
+    {
+        using var connection = connectionFactory.CreateConnection();
+        const string sql = @"
+            UPDATE planets
+            SET name = @Name
+            WHERE user_id = @UserId
+            RETURNING *;
+        ";
+
+        return await connection.QuerySingleOrDefaultAsync<Planet>(sql, new
+        {
+            Name = newName,
+            UserId = userId
+        });
+    }
+
 }

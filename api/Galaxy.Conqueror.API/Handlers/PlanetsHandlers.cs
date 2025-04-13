@@ -1,3 +1,4 @@
+using Galaxy.Conqueror.API.Models.Requests;
 using Galaxy.Conqueror.API.Services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -61,6 +62,30 @@ public class PlanetsHandlers {
             if (planet == null) {
                 return Results.NotFound("Planet not found.");
             }
+
+            return Results.Ok(planet);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error retrieving planet: {ex}");
+            return Results.StatusCode(StatusCodes.Status500InternalServerError);
+        }
+    }
+
+    public static async Task<IResult> UpdatePlanetNameHandler(
+        [FromServices] UserService userService,
+        [FromServices] PlanetService planetService,
+        [FromBody] PlanetNameRequest request,
+        HttpContext context
+    )
+    {
+        try
+        {
+            var user = await userService.GetUserByContext(context);
+            if (user == null)
+                return Results.NotFound("User not found.");
+
+            var planet = await planetService.UpdatePlanetName(user.Id, request.PlanetName);
 
             return Results.Ok(planet);
         }
