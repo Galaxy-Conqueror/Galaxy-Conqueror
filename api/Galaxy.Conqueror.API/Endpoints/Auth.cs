@@ -1,4 +1,4 @@
-﻿using Galaxy.Conqueror.API.Handlers;
+using Galaxy.Conqueror.API.Handlers;
 using Galaxy.Conqueror.API.Models.Requests;
 
 namespace Galaxy.Conqueror.API.Endpoints;
@@ -15,5 +15,4 @@ public static class Auth
             .Produces(StatusCodes.Status500InternalServerError);
         return endpoint;
     }
-
 }
