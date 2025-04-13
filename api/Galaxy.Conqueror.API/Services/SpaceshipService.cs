@@ -27,7 +27,7 @@ public class SpaceshipService(IDbConnectionFactory connectionFactory)
             INSERT INTO spaceships (user_id)
             VALUES (@UserId)
             RETURNING *";
-        var shapeship = new Spaceship()
+        var spaceship = new Spaceship()
         {
             UserId = userId,
             // Design
@@ -40,9 +40,12 @@ public class SpaceshipService(IDbConnectionFactory connectionFactory)
             Y = planet.Y + 1,
         };
 
+        var spaceshipResponse = await connection.QuerySingleAsync<Spaceship>(sql, spaceship, transaction: transaction);
+
         if (transaction == null)
             await connection.DisposeAsync();
-        return await connection.QuerySingleAsync<Spaceship>(sql, shapeship, transaction: transaction);
+
+        return spaceshipResponse;
     }
 
     public async Task<Spaceship> UpdateSpaceship(int spaceshipId, int planetId, int cost)
