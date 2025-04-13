@@ -1,3 +1,4 @@
+using Galaxy.Conqueror.API.Models.Responses;
 using Galaxy.Conqueror.API.Services;
 using Galaxy.Conqueror.API.Utils;
 using Microsoft.AspNetCore.Mvc;
@@ -10,8 +11,7 @@ public class TurretsHandlers {
         [FromServices] UserService userService,
         [FromServices] PlanetService planetService,
         [FromServices] TurretService turretService,
-        HttpContext context,
-        CancellationToken ct
+        HttpContext context
     )
     {
         try
@@ -24,17 +24,19 @@ public class TurretsHandlers {
             if (turret == null)
                 return Results.NotFound("Turret not found.");
 
-            Dictionary<string, string> dict = new Dictionary<string, string>
+            TurretDetailResponse response = new()
             {
-                ["level"] = turret.Level.ToString(),
-                ["damage"] = Calculations.GetTurretDamage(turret.Level).ToString(),
-                ["health"] = Calculations.GetTurretHealth(turret.Level).ToString(),
-                ["upgradeCost"] = Calculations.GetTurretUpgradeCost(turret.Level).ToString(),
-                ["upgradedDamage"] = Calculations.GetTurretDamage(turret.Level + 1).ToString(),
-                ["upgradedHealth"] = Calculations.GetTurretHealth(turret.Level + 1).ToString()
+                Id = turret.Id,
+                PlanetId = turret.PlanetId,
+                Level = turret.Level,
+                Damage = Calculations.GetTurretDamage(turret.Level),
+                Health = Calculations.GetTurretHealth(turret.Level),
+                UpgradeCost = Calculations.GetTurretUpgradeCost(turret.Level),
+                UpgradedDamage = Calculations.GetTurretDamage(turret.Level + 1),
+                UpgradedHealth = Calculations.GetTurretHealth(turret.Level + 1)
             };
 
-            return Results.Ok(dict);
+            return Results.Ok(response);
         }
         catch (Exception ex)
         {
