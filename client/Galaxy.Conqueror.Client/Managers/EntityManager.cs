@@ -19,7 +19,7 @@ namespace Galaxy.Conqueror.Client.Managers
         {
             Entities.Add(new Spaceship(1, "Spaceship", 'V', Color.Yellow, new Vector2I(StateManager.MAP_WIDTH / 2,  StateManager.MAP_HEIGHT / 2)));
 
-            Entities.Add(new Planet(2, "Planet-test", 'O', Color.Blue, new Vector2I(20, 20)));
+            Entities.Add(new Planet(2, "Planet-test", 'O', Color.Blue, new Vector2I(StateManager.MAP_WIDTH / 2, StateManager.MAP_HEIGHT / 2 + 1)));
             Entities.Add(new Planet(3, "Planet-test", 'O', Color.Blue, new Vector2I(25, 25)));
             Entities.Add(new Planet(4, "Planet-test", 'O', Color.Blue, new Vector2I(1, 30)));
             Entities.Add(new Planet(5, "Planet-test", 'O', Color.Blue, new Vector2I(30, 10)));

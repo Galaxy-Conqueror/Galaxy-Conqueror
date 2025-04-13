@@ -9,8 +9,6 @@ namespace Galaxy.Conqueror.Client.Managers;
 
 public static class Renderer
 {
-    private static readonly Dictionary<Vector2I, char> canvas = new();
-
     private static int bufferWidth;
     private static int bufferHeight;
     private static Vector2I camera = Vector2I.ZERO;
@@ -67,7 +65,7 @@ public static class Renderer
             if (IsInCanvas(canvasX, canvasY))
             {
                 Console.SetCursorPosition(canvasX, canvasY);
-                ConsolePrinter.Print(glyph + " ", ConsolePrinter.WHITE);
+                ConsolePrinter.Print(glyph.ToString(), ConsolePrinter.WHITE);
             }
         }
     }
@@ -91,7 +89,7 @@ public static class Renderer
             if (IsInCanvas(canvasX, canvasY))
             {
                 Console.SetCursorPosition(canvasX, canvasY);
-                ConsolePrinter.Print(glyph + " ", ConsolePrinter.WHITE);
+                ConsolePrinter.Print(glyph.ToString(), ConsolePrinter.WHITE);
             }
         }
     }
@@ -130,10 +128,5 @@ public static class Renderer
     public static bool IsInCanvas(int x, int y)
     {
         return x >= 0 && x < bufferWidth && y >= 0 && y < bufferHeight;
-    }
-
-    public static bool IsInCanvas(Vector2I position)
-    {
-        return IsInCanvas(position.X, position.Y);
     }
 }

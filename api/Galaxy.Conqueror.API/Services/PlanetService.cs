@@ -35,17 +35,11 @@ public class PlanetService(IDbConnectionFactory connectionFactory)
         return await connection.QuerySingleOrDefaultAsync<Planet>(sql, new { SpaceshipId = spaceshipId });
     }
 
-    public async Task<Turret?> GetTurretByPlanetId(int planetId)
-    {
-        using var connection = connectionFactory.CreateConnection();
-        const string sql = "SELECT t.* FROM planets p JOIN turrets t ON p.id = t.planet_id WHERE t.planet_id = @PlanetId";
-        return await connection.QuerySingleOrDefaultAsync<Turret>(sql, new { PlanetId = planetId });
-    }
-
     public async Task<Planet> CreatePlanet(Guid userId, DbTransaction? transaction = null)
     {
-        using var connection = transaction?.Connection ?? connectionFactory.CreateConnection();
-
+        var connection = transaction?.Connection;
+        if (connection == null)
+            connection = connectionFactory.CreateConnection();
         if (connection.State != System.Data.ConnectionState.Open)
             await connection.OpenAsync();
 
@@ -55,11 +49,33 @@ public class PlanetService(IDbConnectionFactory connectionFactory)
             RETURNING *;
         ";
 
-        return await connection.QuerySingleAsync<Planet>(
+        var planet = await connection.QuerySingleAsync<Planet>(
             sql,
             new { UserId = userId },
             transaction: transaction
         );
+
+        if (transaction == null)
+            await connection.DisposeAsync();
+
+        return planet;
+    }
+
+    public async Task<Planet?> UpdatePlanetName(Guid userId, string newName)
+    {
+        using var connection = connectionFactory.CreateConnection();
+        const string sql = @"
+            UPDATE planets
+            SET name = @Name
+            WHERE user_id = @UserId
+            RETURNING *;
+        ";
+
+        return await connection.QuerySingleOrDefaultAsync<Planet>(sql, new
+        {
+            Name = newName,
+            UserId = userId
+        });
     }
 
 }

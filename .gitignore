@@ -3,4 +3,5 @@ api/obj/*
 api/bin/*
 */.terraform/providers*
 */bootstrap/.terraform/providers
+terraform\bootstrap\terraform.tfstate*
 deployRdsAndCSServer.sln
