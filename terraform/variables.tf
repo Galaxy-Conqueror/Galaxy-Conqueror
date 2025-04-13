@@ -1,20 +1,29 @@
-variable "aws_region" {
-  default = "us-east-1"
+variable "region" {
+  type = string
+  default = "af-south-1"
 }
 
-variable "ami_id" {
-  description = "AMI for EC2 instance"
-  default     = "ami-0c02fb55956c7d316" # Ubuntu 22.04 in us-east-1
+variable "database_name" {
+  type = string
+  default = "galaxyconquerordb"
 }
 
-variable "instance_type" {
-  default = "t2.micro"
+variable "instance_name" {
+  type = string
+  default = "galaxyConquerorDbInstance"
 }
 
-variable "key_pair" {
-  description = "Name of the AWS key pair"
+variable "ecr_repo_name" {
+  type = string
+  default = "galaxy-conqueror"
 }
 
-variable "allowed_ip" {
-  description = "IP allowed for SSH access (e.g. your public IP/32)"
+variable "ecs_cluster_name" {
+  type = string
+  default = "galaxy_conqueror_ecs_cluster"
+}
+
+variable "ecs_service_name" {
+  type = string
+  default = "galaxy-conqueror-api-service"
 }

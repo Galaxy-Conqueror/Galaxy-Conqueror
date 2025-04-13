@@ -1,0 +1,70 @@
+name: Run Flyway Migrations on Fargate
+
+on:
+  push:
+    branches:
+      - migrations
+
+jobs:
+  migrate:
+    name: Run Flyway Migrations
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Build and Push Flyway Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./flyway
+          file: ./flyway/Dockerfile
+          push: true
+          tags: |
+            ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ vars.AWS_REGION }}.amazonaws.com/${{ vars.ECR_REPO_NAME }}:flyway
+
+      - name: Get Subnet and SG IDs dynamically
+        id: network
+        run: |
+          SUBNET_ID=$(aws ec2 describe-subnets \
+            --filters "Name=tag:Name,Values=*public*" \
+            --query "Subnets[0].SubnetId" --output text)
+
+          SG_ID=$(aws ec2 describe-security-groups \
+            --filters "Name=group-name,Values=*fargate*" \
+            --query "SecurityGroups[0].GroupId" --output text)
+
+          echo "subnet_id=$SUBNET_ID" >> $GITHUB_OUTPUT
+          echo "sg_id=$SG_ID" >> $GITHUB_OUTPUT
+
+      - name: Run Flyway Task on ECS Fargate
+        run: |
+          aws ecs run-task \
+            --cluster ${{ vars.CLUSTER_NAME }} \
+            --launch-type FARGATE \
+            --network-configuration "awsvpcConfiguration={subnets=[${{ steps.network.outputs.subnet_id }}],securityGroups=[${{ steps.network.outputs.sg_id }}],assignPublicIp=ENABLED}" \
+            --task-definition flyway-task \
+            --overrides '{
+              "containerOverrides": [
+                {
+                  "name": "flyway",
+                  "environment": [
+                    { "name": "DB_HOST", "value": "${{ secrets.DB_HOST }}" },
+                    { "name": "DB_NAME", "value": "${{ secrets.DB_NAME }}" },
+                    { "name": "DB_USERNAME", "value": "${{ secrets.DB_USERNAME }}" },
+                    { "name": "DB_PASSWORD", "value": "${{ secrets.DB_PASSWORD }}" }
+                  ]
+                }
+              ]
+            }'
