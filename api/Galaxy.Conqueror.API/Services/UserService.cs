@@ -1,25 +1,26 @@
 ﻿using System.Data;
 using System.Security.Claims;
 using Dapper;
+using Galaxy.Conqueror.API.Configuration.Database;
 using Galaxy.Conqueror.API.Models.Database;
 using Galaxy.Conqueror.API.Models.Responses;
 
 namespace Galaxy.Conqueror.API.Services;
 
-public class UserService(IDbConnection db, ISetupService setupService)
+public class UserService(IDbConnectionFactory connectionFactory, ISetupService setupService)
 {
-    private readonly IDbConnection _db = db;
-
     public async Task<User?> GetUserById(Guid id)
     {
+        using var connection = connectionFactory.CreateConnection();
         const string sql = "SELECT * FROM users WHERE id = @Id";
-        return await _db.QuerySingleOrDefaultAsync<User>(sql, new { Id = id });
+        return await connection.QuerySingleOrDefaultAsync<User>(sql, new { Id = id });
     }
 
-    public async Task<User> GetUserByEmail(string email)
+    public async Task<User?> GetUserByEmail(string email)
     {
+        using var connection = connectionFactory.CreateConnection();
         const string sql = "SELECT * FROM users WHERE email = @Email";
-        return await _db.QuerySingleOrDefaultAsync<User>(sql, new { Email = email });
+        return await connection.QuerySingleOrDefaultAsync<User>(sql, new { Email = email });
     }
 
     public async Task<User?> GetUserByContext(HttpContext context)
@@ -35,18 +36,21 @@ public class UserService(IDbConnection db, ISetupService setupService)
    
     public async Task<IEnumerable<User>> GetUsers()
     {
+        using var connection = connectionFactory.CreateConnection();
         const string sql = "SELECT * FROM users";
-        return await _db.QueryAsync<User>(sql);
+        return await connection.QueryAsync<User>(sql);
     }
 
     public async Task<User?> CreateUser(UserInfoResponse userInfo)
     {
+        using var connection = connectionFactory.CreateConnection();
+
         var googleId = userInfo.sub;
         var email = userInfo.email;
         var username = "";
 
         const string findUserSql = @"SELECT * FROM users WHERE email = @Email";
-        var existingUser = await _db.QuerySingleOrDefaultAsync<User>(findUserSql, new { Email = email });
+        var existingUser = await connection.QuerySingleOrDefaultAsync<User>(findUserSql, new { Email = email });
 
         if (existingUser != null)
         {
@@ -59,17 +63,19 @@ public class UserService(IDbConnection db, ISetupService setupService)
 
     public async Task<User?> UpdateUser(Guid id, string username)
     {
+        using var connection = connectionFactory.CreateConnection();
         const string sql = @"
             UPDATE users SET username = @Username 
             WHERE id = @Id
             RETURNING *";
-        return await _db.QuerySingleOrDefaultAsync<User>(sql, new { Id = id, Username = username });
+        return await connection.QuerySingleOrDefaultAsync<User>(sql, new { Id = id, Username = username });
     }
 
     public async Task DeleteUser(string id)
     {
+        using var connection = connectionFactory.CreateConnection();
         const string sql = "DELETE FROM users WHERE id = @Id";
-        await _db.ExecuteAsync(sql, new { Id = id });
+        await connection.ExecuteAsync(sql, new { Id = id });
     }
 
 }
