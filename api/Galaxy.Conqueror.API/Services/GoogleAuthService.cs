@@ -1,6 +1,6 @@
 ﻿using System.Text.Json;
-using Galaxy.Conqueror.API.Models;
 using Galaxy.Conqueror.API.Models.Database;
+using Galaxy.Conqueror.API.Models.Responses;
 
 namespace Galaxy.Conqueror.API.Services;
 

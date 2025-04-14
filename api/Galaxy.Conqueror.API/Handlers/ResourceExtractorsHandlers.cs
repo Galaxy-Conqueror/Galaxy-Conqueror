@@ -1,3 +1,4 @@
+using Galaxy.Conqueror.API.Models;
 using Galaxy.Conqueror.API.Models.Responses;
 using Galaxy.Conqueror.API.Services;
 using Galaxy.Conqueror.API.Utils;
@@ -7,7 +8,7 @@ namespace Galaxy.Conqueror.API.Handlers;
 
 public class ResourceExtractorHandlers {
     
-       public static async Task<IResult> GetExtractorDetailsHandler(
+    public static async Task<IResult> GetExtractorDetailsHandler(
         [FromServices] UserService userService,
         [FromServices] PlanetService planetService,
         [FromServices] ResourceExtractorService resourceExtractorService,
@@ -80,7 +81,14 @@ public class ResourceExtractorHandlers {
 
             var upgradedExtractor = await resourceExtractorService.UpgradeResourceExtractor(resourceExtractor.Id, planet.Id, upgradeCost);
 
-            return Results.Ok(upgradedExtractor);
+            ResourceExtractorUpgradedResponse response = new()
+            {
+                Level = upgradedExtractor.Level,
+                ResourceGen = Calculations.GetResourceGenAmount(upgradedExtractor.Level),
+                PlanetResourceReserve = planet.ResourceReserve - upgradeCost
+            };
+
+            return Results.Ok(response);
         }
         catch (Exception ex)
         {
