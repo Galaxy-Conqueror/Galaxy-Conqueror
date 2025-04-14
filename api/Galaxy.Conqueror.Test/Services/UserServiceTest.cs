@@ -2,21 +2,24 @@
 using Dapper;
 using Galaxy.Conqueror.API.Models;
 using Galaxy.Conqueror.API.Models.Database;
+using Galaxy.Conqueror.API.Models;
 using Galaxy.Conqueror.API.Services;
 using Moq;
 using Moq.Dapper;
 
 namespace Galaxy.Conqueror.Test.Services;
+namespace Galaxy.Conqueror.API.Models;
+
 
 public class UserServiceTests
 {
-    private readonly Mock<IDbConnection> _dbMock;
+    private readonly Mock<IDbConnectionFactory> _dbMock;
     private readonly Mock<ISetupService> _setupServiceMock;
     private readonly UserService _userService;
 
     public UserServiceTests()
     {
-        _dbMock = new Mock<IDbConnection>();
+        _dbMock = new Mock<IDbConnectionFactory>();
         _setupServiceMock = new Mock<ISetupService>();
         _userService = new UserService(_dbMock.Object, _setupServiceMock.Object);
     }
