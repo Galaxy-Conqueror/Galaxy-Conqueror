@@ -1,4 +1,5 @@
-﻿using Galaxy.Conqueror.Client.Handlers;
+﻿using Battle;
+using Galaxy.Conqueror.Client.Handlers;
 using Galaxy.Conqueror.Client.Managers;
 using Galaxy.Conqueror.Client.Menus;
 using Galaxy.Conqueror.Client.Models.GameModels;
@@ -10,6 +11,8 @@ namespace Galaxy.Conqueror.Client;
 
 public static class Client
 {
+    static GameState prevGameState = GameState.IDLE;
+
     public static async Task Start()
     {
         MapView.Initialise();
@@ -27,28 +30,37 @@ public static class Client
 
     public static async Task Run()
     {
-        var prevGameState = GameState.IDLE;
-
-        Dictionary<Vector2I, Glyph> gameScreen = MapView.GetScreen();
-        Dictionary<Vector2I, Glyph> sidebar = Sidebar.GetSidebar();
-
-        gameScreen = MapView.GetScreen();
-        sidebar = Sidebar.GetSidebar();
-        Renderer.DrawCanvas(gameScreen, sidebar, false);
-
         PlanetView.Initialise();
 
         while (StateManager.State != GameState.QUIT_REQUESTED)
         {
-            // if (StateManager.State == GameState.MAP_VIEW)
-            // {
-            //     gameScreen = MapView.GetScreen();
-            //     sidebar = Sidebar.GetSidebar();
-            //     Renderer.DrawCanvas(gameScreen, sidebar, false);
-            // }
+            UserInputHandler.HandleInput();
 
-            // prevGameState = StateManager.State;
+            switch (StateManager.State)
+            {
+                case GameState.MAP_VIEW:
+                    Renderer.RenderMap();
+                    // Renderer.RenderSidebar(); // adding this makes everything render weirdly when you go close to planets
+                    break;
+
+                case GameState.BATTLE:
+                    BattleEngine.Update();
+                    Renderer.RenderBattleMap();
+                    break;
+
+                default:
+                    break;
+            }
+
+            if (stateHasChanged()) Console.Clear();
+
+            prevGameState = StateManager.State;
         }
+    }
+
+    private static bool stateHasChanged()
+    {
+        return StateManager.State != prevGameState;
     }
 }
 

@@ -10,9 +10,8 @@ public static class ConsolePrinter
         Console.ResetColor();
     }
 
-    public static void ClearGlyph(Vector2I position)
+    public static void ClearGlyph()
     {
-        Console.SetCursorPosition(position.X, position.Y);
         Console.Write(" ");
     }
 
