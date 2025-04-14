@@ -74,9 +74,6 @@ resource "aws_ecs_service" "ecs_service" {
 
   force_new_deployment = true
 
-<<<<<<< HEAD
-}
-=======
 }
 
 resource "aws_ecs_task_definition" "flyway_task" {
@@ -110,4 +107,3 @@ resource "aws_ecs_task_definition" "flyway_task" {
     }
   ])
 }
->>>>>>> 97076dd818a84a69c4534a4271645d998bc8ca83
