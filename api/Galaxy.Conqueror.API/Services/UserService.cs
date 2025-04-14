@@ -5,7 +5,7 @@ using Galaxy.Conqueror.API.Models;
 
 namespace Galaxy.Conqueror.API.Services;
 
-public class UserService(IDbConnection db, SetupService setupService)
+public class UserService(IDbConnection db, ISetupService setupService)
 {
     private readonly IDbConnection _db = db;
 

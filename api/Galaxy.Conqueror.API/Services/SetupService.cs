@@ -10,7 +10,7 @@ public class SetupService(
     SpaceshipService spaceshipService,
     ResourceExtractorService resourceExtractorService,
     TurretService turretService,
-    ILogger<SetupService> logger)
+    ILogger<SetupService> logger) : ISetupService
 {
     public async Task<User> SetupPlayerDefaults(string email, string googleId, string username)
     {
