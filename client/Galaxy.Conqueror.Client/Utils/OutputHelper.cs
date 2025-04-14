@@ -2,7 +2,7 @@ namespace Galaxy.Conqueror.Client.Utils
 {
     public static class OutputHelper
     {
-        private static readonly bool DEBUG = true;
+        private static readonly bool DEBUG = false;
 
         public static void DebugPrint(string output)
         {

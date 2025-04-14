@@ -40,13 +40,18 @@ namespace Galaxy.Conqueror.Client.Utils
                 Console.WriteLine("Error opening browser. Go to this URL to login: \n" + authUrl);
             }
 
-            await GetJwtTokenAsync();
+            bool newUser = await GetJwtTokenAsync();
+            if (newUser) {
+                await SetUsername();
+                await SetPlanetName();
+            }
             return;
         }
 
-        private static async Task GetJwtTokenAsync()
+        private static async Task<bool> GetJwtTokenAsync()
         {
             bool success = false;
+            bool newUser = false;
             var callbackServer = new HttpListener();
             callbackServer.Prefixes.Add(REDIRECT_URI);
             callbackServer.Start();
@@ -94,27 +99,7 @@ namespace Galaxy.Conqueror.Client.Utils
                                 success = jwtToken != "";
 
                                 if (loginResponse?.User?.Username?.Length == 0) {
-                                    SetUsername();
-                                }
-
-                                var userResponse = await RequestHelper.GetRequestAsync(
-                                    "/api/user",
-                                    ""
-                                );
-
-                                if (userResponse.IsSuccessStatusCode)
-                                {
-                                    var userResponseContent =
-                                        await userResponse.Content.ReadAsStringAsync();
-                                    var user = JsonSerializer.Deserialize<User>(
-                                        userResponseContent,
-                                        options
-                                    );
-
-                                }
-                                else
-                                {
-                                    Console.WriteLine("Failed to retrieve user data");
+                                    newUser = true;
                                 }
                             }
                         }
@@ -147,17 +132,18 @@ namespace Galaxy.Conqueror.Client.Utils
                 responseOutput.OutputStream.Close();
                 callbackServer.Stop();
             }
+            return newUser;
         }
 
-        private static async void SetUsername() {
+        private static async Task SetUsername() {
             while (true)    
             {
-                Console.Write("Enter username:");
+                Console.Write("Enter username: ");
                 var username = Console.ReadLine();
 
                 if (string.IsNullOrWhiteSpace(username))
                 {
-                    Console.WriteLine("Username cannot be empty. Try again.\n");
+                    Console.WriteLine("Username cannot be empty, try again.\n");
                     continue;
                 }
 
@@ -168,13 +154,36 @@ namespace Galaxy.Conqueror.Client.Utils
                     JsonSerializer.Serialize(request)
                 );
 
-                if ()
-                {
-                    Console.WriteLine($"✅ Welcome, {loginResponse.User.Username}!");
+                if (response.IsSuccessStatusCode)
                     break;
+
+                Console.WriteLine("Failed to set username, try again.\n");
+            }
+        }
+
+        private static async Task SetPlanetName() {
+            while (true)    
+            {
+                Console.Write("Enter planet name: ");
+                var planetName = Console.ReadLine();
+
+                if (string.IsNullOrWhiteSpace(planetName))
+                {
+                    Console.WriteLine("Planet name cannot be empty, try again.\n");
+                    continue;
                 }
 
-                Console.WriteLine("❌ Login failed. Try again.");
+                var request = new { PlanetName = planetName };
+                var response = await RequestHelper.PutRequestAsync(
+                    "/api/planet",
+                    "",
+                    JsonSerializer.Serialize(request)
+                );
+
+                if (response.IsSuccessStatusCode)
+                    break;
+
+                Console.WriteLine("Failed to set planet name, try again.\n");
             }
         }
 

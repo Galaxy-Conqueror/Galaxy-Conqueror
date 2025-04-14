@@ -15,8 +15,6 @@ public static class Client
 
         await AuthHelper.Authenticate();
 
-        Console.ReadKey();
-
         MapView.Initialise();
         EntityManager.Initialize();
 
