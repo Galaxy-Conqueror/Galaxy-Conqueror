@@ -1,4 +1,4 @@
-namespace Galaxy.Conqueror.API.Models;
+namespace Galaxy.Conqueror.API.Models.Responses;
 public class SpaceshipUpgradeResponse
 {
     public int Level { get; set; }

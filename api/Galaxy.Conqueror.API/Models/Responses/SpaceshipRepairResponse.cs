@@ -1,4 +1,4 @@
-namespace Galaxy.Conqueror.API.Models;
+namespace Galaxy.Conqueror.API.Models.Responses;
 public class SpaceshipRepairResponse
 {
     public int CurrentHealth { get; set; }

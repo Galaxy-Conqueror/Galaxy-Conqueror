@@ -1,4 +1,4 @@
-﻿namespace Galaxy.Conqueror.API.Models;
+﻿namespace Galaxy.Conqueror.API.Models.Responses;
 
 // Response for token exchange google auth
 public class TokenResponse
