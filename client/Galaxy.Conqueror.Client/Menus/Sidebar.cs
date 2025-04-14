@@ -28,7 +28,7 @@ public static class Sidebar
 
         CheckSidebarState();
 
-        var maxY = (StateManager.MAP_SCREEN_HEIGHT / 2) - StateManager.MENU_MARGIN;
+        var maxY = (StateManager.MAP_SCREEN_HEIGHT) - StateManager.MENU_MARGIN;
 
         for (int y = 0; y < maxY; y++)
         {

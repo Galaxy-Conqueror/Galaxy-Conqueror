@@ -26,7 +26,7 @@ public static class Renderer
 
     public static bool Stale { get; set; } = true;
 
-    public static void DrawCanvas(Dictionary<Vector2I, Glyph> gameScreen, Dictionary<Vector2I, Glyph>? sidebar)
+    public static void DrawCanvas(Dictionary<Vector2I, Glyph> gameScreen, Dictionary<Vector2I, Glyph>? sidebar, bool staticScreen)
     {
         bufferWidth = Console.BufferWidth;
         bufferHeight = Console.BufferHeight;
@@ -47,7 +47,7 @@ public static class Renderer
                 previousSidebar = new Dictionary<Vector2I, Glyph>(sidebar);
             }
 
-            RenderGameScreen(gameScreen);
+            RenderGameScreen(gameScreen, staticScreen);
             RenderEntities();
             ClearPreviousCanvas();
 
@@ -66,12 +66,27 @@ public static class Renderer
         currentView.Clear();
     }
 
-    private static void RenderGameScreen(Dictionary<Vector2I, Glyph> gameScreen)
+    private static void RenderGameScreen(Dictionary<Vector2I, Glyph> gameScreen, bool staticScreen)
     {
-        int minX = camera.X - (StateManager.MAP_SCREEN_WIDTH / 2);
-        int maxX = camera.X + (StateManager.MAP_SCREEN_WIDTH / 2);
-        int minY = camera.Y - (StateManager.MAP_SCREEN_HEIGHT / 2);
-        int maxY = camera.Y + (StateManager.MAP_SCREEN_HEIGHT / 2);
+        var cameraOffset = camera;
+        var xOffset = StateManager.MAP_SCREEN_WIDTH;
+        var yOffset = StateManager.MAP_SCREEN_HEIGHT / 2;
+
+        int minX = cameraOffset.X - (StateManager.MAP_SCREEN_WIDTH / 2);
+        int maxX = cameraOffset.X + (StateManager.MAP_SCREEN_WIDTH / 2);
+        int minY = cameraOffset.Y - (StateManager.MAP_SCREEN_HEIGHT / 2);
+        int maxY = cameraOffset.Y + (StateManager.MAP_SCREEN_HEIGHT / 2);
+
+        if (staticScreen)
+        {
+            //cameraOffset = Vector2I.ZERO;
+            minX = 0;
+            maxX = StateManager.MAP_SCREEN_WIDTH;
+            minY = 0;
+            maxY = StateManager.MAP_SCREEN_HEIGHT;
+            xOffset = StateManager.MAP_SCREEN_WIDTH * 2;
+            yOffset = StateManager.MAP_SCREEN_HEIGHT;
+        }
 
         foreach (var (position, glyph) in gameScreen)
         {
@@ -79,8 +94,8 @@ public static class Renderer
                 position.Y < minY || position.Y > maxY)
                 continue;
 
-            var canvasX = ((position.X - camera.X) * 2) + StateManager.MAP_SCREEN_WIDTH;
-            var canvasY = position.Y - camera.Y + StateManager.MAP_SCREEN_HEIGHT / 4;
+            var canvasX = ((position.X - cameraOffset.X) * 2) + xOffset;
+            var canvasY = position.Y - cameraOffset.Y + yOffset;
 
             if (IsInCanvas(canvasX, canvasY))
             {
@@ -133,7 +148,7 @@ public static class Renderer
                 continue;
 
             var canvasX = ((entity.Position.X - camera.X) * 2) + StateManager.MAP_SCREEN_WIDTH;
-            var canvasY = entity.Position.Y - camera.Y + StateManager.MAP_SCREEN_HEIGHT / 4;
+            var canvasY = entity.Position.Y - camera.Y + StateManager.MAP_SCREEN_HEIGHT / 2;
 
             if (IsInCanvas(canvasX, canvasY))
             {
