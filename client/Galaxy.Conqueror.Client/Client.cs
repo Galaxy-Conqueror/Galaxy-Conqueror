@@ -15,73 +15,39 @@ public static class Client
         MapView.Initialise();
         EntityManager.Initialize();
 
+        Console.SetWindowSize(StateManager.CanvasWidth, StateManager.CanvasHeight);
+        Console.SetBufferSize(StateManager.CanvasWidth, StateManager.CanvasHeight);
+
+        Console.CursorVisible = false;
+
+        Console.Clear();
+
         await Run();
     }
 
     public static async Task Run()
     {
+        var prevGameState = GameState.IDLE;
+
         Dictionary<Vector2I, Glyph> gameScreen = MapView.GetScreen();
         Dictionary<Vector2I, Glyph> sidebar = Sidebar.GetSidebar();
 
+        gameScreen = MapView.GetScreen();
+        sidebar = Sidebar.GetSidebar();
+        Renderer.DrawCanvas(gameScreen, sidebar, false);
+
         PlanetView.Initialise();
 
-        var prevGameState = GameState.IDLE;
-        var isStaticGameScreen = false;
-
-        Console.Clear();
-        Console.CursorVisible = false;
-
-        int prevBufferWidth = Console.BufferWidth;
-        int prevBufferHeight = Console.BufferHeight;
-
-        Sidebar.stale = true;
-
-        // Input loop
         while (StateManager.State != GameState.QUIT_REQUESTED)
         {
-            if (Console.KeyAvailable)
-            {
-                var key = Console.ReadKey(true).Key;
-                UserInputHandler.HandleInput(key);
-            }
+            // if (StateManager.State == GameState.MAP_VIEW)
+            // {
+            //     gameScreen = MapView.GetScreen();
+            //     sidebar = Sidebar.GetSidebar();
+            //     Renderer.DrawCanvas(gameScreen, sidebar, false);
+            // }
 
-            if (StateManager.State == GameState.MAP_VIEW)
-            {
-                if (prevBufferWidth != Console.BufferWidth || prevBufferHeight != Console.BufferHeight || prevGameState == GameState.MAP_VIEW && prevGameState != GameState.MAP_VIEW)
-                {
-                    MapView.stale = true;
-                }
-
-                if (MapView.stale)
-                {
-                    gameScreen = MapView.GetScreen();
-                    isStaticGameScreen = false;
-                }
-            }
-
-            if (StateManager.State == GameState.PLANET_MANAGEMENT && prevGameState != GameState.PLANET_MANAGEMENT)
-            {
-                Console.Clear();
-                PlanetView.Stale = true;
-            }
-
-            if (StateManager.State == GameState.PLANET_MANAGEMENT && PlanetView.Stale)
-            {
-                Renderer.Stale = true;
-                gameScreen = PlanetView.GetScreen();
-                isStaticGameScreen = true;
-            }
-
-            Sidebar.CheckSidebarState();
-
-            if (Sidebar.stale)
-            {
-                sidebar = Sidebar.GetSidebar();
-            }
-
-            Renderer.DrawCanvas(gameScreen, sidebar, isStaticGameScreen);
-
-            prevGameState = StateManager.State;
+            // prevGameState = StateManager.State;
         }
     }
 }

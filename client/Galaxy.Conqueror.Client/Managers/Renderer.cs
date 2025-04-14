@@ -28,8 +28,8 @@ public static class Renderer
 
     public static void DrawCanvas(Dictionary<Vector2I, Glyph> gameScreen, Dictionary<Vector2I, Glyph>? sidebar, bool staticScreen)
     {
-        bufferWidth = Console.BufferWidth;
-        bufferHeight = Console.BufferHeight;
+        bufferWidth = StateManager.CanvasWidth;
+        bufferHeight = StateManager.CanvasHeight;
 
         var playerShip = EntityManager.Entities.FirstOrDefault(x => x.Id == StateManager.PlayerShipID);
         if (playerShip == null) return;
