@@ -10,6 +10,12 @@ namespace Galaxy.Conqueror.Client.Models.GameModels
 {
     public class Planet : Entity
     {
+        public Guid UserId { get; set; }
+        public string? Name { get; set; }
+        public string? Design { get; set; }
+        public string? Description { get; set; }
+        public int ResourceReserve { get; set; }
+
         public Planet(int id, string name, Glyph glyph, Vector2I position) : base(id, name, glyph, position)
         {
             this.Id = id;
