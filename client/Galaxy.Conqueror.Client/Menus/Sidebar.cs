@@ -10,10 +10,10 @@ namespace Galaxy.Conqueror.Client.Menus;
 public static class Sidebar
 {
     public static Menu Content;
-    private static readonly Dictionary<Vector2I, char> sidebar = new();
+    private static readonly Dictionary<Vector2I, Glyph> sidebar = new();
     public static bool stale = true;
 
-    public static Dictionary<Vector2I, char> GetSidebar()
+    public static Dictionary<Vector2I, Glyph> GetSidebar()
     {
         MockMenu();
 
@@ -28,19 +28,19 @@ public static class Sidebar
 
         CheckSidebarState();
 
-        var maxY = (StateManager.MAP_SCREEN_HEIGHT / 2) - StateManager.MENU_MARGIN;
+        var maxY = (StateManager.MAP_SCREEN_HEIGHT) - StateManager.MENU_MARGIN;
 
-        for (int y = 0; y <  maxY; y++)
+        for (int y = 0; y < maxY; y++)
         {
-            for (int x = 0; x <  StateManager.MENU_WIDTH; x++)
+            for (int x = 0; x < StateManager.MENU_WIDTH; x++)
             {
-                if (x ==  StateManager.MENU_WIDTH - 1 || x == 0)
+                if (x == StateManager.MENU_WIDTH - 1 || x == 0)
                 {
-                    sidebar[new Vector2I(x, y)] = '|';
+                    sidebar[new Vector2I(x, y)] = new Glyph('|', ConsoleColor.White);
                 }
                 else if (y == maxY - 1 || y == 0)
                 {
-                    sidebar[new Vector2I(x, y)] = '-';
+                    sidebar[new Vector2I(x, y)] = new Glyph('-', ConsoleColor.White);
                 }
 
             }
@@ -81,7 +81,7 @@ public static class Sidebar
         Content.Items = menuItems.ToArray();
 
         if (MenuChanged(prevContent, Content.Items.ToList()))
-        { 
+        {
             stale = true;
         }
     }
@@ -102,25 +102,25 @@ public static class Sidebar
 
     private static void WriteMenuLine(int index, string line)
     {
-        if (line.Length +  StateManager.MENU_MARGIN <  StateManager.MENU_WIDTH)
+        if (line.Length + StateManager.MENU_MARGIN < StateManager.MENU_WIDTH)
         {
             for (int i = 0; i < StateManager.MENU_WIDTH; i++)
             {
                 var position = new Vector2I(StateManager.MENU_MARGIN + i, index);
 
-                if (sidebar.ContainsKey(position) && i < line.Length) 
+                if (sidebar.ContainsKey(position) && i < line.Length)
                 {
-                    sidebar[position] = line[i];
+                    sidebar[position] = new Glyph(line[i], ConsoleColor.White);
                 }
                 else if (i < line.Length)
                 {
-                    sidebar.Add(position, line[i]);
+                    sidebar.Add(position, new Glyph(line[i], ConsoleColor.White));
                 }
                 else
                 {
                     sidebar.Remove(position);
                 }
-                    
+
             }
         }
     }

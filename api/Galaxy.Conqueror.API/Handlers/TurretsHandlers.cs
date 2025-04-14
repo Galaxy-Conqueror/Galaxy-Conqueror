@@ -61,12 +61,10 @@ public class TurretsHandlers {
                 return Results.NotFound("User not found.");
 
             var spaceship = await spaceshipService.GetSpaceshipByUserId(user.Id);
-
             if (spaceship == null)
                 return Results.NotFound("Spaceship not found.");
             
             var planet = await planetService.GetPlanetByUserID(user.Id);
-
             if (planet == null)
                 return Results.NotFound("Planet not found.");
 
@@ -78,14 +76,20 @@ public class TurretsHandlers {
                 return Results.BadRequest("Error upgrading turret: Planet out of range");
 
             var upgradeCost = Calculations.GetExtractorUpgradeCost(turret.Level);
-
-            // Validation to check if planet has enough resources for upgrade
             if (planet.ResourceReserve < upgradeCost)
                 return Results.BadRequest("Error upgrading turret: Insufficient resources");
 
             var upgradedTurret = await turretService.UpgradeTurret(turret.Id, planet.Id, upgradeCost);
 
-            return Results.Ok(upgradedTurret);
+            TurretUpgradedResponse upgradedTurretResponse = new()
+            {
+                Level = upgradedTurret.Level,
+                Damage = Calculations.GetTurretDamage(upgradedTurret.Level),
+                Health = Calculations.GetTurretHealth(upgradedTurret.Level),
+                PlanetResourceReserve = planet.ResourceReserve - upgradeCost
+            };
+
+            return Results.Ok(upgradedTurretResponse);
         }
         catch (Exception ex)
         {

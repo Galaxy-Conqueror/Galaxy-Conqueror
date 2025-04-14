@@ -2,6 +2,7 @@
 using Dapper;
 using Galaxy.Conqueror.API.Configuration.Database;
 using Galaxy.Conqueror.API.Models.Database;
+using Galaxy.Conqueror.API.Utils;
 
 namespace Galaxy.Conqueror.API.Services;
 
@@ -43,15 +44,31 @@ public class PlanetService(IDbConnectionFactory connectionFactory)
         if (connection.State != System.Data.ConnectionState.Open)
             await connection.OpenAsync();
 
+        int x, y;
+
+        var planets = await GetPlanets();
+        Random random = new();
+
+        while (true)
+        {
+            x = random.Next(1, Calculations.MapWidth - 1);
+            y = random.Next(1, Calculations.MapHeight - 1);
+
+            bool isFarEnough = planets.All(p => !Calculations.IsInRange(x, y, p.X, p.Y, Calculations.MinDistance));
+
+            if (isFarEnough)
+                break;
+        }
+
         const string sql = @"
-            INSERT INTO planets (user_id)
-            VALUES (@UserId)
+            INSERT INTO planets (user_id, x, y)
+            VALUES (@UserId, @X, @Y)
             RETURNING *;
         ";
 
         var planet = await connection.QuerySingleAsync<Planet>(
             sql,
-            new { UserId = userId },
+            new { UserId = userId, X = x, Y = y },
             transaction: transaction
         );
 
@@ -63,10 +80,12 @@ public class PlanetService(IDbConnectionFactory connectionFactory)
 
     public async Task<Planet?> UpdatePlanetName(Guid userId, string newName)
     {
+        string description = "This description still needs to be generated";
         using var connection = connectionFactory.CreateConnection();
         const string sql = @"
             UPDATE planets
-            SET name = @Name
+            SET name = @Name,
+            description = @Description
             WHERE user_id = @UserId
             RETURNING *;
         ";
@@ -74,7 +93,8 @@ public class PlanetService(IDbConnectionFactory connectionFactory)
         return await connection.QuerySingleOrDefaultAsync<Planet>(sql, new
         {
             Name = newName,
-            UserId = userId
+            UserId = userId,
+            Description = description
         });
     }
 

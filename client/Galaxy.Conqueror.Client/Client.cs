@@ -20,12 +20,13 @@ public static class Client
 
     public static async Task Run()
     {
-        Dictionary<Vector2I, char> gameScreen = MapView.GetScreen();
-        Dictionary<Vector2I, char> sidebar = Sidebar.GetSidebar();
+        Dictionary<Vector2I, Glyph> gameScreen = MapView.GetScreen();
+        Dictionary<Vector2I, Glyph> sidebar = Sidebar.GetSidebar();
 
         PlanetView.Initialise();
 
         var prevGameState = GameState.IDLE;
+        var isStaticGameScreen = false;
 
         Console.Clear();
         Console.CursorVisible = false;
@@ -44,15 +45,9 @@ public static class Client
                 UserInputHandler.HandleInput(key);
             }
 
-            if (prevGameState == GameState.MAP_VIEW && prevGameState != GameState.MAP_VIEW)
-            {
-                MapView.stale = true;
-
-            }
-
             if (StateManager.State == GameState.MAP_VIEW)
             {
-                if (prevBufferWidth != Console.BufferWidth || prevBufferHeight != Console.BufferHeight)
+                if (prevBufferWidth != Console.BufferWidth || prevBufferHeight != Console.BufferHeight || prevGameState == GameState.MAP_VIEW && prevGameState != GameState.MAP_VIEW)
                 {
                     MapView.stale = true;
                 }
@@ -60,14 +55,22 @@ public static class Client
                 if (MapView.stale)
                 {
                     gameScreen = MapView.GetScreen();
-                }            
+                    isStaticGameScreen = false;
+                }
             }
-            else if (StateManager.State == GameState.PLANET_MANAGEMENT && PlanetView.Stale)
+
+            if (StateManager.State == GameState.PLANET_MANAGEMENT && prevGameState != GameState.PLANET_MANAGEMENT)
+            {
+                Console.Clear();
+                PlanetView.Stale = true;
+            }
+
+            if (StateManager.State == GameState.PLANET_MANAGEMENT && PlanetView.Stale)
             {
                 Renderer.Stale = true;
                 gameScreen = PlanetView.GetScreen();
+                isStaticGameScreen = true;
             }
-
 
             Sidebar.CheckSidebarState();
 
@@ -76,12 +79,7 @@ public static class Client
                 sidebar = Sidebar.GetSidebar();
             }
 
-            if (StateManager.State == GameState.PLANET_MANAGEMENT && prevGameState != GameState.PLANET_MANAGEMENT)
-            {
-                Console.Clear();
-            }
-
-            Renderer.DrawCanvas(gameScreen, sidebar);
+            Renderer.DrawCanvas(gameScreen, sidebar, isStaticGameScreen);
 
             prevGameState = StateManager.State;
         }
