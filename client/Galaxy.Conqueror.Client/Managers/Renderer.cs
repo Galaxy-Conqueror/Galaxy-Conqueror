@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using Galaxy.Conqueror.Client.Menus;
 using Galaxy.Conqueror.Client.Models.GameModels;
 using Galaxy.Conqueror.Client.Utils;
@@ -9,18 +10,23 @@ namespace Galaxy.Conqueror.Client.Managers;
 
 public static class Renderer
 {
-    private static readonly Dictionary<Vector2I, char> canvas = new();
-
     private static int bufferWidth;
     private static int bufferHeight;
+
     private static Vector2I camera = Vector2I.ZERO;
     private static Vector2I previousCamera = Vector2I.ZERO;
+
+    private static Dictionary<Vector2I, Glyph> previousView = new Dictionary<Vector2I, Glyph>();
+    private static Dictionary<Vector2I, Glyph> currentView = new Dictionary<Vector2I, Glyph>();
+
+
+    private static Dictionary<Vector2I, Glyph> previousSidebar = new();
 
     private static readonly HashSet<int> visibleEntityIds = new();
 
     public static bool Stale { get; set; } = true;
 
-    public static void DrawCanvas(Dictionary<Vector2I, char> gameScreen, Dictionary<Vector2I, char>? sidebar)
+    public static void DrawCanvas(Dictionary<Vector2I, Glyph> gameScreen, Dictionary<Vector2I, Glyph>? sidebar)
     {
         bufferWidth = Console.BufferWidth;
         bufferHeight = Console.BufferHeight;
@@ -34,21 +40,33 @@ public static class Renderer
 
         if (Stale || cameraChanged)
         {
-            Console.Clear();
-
-            if (sidebar != null)
+            if (sidebar != null &&
+                (!sidebar.SequenceEqual(previousSidebar ?? new Dictionary<Vector2I, Glyph>())))
             {
                 RenderSidebar(sidebar);
+                previousSidebar = new Dictionary<Vector2I, Glyph>(sidebar);
             }
-            
+
             RenderGameScreen(gameScreen);
             RenderEntities();
+            ClearPreviousCanvas();
 
             Stale = false;
         }
     }
 
-    private static void RenderGameScreen(Dictionary<Vector2I, char> gameScreen)
+    private static void ClearPreviousCanvas()
+    {
+        foreach (var (position, glyph) in previousView)
+        {
+            ConsolePrinter.ClearGlyph(position);
+        }
+
+        previousView = new Dictionary<Vector2I, Glyph>(currentView);
+        currentView.Clear();
+    }
+
+    private static void RenderGameScreen(Dictionary<Vector2I, Glyph> gameScreen)
     {
         int minX = camera.X - (StateManager.MAP_SCREEN_WIDTH / 2);
         int maxX = camera.X + (StateManager.MAP_SCREEN_WIDTH / 2);
@@ -62,17 +80,20 @@ public static class Renderer
                 continue;
 
             var canvasX = ((position.X - camera.X) * 2) + StateManager.MAP_SCREEN_WIDTH;
-            var canvasY = (position.Y - camera.Y) + StateManager.MAP_SCREEN_HEIGHT / 4;
+            var canvasY = position.Y - camera.Y + StateManager.MAP_SCREEN_HEIGHT / 4;
 
             if (IsInCanvas(canvasX, canvasY))
             {
+                Vector2I pos = new Vector2I(canvasX, canvasY);
+                currentView.Add(pos, glyph);
+                previousView.Remove(pos);
                 Console.SetCursorPosition(canvasX, canvasY);
-                ConsolePrinter.Print(glyph + " ", ConsolePrinter.WHITE);
+                ConsolePrinter.PrintGlyph(glyph);
             }
         }
     }
 
-    private static void RenderSidebar(Dictionary<Vector2I, char> sidebar)
+    private static void RenderSidebar(Dictionary<Vector2I, Glyph> sidebar)
     {
         int minX = 0;
         int maxX = StateManager.MAP_WIDTH;
@@ -91,7 +112,7 @@ public static class Renderer
             if (IsInCanvas(canvasX, canvasY))
             {
                 Console.SetCursorPosition(canvasX, canvasY);
-                ConsolePrinter.Print(glyph + " ", ConsolePrinter.WHITE);
+                ConsolePrinter.PrintGlyph(glyph);
             }
         }
     }
@@ -112,12 +133,18 @@ public static class Renderer
                 continue;
 
             var canvasX = ((entity.Position.X - camera.X) * 2) + StateManager.MAP_SCREEN_WIDTH;
-            var canvasY = (entity.Position.Y - camera.Y) + StateManager.MAP_SCREEN_HEIGHT / 4;
+            var canvasY = entity.Position.Y - camera.Y + StateManager.MAP_SCREEN_HEIGHT / 4;
 
             if (IsInCanvas(canvasX, canvasY))
             {
+                Vector2I pos = new Vector2I(canvasX, canvasY);
+
+                currentView.Remove(pos);
+                currentView.Add(pos, entity.Glyph);
+                previousView.Remove(pos);
+
                 Console.SetCursorPosition(canvasX, canvasY);
-                ConsolePrinter.Print(entity.Glyph.ToString(), ConsolePrinter.YELLOW);
+                ConsolePrinter.PrintGlyph(entity.Glyph);
 
                 visibleEntityIds.Add(entity.Id);
 
@@ -130,10 +157,5 @@ public static class Renderer
     public static bool IsInCanvas(int x, int y)
     {
         return x >= 0 && x < bufferWidth && y >= 0 && y < bufferHeight;
-    }
-
-    public static bool IsInCanvas(Vector2I position)
-    {
-        return IsInCanvas(position.X, position.Y);
     }
 }
