@@ -9,8 +9,6 @@ using Moq;
 using Moq.Dapper;
 
 namespace Galaxy.Conqueror.Test.Services;
-namespace Galaxy.Conqueror.API.Models;
-
 
 public class UserServiceTests
 {
