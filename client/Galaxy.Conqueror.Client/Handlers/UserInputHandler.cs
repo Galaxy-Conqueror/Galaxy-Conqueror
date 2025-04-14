@@ -26,10 +26,23 @@ public static class UserInputHandler
         {
             switch (key)
             {
-                case ConsoleKey.UpArrow: ship.Position.Y = Math.Max(0, ship.Position.Y - 1); break;
-                case ConsoleKey.DownArrow: ship.Position.Y = Math.Min(StateManager.MAP_HEIGHT - 1, ship.Position.Y + 1); break;
-                case ConsoleKey.LeftArrow: ship.Position.X = Math.Max(0, ship.Position.X - 1); break;
-                case ConsoleKey.RightArrow: ship.Position.X = Math.Min(ship.Position.X + 1, StateManager.MAP_WIDTH - 1); break;
+                case ConsoleKey.UpArrow:
+                    ship.Position.Y = Math.Max(0, ship.Position.Y - 1);
+                    ship.Glyph.Character = '⋀';
+                    break;
+
+                case ConsoleKey.DownArrow:
+                    ship.Position.Y = Math.Min(StateManager.MAP_HEIGHT - 1, ship.Position.Y + 1);
+                    ship.Glyph.Character = 'V';
+                    break;
+                case ConsoleKey.LeftArrow:
+                    ship.Position.X = Math.Max(0, ship.Position.X - 1);
+                    ship.Glyph.Character = '<';
+                    break;
+                case ConsoleKey.RightArrow:
+                    ship.Position.X = Math.Min(ship.Position.X + 1, StateManager.MAP_WIDTH - 1);
+                    ship.Glyph.Character = '>';
+                    break;
                 default:
                     {
                         HandleMenuInput(key);
@@ -40,12 +53,6 @@ public static class UserInputHandler
         else
         {
             HandleMenuInput(key);
-        }
-
-
-        if (prevPosition != ship.Position)
-        {
-            Renderer.Stale = true;
         }
     }
 
@@ -59,6 +66,6 @@ public static class UserInputHandler
         {
             menuItems[menuIndex].OnSelect();
         }
-            
+
     }
 }

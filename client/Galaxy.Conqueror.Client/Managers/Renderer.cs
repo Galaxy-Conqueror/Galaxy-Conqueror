@@ -13,90 +13,115 @@ public static class Renderer
     private static int bufferWidth;
     private static int bufferHeight;
 
-    private static Vector2I camera = Vector2I.ZERO;
-    private static Vector2I previousCamera = Vector2I.ZERO;
+    private static Vector2I cameraPosition = Vector2I.ZERO;
+    private static Vector2I previousCameraPosition = Vector2I.ZERO;
 
-    private static Dictionary<Vector2I, Glyph> previousView = new Dictionary<Vector2I, Glyph>();
-    private static Dictionary<Vector2I, Glyph> currentView = new Dictionary<Vector2I, Glyph>();
+    private static Dictionary<Vector2I, Glyph> previousMap = new Dictionary<Vector2I, Glyph>();
+    private static Dictionary<Vector2I, Glyph> currentMap = new Dictionary<Vector2I, Glyph>();
 
-
-    private static Dictionary<Vector2I, Glyph> previousSidebar = new();
+    private static Dictionary<Vector2I, Glyph> currentSidebar = new Dictionary<Vector2I, Glyph>();
+    private static Dictionary<Vector2I, Glyph> previousSidebar = new Dictionary<Vector2I, Glyph>();
 
     private static readonly HashSet<int> visibleEntityIds = new();
 
     public static bool Stale { get; set; } = true;
 
-    public static void DrawCanvas(Dictionary<Vector2I, Glyph> gameScreen, Dictionary<Vector2I, Glyph>? sidebar)
+    public static void RenderMap()
     {
-        bufferWidth = Console.BufferWidth;
-        bufferHeight = Console.BufferHeight;
+        if (bufferWidth != Console.BufferWidth || bufferHeight != Console.BufferHeight)
+        {
+            Console.Clear();
+            bufferWidth = Console.BufferWidth;
+            bufferHeight = Console.BufferHeight;
+            previousMap.Clear();
+            currentMap.Clear();
+        }
 
         var playerShip = EntityManager.Entities.FirstOrDefault(x => x.Id == StateManager.PlayerShipID);
+
         if (playerShip == null) return;
 
-        previousCamera = camera;
-        camera = playerShip.Position;
-        bool cameraChanged = !camera.Equals(previousCamera);
+        previousCameraPosition = new Vector2I(cameraPosition.X, cameraPosition.Y);
+        cameraPosition = new Vector2I(playerShip.Position.X, playerShip.Position.Y);
 
-        if (Stale || cameraChanged)
-        {
-            if (sidebar != null &&
-                (!sidebar.SequenceEqual(previousSidebar ?? new Dictionary<Vector2I, Glyph>())))
-            {
-                RenderSidebar(sidebar);
-                previousSidebar = new Dictionary<Vector2I, Glyph>(sidebar);
-            }
+        bool cameraChanged = !cameraPosition.Equals(previousCameraPosition);
 
-            RenderGameScreen(gameScreen);
-            RenderEntities();
-            ClearPreviousCanvas();
+        if (!cameraChanged) return;
 
-            Stale = false;
-        }
-    }
+        int MAP_WIDTH = StateManager.MAP_SCREEN_WIDTH;
+        int MAP_HEIGHT = StateManager.MAP_SCREEN_HEIGHT;
 
-    private static void ClearPreviousCanvas()
-    {
-        foreach (var (position, glyph) in previousView)
-        {
-            ConsolePrinter.ClearGlyph(position);
-        }
+        int minX = cameraPosition.X - (MAP_WIDTH / 2);
+        int maxX = cameraPosition.X + (MAP_WIDTH / 2);
+        int minY = cameraPosition.Y - (MAP_HEIGHT / 2);
+        int maxY = cameraPosition.Y + (MAP_HEIGHT / 2);
 
-        previousView = new Dictionary<Vector2I, Glyph>(currentView);
-        currentView.Clear();
-    }
-
-    private static void RenderGameScreen(Dictionary<Vector2I, Glyph> gameScreen)
-    {
-        int minX = camera.X - (StateManager.MAP_SCREEN_WIDTH / 2);
-        int maxX = camera.X + (StateManager.MAP_SCREEN_WIDTH / 2);
-        int minY = camera.Y - (StateManager.MAP_SCREEN_HEIGHT / 2);
-        int maxY = camera.Y + (StateManager.MAP_SCREEN_HEIGHT / 2);
-
-        foreach (var (position, glyph) in gameScreen)
+        foreach (var (position, glyph) in MapView.GetScreen())
         {
             if (position.X < minX || position.X > maxX ||
                 position.Y < minY || position.Y > maxY)
                 continue;
 
-            var canvasX = ((position.X - camera.X) * 2) + StateManager.MAP_SCREEN_WIDTH;
-            var canvasY = position.Y - camera.Y + StateManager.MAP_SCREEN_HEIGHT / 4;
+            var canvasX = ((position.X - cameraPosition.X) * 2) + StateManager.MAP_SCREEN_WIDTH;
+            var canvasY = position.Y - cameraPosition.Y + StateManager.MAP_SCREEN_HEIGHT / 2;
 
             if (IsInCanvas(canvasX, canvasY))
             {
                 Vector2I pos = new Vector2I(canvasX, canvasY);
-                currentView.Add(pos, glyph);
-                previousView.Remove(pos);
-                Console.SetCursorPosition(canvasX, canvasY);
-                ConsolePrinter.PrintGlyph(glyph);
+                currentMap.Add(pos, glyph);
+                previousMap.Remove(pos);
             }
         }
+
+        foreach (var entity in EntityManager.Entities)
+        {
+            if (entity.Position.X < minX || entity.Position.X > maxX ||
+                entity.Position.Y < minY || entity.Position.Y > maxY)
+                continue;
+
+            var canvasX = ((entity.Position.X - cameraPosition.X) * 2) + StateManager.MAP_SCREEN_WIDTH;
+            var canvasY = entity.Position.Y - cameraPosition.Y + StateManager.MAP_SCREEN_HEIGHT / 2;
+
+            if (IsInCanvas(canvasX, canvasY))
+            {
+                Vector2I pos = new Vector2I(canvasX, canvasY);
+
+                currentMap.Remove(pos);
+                currentMap.Add(pos, entity.Glyph);
+                previousMap.Remove(pos);
+
+                visibleEntityIds.Add(entity.Id);
+
+                EntityManager.PrevEntityPositions[entity.Id] = entity.Position;
+            }
+        }
+
+        foreach (var (position, glyph) in currentMap)
+        {
+            Console.SetCursorPosition(position.X, position.Y);
+            ConsolePrinter.PrintGlyph(glyph);
+        }
+
+        ClearMap();
     }
 
-    private static void RenderSidebar(Dictionary<Vector2I, Glyph> sidebar)
+    private static void ClearMap()
     {
+        foreach (var (position, glyph) in previousMap)
+        {
+            ConsolePrinter.ClearGlyph(position);
+        }
+
+        previousMap = new Dictionary<Vector2I, Glyph>(currentMap);
+        currentMap.Clear();
+    }
+
+    public static void RenderSidebar()
+    {
+        Dictionary<Vector2I, Glyph> sidebar = Sidebar.GetSidebar();
+
         int minX = 0;
-        int maxX = StateManager.MAP_WIDTH;
+        int maxX = StateManager.MAP_SCREEN_WIDTH;
         int minY = 0;
         int maxY = StateManager.MAP_SCREEN_HEIGHT;
 
@@ -111,51 +136,32 @@ public static class Renderer
 
             if (IsInCanvas(canvasX, canvasY))
             {
+                Vector2I pos = new Vector2I(canvasX, canvasY);
+
+                currentSidebar.Add(pos, glyph);
+                previousSidebar.Remove(pos);
+
                 Console.SetCursorPosition(canvasX, canvasY);
                 ConsolePrinter.PrintGlyph(glyph);
             }
         }
+
+        ClearSidebar();
     }
 
-    private static void RenderEntities()
+    private static void ClearSidebar()
     {
-        visibleEntityIds.Clear();
-
-        int minX = camera.X - (StateManager.MAP_SCREEN_WIDTH / 2);
-        int maxX = camera.X + (StateManager.MAP_SCREEN_WIDTH / 2);
-        int minY = camera.Y - (StateManager.MAP_SCREEN_HEIGHT / 2);
-        int maxY = camera.Y + (StateManager.MAP_SCREEN_HEIGHT / 2);
-
-        foreach (var entity in EntityManager.Entities)
+        foreach (var (position, glyph) in previousSidebar)
         {
-            if (entity.Position.X < minX || entity.Position.X > maxX ||
-                entity.Position.Y < minY || entity.Position.Y > maxY)
-                continue;
-
-            var canvasX = ((entity.Position.X - camera.X) * 2) + StateManager.MAP_SCREEN_WIDTH;
-            var canvasY = entity.Position.Y - camera.Y + StateManager.MAP_SCREEN_HEIGHT / 4;
-
-            if (IsInCanvas(canvasX, canvasY))
-            {
-                Vector2I pos = new Vector2I(canvasX, canvasY);
-
-                currentView.Remove(pos);
-                currentView.Add(pos, entity.Glyph);
-                previousView.Remove(pos);
-
-                Console.SetCursorPosition(canvasX, canvasY);
-                ConsolePrinter.PrintGlyph(entity.Glyph);
-
-                visibleEntityIds.Add(entity.Id);
-
-                EntityManager.PrevEntityPositions[entity.Id] = entity.Position;
-                entity.Stale = false;
-            }
+            ConsolePrinter.ClearGlyph(position);
         }
+
+        previousSidebar = new Dictionary<Vector2I, Glyph>(currentSidebar);
+        currentSidebar.Clear();
     }
 
     public static bool IsInCanvas(int x, int y)
     {
-        return x >= 0 && x < bufferWidth && y >= 0 && y < bufferHeight;
+        return x >= 0 && x < Console.BufferWidth && y >= 0 && y < Console.BufferHeight;
     }
 }

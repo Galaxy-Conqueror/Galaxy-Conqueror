@@ -9,7 +9,7 @@ public class Program
         await Client.Start();
 
         Console.Clear();
-        Console.WriteLine(" \n\n\n\n\n \t\t\t Goodbye...");
+        Console.WriteLine("Goodbye...");
         Thread.Sleep(2000);
     }
 }

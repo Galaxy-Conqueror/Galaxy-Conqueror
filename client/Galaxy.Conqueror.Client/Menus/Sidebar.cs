@@ -26,7 +26,7 @@ public static class Sidebar
     {
         Content = new Menu(new List<MenuItem>());
 
-        CheckSidebarState();
+        UpdateSidebarState();
 
         var maxY = (StateManager.MAP_SCREEN_HEIGHT / 2) - StateManager.MENU_MARGIN;
 
@@ -55,7 +55,7 @@ public static class Sidebar
         }
     }
 
-    public static void CheckSidebarState()
+    public static void UpdateSidebarState()
     {
         var playerEntity = EntityManager.Entities.First(x => x.Id == StateManager.PlayerShipID);
 
@@ -104,7 +104,7 @@ public static class Sidebar
     {
         if (line.Length + StateManager.MENU_MARGIN < StateManager.MENU_WIDTH)
         {
-            for (int i = 0; i < StateManager.MENU_WIDTH; i++)
+            for (int i = 0; i < StateManager.MENU_WIDTH - StateManager.MENU_MARGIN; i++)
             {
                 var position = new Vector2I(StateManager.MENU_MARGIN + i, index);
 
@@ -120,7 +120,6 @@ public static class Sidebar
                 {
                     sidebar.Remove(position);
                 }
-
             }
         }
     }

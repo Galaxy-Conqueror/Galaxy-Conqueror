@@ -37,11 +37,7 @@ public class Vector2I
 
     public override bool Equals(object obj)
     {
-        if (obj == null || GetType() != obj.GetType())
-            return false;
-
-        Vector2I other = (Vector2I)obj;
-        return X == other.X && Y == other.Y;
+        return obj is Vector2I other && X == other.X && Y == other.Y;
     }
 
     public override int GetHashCode()
@@ -55,4 +51,10 @@ public class Vector2I
         int dy = Y - other.Y;
         return Math.Sqrt(dx * dx + dy * dy);
     }
+
+    public override string ToString()
+    {
+        return $"(X: {X}, Y: {Y})";
+    }
+
 }

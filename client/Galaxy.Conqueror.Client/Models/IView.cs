@@ -12,6 +12,6 @@ namespace Galaxy.Conqueror.Client.Models
 
         public static abstract void Initialise();
 
-        public static abstract Dictionary<Vector2I, char> GetScreen();
+        public static abstract Dictionary<Vector2I, Glyph> GetScreen();
     }
 }

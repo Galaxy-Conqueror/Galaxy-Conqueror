@@ -10,7 +10,7 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading;
 
-public class PlanetView : IView
+public class PlanetView
 {
     private static readonly Dictionary<Vector2I, char> map = new();
     private static readonly Dictionary<string, Dictionary<Vector2I, char>> planets = new();
@@ -50,7 +50,7 @@ public class PlanetView : IView
                 //}
                 //if (rand.Next(1, 100) / 100.0 < starDensity)
                 //{
-                    map.Add(new Vector2I(x, y), '.');
+                map.Add(new Vector2I(x, y), '.');
                 //}
             }
         }

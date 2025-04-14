@@ -7,7 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 
-public class MapView
+public class MapView : IView
 {
     private static readonly Dictionary<Vector2I, Glyph> map = new();
 
@@ -34,10 +34,6 @@ public class MapView
         {
             for (int x = 0; x < StateManager.MAP_WIDTH; x++)
             {
-                //if (x == 0 || x == StateManager.MAP_WIDTH - 1 || y == 0 || y == StateManager.MAP_HEIGHT - 1)
-                //{
-                //    map.Add(new Vector2I(x, y), '#');
-                //}
                 if (rand.Next(1, 100) / 100.0 < starDensity)
                 {
                     map.Add(new Vector2I(x, y), new Glyph('.', ConsoleColor.White));

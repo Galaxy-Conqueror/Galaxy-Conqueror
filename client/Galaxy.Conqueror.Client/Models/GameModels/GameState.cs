@@ -12,4 +12,5 @@ public enum GameState
     QUIT_REQUESTED,
     IDLE,
     PLANET_MANAGEMENT,
+    BATTLE_VIEW,
 }

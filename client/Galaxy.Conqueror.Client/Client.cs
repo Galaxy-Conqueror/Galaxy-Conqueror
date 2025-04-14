@@ -30,6 +30,8 @@ public static class Client
         Console.Clear();
         Console.CursorVisible = false;
 
+        Console.Clear();
+
         int prevBufferWidth = Console.BufferWidth;
         int prevBufferHeight = Console.BufferHeight;
 
@@ -44,44 +46,26 @@ public static class Client
                 UserInputHandler.HandleInput(key);
             }
 
-            if (prevGameState == GameState.MAP_VIEW && prevGameState != GameState.MAP_VIEW)
-            {
-                MapView.stale = true;
-
-            }
-
             if (StateManager.State == GameState.MAP_VIEW)
             {
-                if (prevBufferWidth != Console.BufferWidth || prevBufferHeight != Console.BufferHeight)
-                {
-                    MapView.stale = true;
-                }
-
-                if (MapView.stale)
-                {
-                    gameScreen = MapView.GetScreen();
-                }
+                Renderer.RenderMap();
             }
             else if (StateManager.State == GameState.PLANET_MANAGEMENT && PlanetView.Stale)
             {
-                Renderer.Stale = true;
                 // gameScreen = PlanetView.GetScreen();
             }
 
-
-            Sidebar.CheckSidebarState();
+            Sidebar.UpdateSidebarState();
 
             if (Sidebar.stale)
             {
-                sidebar = Sidebar.GetSidebar();
+                Renderer.RenderSidebar();
             }
 
             if (StateManager.State == GameState.PLANET_MANAGEMENT && prevGameState != GameState.PLANET_MANAGEMENT)
             {
-                Renderer.DrawCanvas(gameScreen, null);
+                // Renderer.DrawCanvas(gameScreen, null);
             }
-
-            Renderer.DrawCanvas(gameScreen, sidebar);
         }
     }
 }
