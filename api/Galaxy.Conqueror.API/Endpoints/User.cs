@@ -28,7 +28,7 @@ public static class User
 
     public static IEndpointRouteBuilder UpdateUser(this IEndpointRouteBuilder endpoint)
     {
-        endpoint.MapPatch("api/user", UsersHandlers.UpdateUserHandler)
+        endpoint.MapPut("api/user", UsersHandlers.UpdateUserHandler)
             .Accepts<UsernameUpdateRequest>("application/json")
             .Produces(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status204NoContent)

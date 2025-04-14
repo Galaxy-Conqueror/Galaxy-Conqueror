@@ -74,7 +74,6 @@ namespace Galaxy.Conqueror.Client.Utils
                                 "",
                                 JsonSerializer.Serialize(requestBody)
                             );
-                            // TODO Ensure this is successful
 
                             var responseContent = await response.Content.ReadAsStringAsync();
 
@@ -89,18 +88,14 @@ namespace Galaxy.Conqueror.Client.Utils
                                     options
                                 );
 
-                                OutputHelper.DebugPrint("USER ID: " + loginResponse?.User.Id);
-                                OutputHelper.DebugPrint(
-                                    "GOOGLE ID: " + loginResponse?.User.GoogleId
-                                );
-                                OutputHelper.DebugPrint("USER EMAIL: " + loginResponse?.User.Email);
-                                OutputHelper.DebugPrint(
-                                    "USERNAME: " + loginResponse?.User.Username
-                                );
                                 OutputHelper.DebugPrint("JWT: " + loginResponse?.JWT);
 
                                 jwtToken = loginResponse != null ? loginResponse.JWT : "";
-                                success = true;
+                                success = jwtToken != "";
+
+                                if (loginResponse?.User?.Username?.Length == 0) {
+                                    SetUsername();
+                                }
 
                                 var userResponse = await RequestHelper.GetRequestAsync(
                                     "/api/user",
@@ -116,11 +111,6 @@ namespace Galaxy.Conqueror.Client.Utils
                                         options
                                     );
 
-                                    Console.WriteLine("User details:");
-                                    Console.WriteLine($"User ID: {user?.Id}");
-                                    Console.WriteLine($"Google ID: {user?.GoogleId}");
-                                    Console.WriteLine($"Email: {user?.Email}");
-                                    Console.WriteLine($"Username: {user?.Username}");
                                 }
                                 else
                                 {
@@ -158,5 +148,35 @@ namespace Galaxy.Conqueror.Client.Utils
                 callbackServer.Stop();
             }
         }
+
+        private static async void SetUsername() {
+            while (true)    
+            {
+                Console.Write("Enter username:");
+                var username = Console.ReadLine();
+
+                if (string.IsNullOrWhiteSpace(username))
+                {
+                    Console.WriteLine("Username cannot be empty. Try again.\n");
+                    continue;
+                }
+
+                var request = new { Username = username };
+                var response = await RequestHelper.PutRequestAsync(
+                    "/api/user",
+                    "",
+                    JsonSerializer.Serialize(request)
+                );
+
+                if ()
+                {
+                    Console.WriteLine($"✅ Welcome, {loginResponse.User.Username}!");
+                    break;
+                }
+
+                Console.WriteLine("❌ Login failed. Try again.");
+            }
+        }
+
     }
 }
