@@ -1,4 +1,5 @@
 ﻿using System.Data;
+using System.Security.Claims;
 using Dapper;
 using Galaxy.Conqueror.API.Configuration.Database;
 using Galaxy.Conqueror.API.Models.Database;
@@ -24,8 +25,8 @@ public class UserService(IDbConnectionFactory connectionFactory, ISetupService s
 
     public async Task<User?> GetUserByContext(HttpContext context)
     {
-        // var email = context.User.FindFirst(ClaimTypes.Email)?.Value;
-        var email = "user1@example.com";
+        var email = context.User.FindFirst(ClaimTypes.Email)?.Value;
+        // var email = "user1@example.com";
 
         if (string.IsNullOrEmpty(email))
             return null;
@@ -46,7 +47,7 @@ public class UserService(IDbConnectionFactory connectionFactory, ISetupService s
 
         var googleId = userInfo.sub;
         var email = userInfo.email;
-        var username = "Galaxy Conqueror";
+        var username = "";
 
         const string findUserSql = @"SELECT * FROM users WHERE email = @Email";
         var existingUser = await connection.QuerySingleOrDefaultAsync<User>(findUserSql, new { Email = email });

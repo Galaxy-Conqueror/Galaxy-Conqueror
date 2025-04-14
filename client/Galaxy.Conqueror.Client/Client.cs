@@ -12,6 +12,9 @@ public static class Client
 {
     public static async Task Start()
     {
+
+        await AuthHelper.Authenticate();
+
         MapView.Initialise();
         EntityManager.Initialize();
 

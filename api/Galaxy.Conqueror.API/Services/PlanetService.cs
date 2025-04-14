@@ -61,14 +61,25 @@ public class PlanetService(IDbConnectionFactory connectionFactory)
         }
 
         const string sql = @"
-            INSERT INTO planets (user_id, x, y)
-            VALUES (@UserId, @X, @Y)
+            INSERT INTO planets (user_id, name, design, description, resource_reserve, x, y)
+            VALUES (@UserId, @Name, @Design, @Description, @ResourceReserve, @X, @Y)
             RETURNING *;
         ";
 
+        var newPlanet = new
+        {
+            UserId = userId,
+            Name = "",
+            Design = "",
+            Description = "",
+            ResourceReserve = 0,
+            X = x,
+            Y = y
+        };
+
         var planet = await connection.QuerySingleAsync<Planet>(
             sql,
-            new { UserId = userId, X = x, Y = y },
+            newPlanet,
             transaction: transaction
         );
 
