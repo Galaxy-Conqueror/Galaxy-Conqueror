@@ -18,11 +18,11 @@ public static class Sidebar
         return sidebar;
     }
 
-    public static void MockMenu()
+    public async static void MockMenu()
     {
         Content = new Menu(new List<MenuItem>());
 
-        CheckSidebarState();
+        await CheckSidebarState();
 
         var maxY = (StateManager.MAP_SCREEN_HEIGHT) - StateManager.MENU_MARGIN;
 
@@ -50,7 +50,7 @@ public static class Sidebar
         }
     }
 
-    public static void CheckSidebarState()
+    public async static Task CheckSidebarState()
     {
         var playerEntity = EntityManager.Entities.First(x => x.Id == StateManager.PlayerShipID);
 
@@ -64,7 +64,7 @@ public static class Sidebar
 
         if (playerEntity is Spaceship playerShip)
         {
-            playerShip.GetShipOperations(menuItems);
+            await playerShip.GetShipOperations(menuItems);
             menuItems.Add(new MenuItem(playerShip.Position.ToString(), GameOperations.Quit));
         }
 

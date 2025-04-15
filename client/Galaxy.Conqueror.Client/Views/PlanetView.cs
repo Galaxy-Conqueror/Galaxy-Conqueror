@@ -24,13 +24,17 @@ public class PlanetView
 
         planets.Add("blank", map);
 
+        LoadPlanetFromFile("C:\\Users\\bbdnet2817\\OneDrive - BBD Software Development\\BBD\\grad_program\\C#\\Galaxy-Conqueror\\client\\Galaxy.Conqueror.Client\\PlanetAscii\\desert.json");
+
+        planets.Add("desert", map);
+
         Stale = true;
     }
 
     public static Dictionary<Vector2I, Glyph> GetScreen()
     {
         Stale = false;
-        return planets["blank"];
+        return planets["desert"];
     }
 
     public static void LoadPlanetAsciiFromJson(string jsonContent)
