@@ -1,4 +1,5 @@
-﻿using Galaxy.Conqueror.Client.Managers;
+using Galaxy.Conqueror.Client.Handlers;
+using Galaxy.Conqueror.Client.Managers;
 using Galaxy.Conqueror.Client.Models.Menu;
 using Galaxy.Conqueror.Client.Operations.MenuOperations;
 using Galaxy.Conqueror.Client.Utils;
@@ -15,6 +16,7 @@ namespace Galaxy.Conqueror.Client.Models.GameModels
         public int Level { get; set; }
         public int CurrentFuel { get; set; }
         public int CurrentHealth { get; set; }
+        public int MaxHealth { get; set; }
         public int ResourceReserve { get; set; }
 
         public bool Landed { get; set; } = false;
@@ -30,8 +32,20 @@ namespace Galaxy.Conqueror.Client.Models.GameModels
             Design = design;
         }
 
+        public void TakeDamage(Bullet bullet)
+        {
+            CurrentHealth -= bullet.Damage;
+        }
+
+        public bool IsDestroyed()
+        {
+            return CurrentHealth <= 0;
+        }
+
         public Spaceship ConvertFromRemoteSpaceship()
         {
+            Design = Design.Replace("\\n", "\r\n");
+
             Glyph = new Glyph('^', ConsoleColor.White);
             Position = new Vector2I(X, Y);
 
@@ -40,16 +54,25 @@ namespace Galaxy.Conqueror.Client.Models.GameModels
 
         public List<MenuItem> GetShipOperations(List<MenuItem> menuItems)
         {
-            var isNextToPlanet = EntityManager.Entities.Where(x => x != this).Any(x => Position.DistanceTo(x.Position) <= 1);
+            var adjacentEntity = EntityManager.Entities.Where(x => x != this).FirstOrDefault(x => Position.DistanceTo(x.Position) <= 1);
 
-            if (Landed)
+            if (adjacentEntity is Planet adjacentPlanet)
             {
-                menuItems.Add(new MenuItem("Takeoff", TakeoffFromPlanet));
-            }
-            else if (isNextToPlanet)
-            {
+                if (Landed)
+                {
+                    menuItems.Add(new MenuItem("Takeoff", TakeoffFromPlanet));
 
-                menuItems.Add(new MenuItem("Land on planet", LandOnPlanet));
+                    menuItems.Add(new MenuItem("Refuel [Cost: 100]", Refuel));
+                    menuItems.Add(new MenuItem("Repair [Cost: 100]", Repair));
+                    menuItems.Add(new MenuItem("Upgrade [Cost: 100]", Upgrade));
+                    menuItems.Add(new MenuItem("Deposit [Material: 100]", Deposit));
+
+                    adjacentPlanet.GetPlanetOperations(menuItems);          
+                }
+                else if (adjacentPlanet != null)
+                {
+                    menuItems.Add(new MenuItem($"Enter orbit around {adjacentPlanet.Name}", LandOnPlanet));
+                }
             }
 
 
@@ -58,7 +81,7 @@ namespace Galaxy.Conqueror.Client.Models.GameModels
 
         public void LandOnPlanet()
         {
-            StateManager.State = GameState.PLANET_MANAGEMENT;
+            StateManager.State = GameState.PLANET_VIEW;
             Landed = true;
         }
 
@@ -72,5 +95,26 @@ namespace Galaxy.Conqueror.Client.Models.GameModels
         {
             StateManager.State = GameState.MAP_VIEW;
         }
+
+        public async void Refuel()
+        {
+            var reponse = ApiService.RefuelSpaceshipAsync();
+        }
+
+        public async void Repair()
+        {
+            var reponse = ApiService.RepairSpaceshipAsync();
+        }
+
+        public async void Upgrade()
+        {
+            var reponse = ApiService.UpgradeSpaceshipAsync();
+        }
+
+        public async void Deposit()
+        {
+            var reponse = ApiService.DepositAsync();
+        }
+
     }
 }

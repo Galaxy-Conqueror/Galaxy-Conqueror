@@ -1,5 +1,5 @@
 using Galaxy.Conqueror.Client.Utils;
-namespace Battle;
+namespace Galaxy.Conqueror.Client.Models.GameModels;
 
 public class Bullet
 {
@@ -8,13 +8,16 @@ public class Bullet
     public float Speed { get; private set; }
     public Glyph Glyph { get; private set; }
 
+    public int Damage { get; private set; }
 
-    public Bullet(int x, float y, float speed, Glyph glyph)
+
+    public Bullet(int x, float y, float speed, Glyph glyph, int damage)
     {
         X = x;
         Y = y;
         Speed = speed;
         Glyph = glyph;
+        Damage = damage;
     }
 
     public void Update(float deltaTime)

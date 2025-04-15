@@ -21,13 +21,13 @@ namespace Galaxy.Conqueror.Client.Managers
             //Entities.Add(new Spaceship(1, "Spaceship", new Glyph('V', ConsoleColor.Yellow), new Vector2I(StateManager.MAP_WIDTH / 2, StateManager.MAP_HEIGHT / 2), "SSSS△SSSS\r\nSS:▓╬▓:SS\r\nS:╔▒╬▒╗:S\r\n:▓▓◙█◙▓▓:\r\n█╗▓▓╬▓▓╔█\r\nSS▼▼▼▼▼▼SS"));
             //Entities.Add(new Spaceship(1, "Spaceship", new Glyph('V', ConsoleColor.Yellow), new Vector2I(StateManager.MAP_WIDTH / 2, StateManager.MAP_HEIGHT / 2), "SSSS║SSSS\r\nSS◣▓╦▓◢SS\r\nS◤╠▒▀▒╣◥S\r\n╔▲◘╬█╬◘▲╗\r\n◄▒╝▓┼▓╚▒►\r\nSS▼▼▼▼▼▼SS"));
 
-            Entities.Add(new Planet(2, "Planet-test", new Glyph('O', ConsoleColor.Blue), new Vector2I(StateManager.MAP_WIDTH / 2, StateManager.MAP_HEIGHT / 2), "Test", 0));
+            //Entities.Add(new Planet(2, "Planet-test", new Glyph('O', ConsoleColor.Blue), new Vector2I(StateManager.MAP_WIDTH / 2, StateManager.MAP_HEIGHT / 2), "Test", 0));
            
             var planets = await ApiService.GetPlanetsAsync();
 
             foreach (var planet in planets)
             {
-                Entities.Add(new Planet(planet.Id, planet.Name, new Glyph('O', ConsoleColor.Blue), new Vector2I(planet.X, planet.Y), planet.Description, planet.ResourceReserve));
+                Entities.Add(new Planet(planet.Id + 99, planet.UserId, planet.Name, new Glyph('O', ConsoleColor.Blue), new Vector2I(planet.X, planet.Y), planet.Description, planet.ResourceReserve));
             }
 
             var playerShip = (await ApiService.GetSpaceshipAsync()).ConvertFromRemoteSpaceship();
