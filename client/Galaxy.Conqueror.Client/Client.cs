@@ -16,10 +16,10 @@ public static class Client
     public static async Task Start()
     {
 
-        // await AuthHelper.Authenticate();
+        await AuthHelper.Authenticate();
 
         MapView.Initialise();
-        EntityManager.Initialize();
+        await EntityManager.Initialize();
         Sidebar.MockMenu();
 
         Console.SetWindowSize(StateManager.CanvasWidth, StateManager.CanvasHeight);
@@ -54,6 +54,7 @@ public static class Client
 
                 case GameState.PLANET_MANAGEMENT:
                     Renderer.RenderImage();
+                    Renderer.RenderSidebar();
                     break;
 
                 default:

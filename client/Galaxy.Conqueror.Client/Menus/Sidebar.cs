@@ -66,6 +66,7 @@ public static class Sidebar
         if (playerEntity is Spaceship playerShip)
         {
             playerShip.GetShipOperations(menuItems);
+            menuItems.Add(new MenuItem(playerShip.Position.ToString(), GameOperations.Quit));
         }
 
         menuItems.Add(new MenuItem("Pause", GameOperations.Pause));
