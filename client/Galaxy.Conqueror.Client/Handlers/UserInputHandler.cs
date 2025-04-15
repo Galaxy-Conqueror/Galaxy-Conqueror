@@ -106,12 +106,6 @@ public static class UserInputHandler
 
     private static void HandleMenuInput(ConsoleKey key)
     {
-        if (key == ConsoleKey.Z)
-        {
-            StateManager.State = GameState.BATTLE;
-            return;
-        }
-
         var menuIndex = (int)key - 'A';
         var menuItems = Sidebar.Content.Items;
 

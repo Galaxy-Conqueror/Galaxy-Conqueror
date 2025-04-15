@@ -73,8 +73,8 @@ namespace Galaxy.Conqueror.Client.Utils
 
         public static async Task<HttpResponseMessage> PostRequestAsync(
             string path,
-            string queryParams,
-            string body
+            string? queryParams = "",
+            string? body = ""
         )
         {
             OutputHelper.DebugPrint("POST REQUEST");
@@ -123,8 +123,8 @@ namespace Galaxy.Conqueror.Client.Utils
 
         public static async Task<HttpResponseMessage> PutRequestAsync(
             string path,
-            string queryParams,
-            string body
+            string? queryParams = "",
+            string? body = ""
         )
         {
             OutputHelper.DebugPrint("PUT REQUEST");

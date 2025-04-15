@@ -14,6 +14,8 @@ namespace Galaxy.Conqueror.Client.Utils
         private const string REDIRECT_URI = "http://localhost:9090/callback/";
         private static string jwtToken = "";
 
+        public static Guid UserId { get; set; }
+
         public static string GetJwt()
         {
             return jwtToken;
@@ -97,6 +99,8 @@ namespace Galaxy.Conqueror.Client.Utils
 
                                 jwtToken = loginResponse != null ? loginResponse.JWT : "";
                                 success = jwtToken != "";
+
+                                UserId = loginResponse?.User?.Id ?? Guid.NewGuid();
 
                                 if (loginResponse?.User?.Username?.Length == 0) {
                                     newUser = true;
