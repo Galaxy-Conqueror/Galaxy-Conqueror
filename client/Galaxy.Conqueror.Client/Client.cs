@@ -64,7 +64,7 @@ public static class Client
                             Console.WriteLine($"Battle over! Winner: {battleResult.WinnerName}");
                             Console.WriteLine($"Spaceship HP: {battleResult.SpaceshipHealth}, Turret HP: {battleResult.TurretHealth}");
                             Console.WriteLine($"Battle lasted {battleResult.BattleDurationSeconds:F2} seconds");
-                            StateManager.State = GameState.MAP_VIEW;
+                            StateManager.State = GameState.PLANET_VIEW;
                             Thread.Sleep(2000);
                         });
                     }
@@ -75,7 +75,7 @@ public static class Client
                     }                
                     break;
 
-                case GameState.PLANET_MANAGEMENT:
+                case GameState.PLANET_VIEW:
                     Renderer.RenderImage();
                     Renderer.RenderSidebar();
                     break;
@@ -84,7 +84,7 @@ public static class Client
                     break;
             }
 
-            if (stateHasChanged() && StateManager.State != GameState.PLANET_MANAGEMENT) Console.Clear();
+            if (stateHasChanged() && StateManager.State != GameState.PLANET_VIEW) Console.Clear();
 
             prevGameState = StateManager.State;
         }

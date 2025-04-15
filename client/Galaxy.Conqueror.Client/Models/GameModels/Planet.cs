@@ -71,9 +71,6 @@ namespace Galaxy.Conqueror.Client.Models.GameModels
         public void AttackPlanet()
         {
             StateManager.State = GameState.BATTLE;
-            Spaceship spaceship = new Spaceship(1, "Greg", new Glyph('⋀', ConsoleColor.Yellow), new Vector2I(0, 0), "");
-            spaceship.Level = 200;
-            BattleEngine.Initialize(40, 40, spaceship, 100);
         }
     }
 }

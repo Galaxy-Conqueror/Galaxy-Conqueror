@@ -81,7 +81,7 @@ namespace Galaxy.Conqueror.Client.Models.GameModels
 
         public void LandOnPlanet()
         {
-            StateManager.State = GameState.PLANET_MANAGEMENT;
+            StateManager.State = GameState.PLANET_VIEW;
             Landed = true;
         }
 
