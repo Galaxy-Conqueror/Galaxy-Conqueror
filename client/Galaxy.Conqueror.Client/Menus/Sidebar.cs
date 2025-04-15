@@ -40,7 +40,6 @@ public static class Sidebar
                 }
 
             }
-            Console.WriteLine();
         }
 
         var itemStrings = Content.ItemStrings();
@@ -94,7 +93,29 @@ public static class Sidebar
                 return true;
         }
 
+        var itemStrings = Content.ItemStrings();
+
+        ClearMenu();
+
+        for (int i = 0; i < itemStrings.Count; i++)
+        {
+            WriteMenuLine(i + 5, itemStrings[i]);
+        }
+
         return false;
+    }
+
+    private static void ClearMenu()
+    {
+        var maxY = (StateManager.MAP_SCREEN_HEIGHT) - StateManager.MENU_MARGIN;
+
+        for (int y = 1; y < maxY - 1; y++)
+        {
+            for (int x = 1; x < StateManager.MENU_WIDTH - 1; x++)
+            {
+                sidebar.Remove(new Vector2I(x, y));
+            }
+        }
     }
 
     private static void WriteMenuLine(int index, string line)

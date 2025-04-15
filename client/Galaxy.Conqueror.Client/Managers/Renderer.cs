@@ -131,7 +131,9 @@ public static class Renderer
 
     public static void RenderSidebar()
     {
+        Sidebar.CheckSidebarState();
         Dictionary<Vector2I, Glyph> sidebar = Sidebar.GetSidebar();
+        var items = Sidebar.Content.Items;
 
         int minX = StateManager.MAP_SCREEN_WIDTH;
         int maxX = (StateManager.MAP_SCREEN_WIDTH * 2) + StateManager.MENU_WIDTH;
@@ -213,7 +215,7 @@ public static class Renderer
                 ConsolePrinter.PrintGlyph(glyph);
             }
         }
-        imageRendered = true;
+        //imageRendered = true;
 
         ClearImage();
     }
