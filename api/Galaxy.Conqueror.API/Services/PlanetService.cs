@@ -89,9 +89,9 @@ public class PlanetService(IDbConnectionFactory connectionFactory)
         return planet;
     }
 
-    public async Task<Planet?> UpdatePlanetName(Guid userId, string newName)
+    public async Task<Planet?> UpdatePlanetName(Guid userId, string newName, AiService aiService)
     {
-        string description = "This description still needs to be generated";
+        string description = await aiService.AiGeneratorAsync($"Generate a planet description from the planet name {newName}");
         using var connection = connectionFactory.CreateConnection();
         const string sql = @"
             UPDATE planets
@@ -105,7 +105,7 @@ public class PlanetService(IDbConnectionFactory connectionFactory)
         {
             Name = newName,
             UserId = userId,
-            Description = description
+            Description = description ?? $"{newName} is a large barren planet"
         });
     }
 
