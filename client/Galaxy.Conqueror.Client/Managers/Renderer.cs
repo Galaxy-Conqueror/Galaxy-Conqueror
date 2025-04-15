@@ -266,7 +266,25 @@ public static class Renderer
 
         previousSpaceship = currentSpaceship;
         previousBattleMap = currentMap;
+
+        var state = BattleEngine.GetBattleState();
+
+        int hudX = BattleEngine.MAP_WIDTH * 2 + 2; 
+        int line = 0;
+
+        void PrintHudLine(string text)
+        {
+            Console.SetCursorPosition(hudX, line++);
+            Console.Write(text.PadRight(40));
+        }
+
+        PrintHudLine("=== Battle Status ===");
+        PrintHudLine($"Spaceship HP: {state.SpaceshipHealth}");
+        PrintHudLine($"Turret HP:    {state.TurretHealth}");
+        PrintHudLine($"Winner:       {state.WinnerName}");
+        PrintHudLine($"Duration:     {state.BattleDurationSeconds:F2}s");
     }
+
 
     public static bool IsInCanvas(int x, int y)
     {

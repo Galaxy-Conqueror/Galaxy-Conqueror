@@ -1,4 +1,4 @@
-﻿using Galaxy.Conqueror.Client.Handlers;
+using Galaxy.Conqueror.Client.Handlers;
 using Galaxy.Conqueror.Client.Managers;
 using Galaxy.Conqueror.Client.Models.Menu;
 using Galaxy.Conqueror.Client.Operations.MenuOperations;
@@ -16,6 +16,7 @@ namespace Galaxy.Conqueror.Client.Models.GameModels
         public int Level { get; set; }
         public int CurrentFuel { get; set; }
         public int CurrentHealth { get; set; }
+        public int MaxHealth { get; set; }
         public int ResourceReserve { get; set; }
 
         public bool Landed { get; set; } = false;
@@ -29,6 +30,16 @@ namespace Galaxy.Conqueror.Client.Models.GameModels
             Glyph = glyph;
             Position = position;
             Design = design;
+        }
+
+        public void TakeDamage(Bullet bullet)
+        {
+            CurrentHealth -= bullet.Damage;
+        }
+
+        public bool IsDestroyed()
+        {
+            return CurrentHealth <= 0;
         }
 
         public Spaceship ConvertFromRemoteSpaceship()
