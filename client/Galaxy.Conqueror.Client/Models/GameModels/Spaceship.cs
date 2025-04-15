@@ -1,4 +1,4 @@
-﻿using Galaxy.Conqueror.Client.Managers;
+using Galaxy.Conqueror.Client.Managers;
 using Galaxy.Conqueror.Client.Models.Menu;
 using Galaxy.Conqueror.Client.Operations.MenuOperations;
 using Galaxy.Conqueror.Client.Utils;
