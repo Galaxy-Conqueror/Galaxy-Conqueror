@@ -1,18 +1,16 @@
 ﻿using System.Text.Json;
-using Galaxy.Conqueror.API.Models;
+using Galaxy.Conqueror.API.Models.Database;
+using Galaxy.Conqueror.API.Models.Responses;
 
 namespace Galaxy.Conqueror.API.Services;
 
 public class GoogleAuthService(
     HttpClient httpClient,
     UserService userService,
-    IConfiguration configuration)
+    IConfiguration configuration, 
+    IHostEnvironment env)
 {
     private readonly HttpClient _httpClient = httpClient;
-    private readonly string _clientId = configuration["Google:ClientId"];
-    private readonly string _clientSecret = configuration["Google:ClientSecret"];
-    private readonly string _redirectUri = configuration["Google:RedirectUri"];
-
     public async Task<LoginResponse> Login (string authCode)
     {
         var tokens = await ExchangeAuthCodeForTokens(authCode);
@@ -23,12 +21,25 @@ public class GoogleAuthService(
 
     private async Task<TokenResponse> ExchangeAuthCodeForTokens(string authCode)
     {
+ 
+        string clientId, clientSecret, redirectUri;
+        if (env.IsDevelopment())
+        {
+            clientId = configuration["Google:ClientId"] ?? "";
+            clientSecret = configuration["Google:ClientSecret"] ?? "";
+            redirectUri = configuration["Google:RedirectUri"] ?? "";
+        } else
+        {
+            clientId = Environment.GetEnvironmentVariable("CLIENT_ID") ?? "";
+            clientSecret = Environment.GetEnvironmentVariable("CLIENT_SECRET") ?? "";
+            redirectUri = Environment.GetEnvironmentVariable("REDIRECT_URI") ?? "";
+        }
         var requestData = new Dictionary<string, string>
         {
             { "code", authCode },
-            { "client_id", _clientId },
-            { "client_secret", _clientSecret },
-            { "redirect_uri", _redirectUri },
+            { "client_id", clientId },
+            { "client_secret", clientSecret },
+            { "redirect_uri", redirectUri },
             { "grant_type", "authorization_code" }
         };
 

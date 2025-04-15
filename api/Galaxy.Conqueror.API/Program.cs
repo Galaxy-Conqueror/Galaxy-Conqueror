@@ -42,6 +42,7 @@ builder.Services.AddScoped<PlanetService>();
 builder.Services.AddScoped<BattleService>();
 builder.Services.AddScoped<ResourceExtractorService>();
 builder.Services.AddScoped<TurretService>();
+builder.Services.AddScoped<ISetupService, SetupService>();
 
 builder.Services.AddHostedService<ResourceUpdaterService>();
 

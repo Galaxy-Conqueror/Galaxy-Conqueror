@@ -1,4 +1,5 @@
-﻿using Galaxy.Conqueror.Client.Handlers;
+﻿using Battle;
+using Galaxy.Conqueror.Client.Handlers;
 using Galaxy.Conqueror.Client.Managers;
 using Galaxy.Conqueror.Client.Menus;
 using Galaxy.Conqueror.Client.Models.GameModels;
@@ -10,66 +11,64 @@ namespace Galaxy.Conqueror.Client;
 
 public static class Client
 {
+    static GameState prevGameState = GameState.IDLE;
+
     public static async Task Start()
     {
-        MapView.InitialiseMap();
+
+        // await AuthHelper.Authenticate();
+
+        MapView.Initialise();
         EntityManager.Initialize();
+        Sidebar.MockMenu();
+
+        Console.SetWindowSize(StateManager.CanvasWidth, StateManager.CanvasHeight);
+        Console.SetBufferSize(StateManager.CanvasWidth, StateManager.CanvasHeight);
+
+        Console.CursorVisible = false;
+
+        Console.Clear();
 
         await Run();
     }
 
     public static async Task Run()
     {
-        Dictionary<Vector2I, char> gameScreen = MapView.GetMap();
-        Dictionary<Vector2I, char> sidebar = Sidebar.GetSidebar();
+        PlanetView.Initialise();
 
-        Console.SetWindowSize(StateManager.CanvasWidth, StateManager.CanvasHeight);
-        Console.SetBufferSize(StateManager.CanvasWidth, StateManager.CanvasHeight);
-
-        Console.Clear();
-        Console.CursorVisible = false;
-
-        int prevBufferWidth = Console.BufferWidth;
-        int prevBufferHeight = Console.BufferHeight;
-
-        Sidebar.stale = true;
-
-        // Input loop
-        while (StateManager.State == GameState.RUNNING)
+        while (StateManager.State != GameState.QUIT_REQUESTED)
         {
-            if (Console.KeyAvailable)
+            UserInputHandler.HandleInput();
+
+            switch (StateManager.State)
             {
-                var key = Console.ReadKey(true).Key;
-                UserInputHandler.HandleInput(key);
+                case GameState.MAP_VIEW:
+                    Renderer.RenderMap();
+                    Renderer.RenderSidebar();
+                    break;
+
+                case GameState.BATTLE:
+                    BattleEngine.Update();
+                    Renderer.RenderBattleMap();
+                    break;
+
+                case GameState.PLANET_MANAGEMENT:
+                    Renderer.RenderImage();
+                    break;
+
+                default:
+                    break;
             }
 
+            if (stateHasChanged() && StateManager.State != GameState.PLANET_MANAGEMENT) Console.Clear();
 
-
-
-            if (prevBufferWidth != Console.BufferWidth || prevBufferHeight != Console.BufferHeight)
-            {
-                MapView.stale = true;
-            }
-
-            if (MapView.stale)
-            {
-                gameScreen = MapView.GetMap();
-            }
-
-            if (Sidebar.stale)
-            {
-                Renderer.DrawCanvas(gameScreen, sidebar);
-            } 
-            else
-            {
-                Renderer.DrawCanvas(gameScreen, null);
-            }
-
-               
-
-            Thread.Sleep(50);
-            
+            prevGameState = StateManager.State;
         }
+    }
+
+    private static bool stateHasChanged()
+    {
+        return StateManager.State != prevGameState;
     }
 }
 

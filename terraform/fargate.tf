@@ -37,6 +37,10 @@ resource "aws_ecs_task_definition" "ecs_task_definition" {
         {
           "name": "DB_PASSWORD",
           "value": local.db_creds.password
+        },
+        {
+          "name": "ASPNETCORE_ENVIRONMENT",
+          "value": "Production"
         }
 
       ],

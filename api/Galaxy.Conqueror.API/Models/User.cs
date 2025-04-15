@@ -1,4 +1,4 @@
-﻿namespace Galaxy.Conqueror.API.Models;
+﻿namespace Galaxy.Conqueror.API.Models.Old;
 
 public class User
 {
