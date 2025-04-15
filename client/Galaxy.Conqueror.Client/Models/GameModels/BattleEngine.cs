@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Reflection;
 using Galaxy.Conqueror.Client.Models.GameModels;
 using Galaxy.Conqueror.Client.Utils;
 
@@ -6,8 +7,8 @@ namespace Battle;
 
 public static class BattleEngine
 {
-    private static int MAP_WIDTH;
-    private static int MAP_HEIGHT;
+    public static int MAP_WIDTH;
+    public static int MAP_HEIGHT;
 
     public static Spaceship spaceship;
     private static Turret turret;
@@ -25,7 +26,14 @@ public static class BattleEngine
 
     private static readonly Random random = new(0);
 
-    public static void Initialize(int width, int height, Spaceship playerSpaceship, int turretLevel)
+    public static bool gameRunning = false;
+
+    private static Action<BattleResult> battleConcludedCallback;
+
+    private static float battleStartTime;
+
+
+    public static void Initialise(int width, int height, Spaceship playerSpaceship, Turret enemyTurret)
     {
         MAP_WIDTH = width;
         MAP_HEIGHT = height;
@@ -33,7 +41,8 @@ public static class BattleEngine
         spaceship = playerSpaceship;
         spaceship.Position = new Vector2I(MAP_WIDTH / 2, MAP_HEIGHT);
 
-        turret = new Turret(MAP_WIDTH / 2, 1, new Glyph('V', ConsoleColor.Red));
+        turret = enemyTurret;
+        turret.Position = new Vector2I(MAP_WIDTH / 2, 0);
 
         bullets = new List<Bullet>();
         lastUpdateTime = GetCurrentTime();
@@ -41,9 +50,17 @@ public static class BattleEngine
         lastTurretMoveTime = GetCurrentTime();
 
         playerBulletSpeed = spaceship.Level / -10f;
-        turretBulletSpeed = turretLevel / 10f;
-        turretFiringRate = turretLevel / 200f;
+        turretBulletSpeed = turret.Level / 10f;
+        turretFiringRate = turret.Level / 200f;
         turretMoveRate = 20f;
+
+        battleStartTime = GetCurrentTime();
+        gameRunning = true;
+    }
+
+    public static void OnBattleConcluded(Action<BattleResult> callback)
+    {
+        battleConcludedCallback = callback;
     }
 
     private static float GetCurrentTime()
@@ -77,28 +94,30 @@ public static class BattleEngine
 
     public static void ShootFromSpaceship()
     {
-        bullets.Add(new Bullet(spaceship.Position.X, spaceship.Position.Y - 1, playerBulletSpeed, new Glyph('|', ConsoleColor.Yellow)));
+        bullets.Add(new Bullet(spaceship.Position.X, spaceship.Position.Y - 1, playerBulletSpeed, new Glyph('|', ConsoleColor.Yellow), 10));
     }
 
     public static void ShootFromTurret()
     {
-        bullets.Add(new Bullet(turret.X, turret.Y + 1, turretBulletSpeed, new Glyph('|', ConsoleColor.Red)));
+        bullets.Add(new Bullet(turret.Position.X, turret.Position.Y + 1, turretBulletSpeed, new Glyph('|', ConsoleColor.Red), 10));
     }
 
     private static void MoveTurret()
     {
         int direction = random.Next(-1, 2);
 
-        int newX = turret.X + direction;
+        int newX = turret.Position.X + direction;
 
         if (newX >= 0 && newX < MAP_WIDTH)
         {
-            turret.X = newX;
+            turret.Position.X = newX;
         }
     }
 
     public static void Update()
     {
+        if (!gameRunning) return;
+
         float currentTime = GetCurrentTime();
         float deltaTime = currentTime - lastUpdateTime;
         lastUpdateTime = currentTime;
@@ -154,10 +173,10 @@ public static class BattleEngine
         {
             if (bullet.Speed > 0)
             {
-                if (bullet.X == spaceship.Position.X && bullet.Y == spaceship.Position.Y)
+                if (bullet.X == spaceship.Position.X && Math.Abs(bullet.Y - spaceship.Position.Y) <= 1)
                 {
                     bulletsToRemove.Add(bullet);
-                    OnSpaceshipHit();
+                    OnSpaceshipHit(bullet);
                 }
             }
         }
@@ -166,10 +185,10 @@ public static class BattleEngine
         {
             if (bullet.Speed < 0)
             {
-                if (bullet.X == turret.X && bullet.Y == turret.Y)
+                if (bullet.X == turret.Position.X && Math.Abs(bullet.Y - turret.Position.Y) <= 1)
                 {
                     bulletsToRemove.Add(bullet);
-                    turretHit = true;
+                    OnTurretHit(bullet);
                 }
             }
         }
@@ -178,21 +197,20 @@ public static class BattleEngine
         {
             bullets.Remove(bullet);
         }
-
-        if (turretHit)
-        {
-            OnTurretHit();
-        }
     }
 
-    private static void OnSpaceshipHit()
+    private static void OnSpaceshipHit(Bullet bullet)
     {
-        // Spaceship damage logic here
+        spaceship.TakeDamage(bullet);
+
+        if (spaceship.IsDestroyed()) ConcludeBattle();
     }
 
-    private static void OnTurretHit()
+    private static void OnTurretHit(Bullet bullet)
     {
-        // Turret damage logic here
+        turret.TakeDamage(bullet);
+
+        if (turret.IsDestroyed()) ConcludeBattle();
     }
 
     public static Dictionary<Vector2I, Glyph> GetMap()
@@ -215,5 +233,31 @@ public static class BattleEngine
     public static Tuple<Vector2I, Glyph> GetSpaceship()
     {
         return new Tuple<Vector2I, Glyph>(new Vector2I(spaceship.Position), spaceship.Glyph);
+    }
+
+    private static void ConcludeBattle()
+    {
+        gameRunning = false;
+        battleConcludedCallback?.Invoke(GetBattleState());
+    }
+
+    public static BattleResult GetBattleState()
+    {
+        string winner;
+        if (spaceship.IsDestroyed() && turret.IsDestroyed())
+            winner = "Draw";
+        else if (turret.IsDestroyed())
+            winner = "Spaceship";
+        else if (spaceship.IsDestroyed())
+            winner = "Turret";
+        else
+            winner = "Unknown";
+
+        return new BattleResult(
+            spaceship.CurrentHealth,
+            turret.CurrentHealth,
+            winner,
+            GetCurrentTime() - battleStartTime
+        );
     }
 }
