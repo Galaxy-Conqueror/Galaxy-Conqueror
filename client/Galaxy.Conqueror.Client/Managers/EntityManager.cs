@@ -27,7 +27,7 @@ namespace Galaxy.Conqueror.Client.Managers
 
             foreach (var planet in planets)
             {
-                Entities.Add(new Planet(planet.Id + 99, planet.Name, new Glyph('O', ConsoleColor.Blue), new Vector2I(planet.X, planet.Y), planet.Description, planet.ResourceReserve));
+                Entities.Add(new Planet(planet.Id + 99, planet.UserId, planet.Name, new Glyph('O', ConsoleColor.Blue), new Vector2I(planet.X, planet.Y), planet.Description, planet.ResourceReserve));
             }
 
             var playerShip = (await ApiService.GetSpaceshipAsync()).ConvertFromRemoteSpaceship();

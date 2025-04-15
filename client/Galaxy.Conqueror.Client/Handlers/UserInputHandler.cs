@@ -106,14 +106,14 @@ public static class UserInputHandler
 
     private static void HandleMenuInput(ConsoleKey key)
     {
-        if (key == ConsoleKey.B)
-        {
-            StateManager.State = GameState.BATTLE;
-            Spaceship spaceship = new Spaceship(1, "Greg", new Glyph('⋀', ConsoleColor.Yellow), new Vector2I(0, 0), "");
-            spaceship.Level = 200;
-            BattleEngine.Initialize(40, 40, spaceship, 100);
-            return;
-        }
+        //if (key == ConsoleKey.B)
+        //{
+        //    StateManager.State = GameState.BATTLE;
+        //    Spaceship spaceship = new Spaceship(1, "Greg", new Glyph('⋀', ConsoleColor.Yellow), new Vector2I(0, 0), "");
+        //    spaceship.Level = 200;
+        //    BattleEngine.Initialize(40, 40, spaceship, 100);
+        //    return;
+        //}
 
         var menuIndex = (int)key - 'A';
         var menuItems = Sidebar.Content.Items;
