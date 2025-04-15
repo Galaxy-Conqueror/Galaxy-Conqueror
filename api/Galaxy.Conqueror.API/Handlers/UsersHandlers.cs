@@ -43,11 +43,17 @@ public class UsersHandlers {
     public static async Task<IResult> UpdateUserHandler(
         [FromBody] UsernameUpdateRequest request,
         [FromServices] UserService userService,
+        HttpContext context,
         CancellationToken ct
     )
     {
-        var user = await userService.UpdateUser(new Guid("1bafe6fc-1c69-4377-b9f6-78a07f98d4b1"), request.Username);
-        return Results.Ok(user);
+        var user = await userService.GetUserByContext(context);
+
+        if (user == null)
+            return Results.NotFound("User not found.");
+
+        var UpdatedUser = await userService.UpdateUser(user.Id, request.Username);
+        return Results.Ok(UpdatedUser);
     }
 
     public static async Task<IResult> DeleteUserHandler(

@@ -10,17 +10,15 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading;
 
-public class PlanetView : IView
+public class PlanetView
 {
-    private static readonly Dictionary<Vector2I, char> map = new();
-    private static readonly Dictionary<string, Dictionary<Vector2I, char>> planets = new();
+    private static readonly Dictionary<Vector2I, Glyph> map = new();
+    private static readonly Dictionary<string, Dictionary<Vector2I, Glyph>> planets = new();
     public static bool Stale = true;
 
     public static void Initialise()
     {
-        //LoadPlanetFromFile("C:\\Users\\bbdnet2817\\OneDrive - BBD Software Development\\BBD\\grad_program\\C#\\Galaxy-Conqueror\\client\\Galaxy.Conqueror.Client\\PlanetAscii\\blank-planet.json");
-
-        LoadPlanetFromJsonString();
+        LoadPlanetFromFile("C:\\Users\\bbdnet2817\\OneDrive - BBD Software Development\\BBD\\grad_program\\C#\\Galaxy-Conqueror\\client\\Galaxy.Conqueror.Client\\PlanetAscii\\water.json");
 
         //InitMap();
 
@@ -29,31 +27,10 @@ public class PlanetView : IView
         Stale = true;
     }
 
-    public static Dictionary<Vector2I, char> GetScreen()
+    public static Dictionary<Vector2I, Glyph> GetScreen()
     {
         Stale = false;
         return planets["blank"];
-    }
-
-    private static void InitMap()
-    {
-        const double starDensity = 0.05;
-        Random rand = new();
-
-        for (int y = 0; y < StateManager.MAP_HEIGHT; y++)
-        {
-            for (int x = 0; x < StateManager.MAP_WIDTH; x++)
-            {
-                //if (x == 0 || x == StateManager.MAP_WIDTH - 1 || y == 0 || y == StateManager.MAP_HEIGHT - 1)
-                //{
-                //    map.Add(new Vector2I(x, y), '#');
-                //}
-                //if (rand.Next(1, 100) / 100.0 < starDensity)
-                //{
-                    map.Add(new Vector2I(x, y), '.');
-                //}
-            }
-        }
     }
 
     public static void LoadPlanetAsciiFromJson(string jsonContent)
@@ -66,18 +43,17 @@ public class PlanetView : IView
             if (root.TryGetProperty("picture", out JsonElement pictureElement) &&
                 pictureElement.ValueKind == JsonValueKind.Array)
             {
-                int centerX = StateManager.MAP_WIDTH / 2;
-                int centerY = StateManager.MAP_HEIGHT / 2;
                 int arrayLength = pictureElement.GetArrayLength();
-                int halfHeight = arrayLength / 2;
+
+                // Clear the existing map
+                map.Clear();
 
                 for (int i = 0; i < arrayLength; i++)
                 {
                     string line = pictureElement[i].GetString();
                     if (line == null) continue;
 
-                    // Process the line to extract characters and colors
-                    ProcessAsciiLine(line, i, centerX, centerY, halfHeight);
+                    ProcessAsciiLine(line, i);
                 }
 
                 Stale = true;
@@ -89,42 +65,83 @@ public class PlanetView : IView
         }
     }
 
-    private static void ProcessAsciiLine(string line, int lineIndex, int centerX, int centerY, int halfHeight)
+    public static void AddPlayerShip(Vector2I origin)
     {
-        // Extract characters and colors from the line
+        var entity = EntityManager.Entities.First(x => x.Id == StateManager.PlayerShipID);
+        if (entity is Spaceship ship)
+        {
+            if (string.IsNullOrEmpty(ship.Design))
+                return;
+
+            string[] rectangle = ship.Design.Split("\r\n");
+
+            for (int y = 0; y < rectangle.Length; y++)
+            {
+                string line = rectangle[y];
+                for (int x = 0; x < line.Length; x++)
+                {
+                    char c = line[x];
+                    Vector2I position = new Vector2I(origin.X + x, origin.Y + y);
+
+                    if (c != 'S')
+                    {
+                        if (map.ContainsKey(position))
+                        {
+                            map.Remove(position);
+                        }
+                        map.Add(position, new Glyph(c, ship.Glyph.Color));
+                    }
+                    else
+                    {
+                        if (map.ContainsKey(position))
+                        {
+                            map.Remove(position);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private static void ProcessAsciiLine(string line, int y)
+    {
         var extractedData = ExtractCharactersAndColors(line);
         string plainText = extractedData.Item1;
         Dictionary<int, string> colorMap = extractedData.Item2;
 
-        int lineLength = plainText.Length;
-        int startX = centerX - (lineLength / 2);
-        int y = centerY - halfHeight + lineIndex;
+        plainText = plainText.Replace("</color>", "");
+        
 
         for (int i = 0; i < plainText.Length; i++)
         {
-            int x = startX + i;
+            int x = i;
 
-            // Skip spaces or add only non-space characters
-            if (plainText[i] != ' ' &&
-                x >= 0 && x < StateManager.MAP_WIDTH &&
+            var glyph = plainText[i];
+
+            if (glyph == ' ')
+            {
+                continue;
+            }
+
+            if (x >= 0 && x < StateManager.MAP_WIDTH &&
                 y >= 0 && y < StateManager.MAP_HEIGHT)
             {
-                // If position already has something, remove it first
                 Vector2I position = new Vector2I(x, y);
                 if (map.ContainsKey(position))
                 {
                     map.Remove(position);
                 }
 
-                map.Add(position, plainText[i]);
-
-                // Here's where you'd use the color if needed
-                string color = "";
+                ConsoleColor color = ConsoleColor.White;
                 if (colorMap.TryGetValue(i, out string colorValue))
                 {
-                    color = colorValue;
-                    // For now, just storing the color in an unused variable as requested
+                    if (Enum.TryParse(colorValue, true, out ConsoleColor parsedColor))
+                    {
+                        color = parsedColor;
+                    }
                 }
+
+                map.Add(position, new Glyph(glyph, color));
             }
         }
     }
@@ -141,14 +158,12 @@ public class PlanetView : IView
         {
             int colorTagStartIndex = input.IndexOf("<color_", inputIndex);
 
-            // No more color tags found
             if (colorTagStartIndex == -1)
             {
                 plainText += input.Substring(inputIndex);
                 break;
             }
 
-            // Add text before the color tag
             if (colorTagStartIndex > inputIndex)
             {
                 string textBeforeTag = input.Substring(inputIndex, colorTagStartIndex - inputIndex);
@@ -156,21 +171,25 @@ public class PlanetView : IView
                 currentPlainTextIndex += textBeforeTag.Length;
             }
 
-            // Find the end of the color name
             int colorNameEndIndex = input.IndexOf(">", colorTagStartIndex);
             if (colorNameEndIndex == -1) break;
 
-            // Extract the color name
             string colorName = input.Substring(colorTagStartIndex + 7, colorNameEndIndex - (colorTagStartIndex + 7));
 
-            // Find the closing color tag
             int closingTagIndex = input.IndexOf("</color>", colorNameEndIndex);
-            if (closingTagIndex == -1) break;
+            if (closingTagIndex == -1)
+            {
+                string color = input.Substring(colorNameEndIndex + 1);
+                for (int i = 0; i < color.Length; i++)
+                {
+                    plainText += color[i];
+                    colorMap[currentPlainTextIndex + i] = colorName;
+                }
+                break;
+            }
 
-            // Extract the content between the color tags
             string colorContent = input.Substring(colorNameEndIndex + 1, closingTagIndex - (colorNameEndIndex + 1));
 
-            // Add the colored content to the plainText and record the color in the map
             for (int i = 0; i < colorContent.Length; i++)
             {
                 plainText += colorContent[i];
@@ -184,25 +203,17 @@ public class PlanetView : IView
         return new Tuple<string, Dictionary<int, string>>(plainText, colorMap);
     }
 
-    // Method to load planet ASCII art from a file path
     public static void LoadPlanetFromFile(string filePath)
     {
         try
         {
             string jsonContent = File.ReadAllText(filePath);
             LoadPlanetAsciiFromJson(jsonContent);
+            AddPlayerShip(new Vector2I((StateManager.MAP_SCREEN_WIDTH) - 8, StateManager.MAP_SCREEN_HEIGHT - 8));
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error reading file: {ex.Message}");
         }
-    }
-
-    // Method to load planet ASCII art from a JSON string
-    public static void LoadPlanetFromJsonString()
-    {
-        var jsonString = "  {\r\n    \"type\": \"ascii_art\",\r\n    \"id\": \"blank planet\",\r\n    \"picture\": [\r\n      \"                         <color_white>∙∙∙∙∙∙∙∙∙∙</color>                         \",\r\n      \"                     <color_white>∙∙∙∙</color>          <color_white>∙∙∙∙</color>                     \",\r\n      \"                  <color_white>∙∙∙</color>                  <color_white>∙∙∙</color>                  \",\r\n      \"                <color_white>∙∙</color>                        <color_white>∙∙</color>                \",\r\n      \"              <color_white>∙∙</color>                            <color_white>∙∙</color>              \",\r\n      \"             <color_white>∙</color>                                <color_white>∙</color>             \",\r\n      \"            <color_white>∙</color>                                  <color_white>∙</color>            \",\r\n      \"          <color_white>∙∙</color>                                    <color_white>∙∙</color>          \",\r\n      \"         <color_white>∙</color>                                        <color_white>∙</color>         \",\r\n      \"        <color_white>∙</color>                                          <color_white>∙</color>        \",\r\n      \"       <color_white>∙</color>                                            <color_white>∙</color>       \",\r\n      \"       <color_white>∙</color>                                            <color_white>∙</color>       \",\r\n      \"      <color_white>∙</color>                                              <color_white>∙</color>      \",\r\n      \"     <color_white>∙</color>                                                <color_white>∙</color>     \",\r\n      \"    <color_white>∙</color>                                                  <color_white>∙</color>    \",\r\n      \"    <color_white>∙</color>                                                  <color_white>∙</color>    \",\r\n      \"   <color_white>∙</color>                                                    <color_white>∙</color>   \",\r\n      \"   <color_white>∙</color>                                                    <color_white>∙</color>   \",\r\n      \"  <color_white>∙</color>                                                      <color_white>∙</color>  \",\r\n      \"  <color_white>∙</color>                                                      <color_white>∙</color>  \",\r\n      \"  <color_white>∙</color>                                                      <color_white>∙</color>  \",\r\n      \" <color_white>∙</color>                                                        <color_white>∙</color> \",\r\n      \" <color_white>∙</color>                                                        <color_white>∙</color> \",\r\n      \" <color_white>∙</color>                                                        <color_white>∙</color> \",\r\n      \" <color_white>∙</color>                                                        <color_white>∙</color> \",\r\n      \"<color_white>∙</color>                                                          <color_white>∙\",\r\n      \"∙</color>                                                          <color_white>∙\",\r\n      \"∙</color>                                                          <color_white>∙\",\r\n      \"∙</color>                                                          <color_white>∙\",\r\n      \"∙</color>                                                          <color_white>∙\",\r\n      \"∙</color>                                                          <color_white>∙\",\r\n      \"∙</color>                                                          <color_white>∙\",\r\n      \"∙</color>                                                          <color_white>∙\",\r\n      \"∙</color>                                                          <color_white>∙\",\r\n      \"∙</color>                                                          <color_white>∙\",\r\n      \"</color> <color_white>∙</color>                                                        <color_white>∙</color> \",\r\n      \" <color_white>∙</color>                                                        <color_white>∙</color> \",\r\n      \" <color_white>∙</color>                                                        <color_white>∙</color> \",\r\n      \" <color_white>∙</color>                                                        <color_white>∙</color> \",\r\n      \"  <color_white>∙</color>                                                      <color_white>∙</color>  \",\r\n      \"  <color_white>∙</color>                                                      <color_white>∙</color>  \",\r\n      \"  <color_white>∙</color>                                                      <color_white>∙</color>  \",\r\n      \"   <color_white>∙</color>                                                    <color_white>∙</color>   \",\r\n      \"   <color_white>∙</color>                                                    <color_white>∙</color>   \",\r\n      \"    <color_white>∙</color>                                                  <color_white>∙</color>    \",\r\n      \"    <color_white>∙</color>                                                  <color_white>∙</color>    \",\r\n      \"     <color_white>∙</color>                                                <color_white>∙</color>     \",\r\n      \"      <color_white>∙</color>                                              <color_white>∙</color>      \",\r\n      \"       <color_white>∙</color>                                            <color_white>∙</color>       \",\r\n      \"       <color_white>∙</color>                                            <color_white>∙</color>       \",\r\n      \"        <color_white>∙</color>                                          <color_white>∙</color>        \",\r\n      \"         <color_white>∙</color>                                        <color_white>∙</color>         \",\r\n      \"          <color_white>∙∙</color>                                    <color_white>∙∙</color>          \",\r\n      \"            <color_white>∙</color>                                  <color_white>∙</color>            \",\r\n      \"             <color_white>∙</color>                                <color_white>∙</color>             \",\r\n      \"              <color_white>∙∙</color>                            <color_white>∙∙</color>              \",\r\n      \"                <color_white>∙∙</color>                        <color_white>∙∙</color>                \",\r\n      \"                  <color_white>∙∙∙</color>                  <color_white>∙∙∙</color>                  \",\r\n      \"                     <color_white>∙∙∙∙</color>          <color_white>∙∙∙∙</color>                     \",\r\n      \"                         <color_white>∙∙∙∙∙∙∙∙∙∙</color>                         \"\r\n    ]\r\n  }\r\n";
-
-        LoadPlanetAsciiFromJson(jsonString);
     }
 }

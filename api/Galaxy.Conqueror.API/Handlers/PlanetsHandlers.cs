@@ -38,6 +38,8 @@ public class PlanetsHandlers {
                 return Results.NotFound("User not found.");
 
             var planet = await planetService.GetPlanetByUserID(user.Id);
+            if (planet == null)
+                return Results.NotFound("Planet not found.");
 
             return Results.Ok(planet);
         }
@@ -50,7 +52,6 @@ public class PlanetsHandlers {
 
     public static async Task<IResult> GetPlanetDetailsByIdHandler(
         [FromRoute] int planetId,
-        [FromServices] UserService userService,
         [FromServices] PlanetService planetService,
         HttpContext context,
         CancellationToken ct
@@ -59,9 +60,8 @@ public class PlanetsHandlers {
         try
         {
             var planet = await planetService.GetPlanetById(planetId);
-            if (planet == null) {
+            if (planet == null) 
                 return Results.NotFound("Planet not found.");
-            }
 
             return Results.Ok(planet);
         }

@@ -8,21 +8,30 @@ namespace Galaxy.Conqueror.Client.Models.GameModels
 {
     public class Spaceship : Entity
     {
-        public bool landed { get; set; } = false;
+        public Guid UserId { get; set; }
+        public string? Design { get; set; }
+        public string? Description { get; set; }
+        public int Level { get; set; }
+        public int CurrentFuel { get; set; }
+        public int CurrentHealth { get; set; }
+        public int ResourceReserve { get; set; }
 
-        public Spaceship(int id, string name, Glyph glyph, Vector2I position) : base(id, name, glyph, position)
+        public bool Landed { get; set; } = false;
+
+        public Spaceship(int id, string name, Glyph glyph, Vector2I position, string design) : base(id, name, glyph, position)
         {
             Id = id;
             Name = name;
             Glyph = glyph;
             Position = position;
+            Design = design;
         }
 
         public List<MenuItem> GetShipOperations(List<MenuItem> menuItems)
         {
             var isNextToPlanet = EntityManager.Entities.Where(x => x != this).Any(x => Position.DistanceTo(x.Position) <= 1);
 
-            if (landed)
+            if (Landed)
             {
                 menuItems.Add(new MenuItem("Takeoff", TakeoffFromPlanet));
             }
@@ -39,13 +48,13 @@ namespace Galaxy.Conqueror.Client.Models.GameModels
         public void LandOnPlanet()
         {
             StateManager.State = GameState.PLANET_MANAGEMENT;
-            landed = true;
+            Landed = true;
         }
 
         public void TakeoffFromPlanet()
         {
             StateManager.State = GameState.MAP_VIEW;
-            landed = false;
+            Landed = false;
         }
 
         public void TravelToPlanet()

@@ -14,6 +14,5 @@ namespace Galaxy.Conqueror.Client.Models.GameModels
         public string Name { get; set; }
         public Glyph Glyph { get; set; }
         public Vector2I Position { get; set; }
-        public bool Stale { get; set; } = true;
     }
 }

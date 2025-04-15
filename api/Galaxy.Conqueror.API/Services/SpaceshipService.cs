@@ -24,17 +24,17 @@ public class SpaceshipService(IDbConnectionFactory connectionFactory)
             await connection.OpenAsync();
 
         const string sql = @"
-            INSERT INTO spaceships (user_id)
-            VALUES (@UserId)
+            INSERT INTO spaceships (user_id, design, description, level, current_fuel, current_health, resource_reserve, x, y)
+            VALUES (@UserId, @Design, @Description, @Level, @CurrentFuel, @CurrentHealth, @ResourceReserve, @X, @Y)
             RETURNING *";
         var spaceship = new Spaceship()
         {
             UserId = userId,
-            // Design
-            // Description
+            Design = "",
+            Description = "",
             Level = 1,
-            CurrentFuel = Calculations.GetSpaceshipMaxFuel(1), // set to max fuel based on level and config values
-            CurrentHealth = Calculations.GetSpaceshipMaxHealth(1), // set to max health based on level and config values
+            CurrentFuel = Calculations.GetSpaceshipMaxFuel(1),
+            CurrentHealth = Calculations.GetSpaceshipMaxHealth(1),
             ResourceReserve = 0,
             X = planet.X,
             Y = planet.Y + 1,
