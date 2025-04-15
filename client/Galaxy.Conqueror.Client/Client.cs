@@ -16,10 +16,10 @@ public static class Client
     public static async Task Start()
     {
 
-        // await AuthHelper.Authenticate();
+        await AuthHelper.Authenticate();
 
         MapView.Initialise();
-        EntityManager.Initialize();
+        await EntityManager.Initialize();
         Sidebar.MockMenu();
 
         Console.SetWindowSize(StateManager.CanvasWidth, StateManager.CanvasHeight);
@@ -48,12 +48,36 @@ public static class Client
                     break;
 
                 case GameState.BATTLE:
-                    BattleEngine.Update();
-                    Renderer.RenderBattleMap();
+                    if (!BattleEngine.gameRunning)
+                    {
+                        Spaceship spaceship = new Spaceship(1, "Player", new Glyph('⋀', ConsoleColor.Yellow), new Vector2I(0, 0), "");
+                        spaceship.Level = 400;
+                        spaceship.CurrentHealth = 100;
+                        Turret turret = new Turret(2, "Enemy", new Glyph('V', ConsoleColor.Red), new Vector2I(0, 0));
+                        turret.Level = 600;
+                        turret.CurrentHealth = 100;
+                        BattleEngine.Initialise(StateManager.MAP_SCREEN_WIDTH, StateManager.MAP_SCREEN_HEIGHT, spaceship, turret);
+
+                        BattleEngine.OnBattleConcluded(battleResult =>
+                        {
+                            Console.Clear();
+                            Console.WriteLine($"Battle over! Winner: {battleResult.WinnerName}");
+                            Console.WriteLine($"Spaceship HP: {battleResult.SpaceshipHealth}, Turret HP: {battleResult.TurretHealth}");
+                            Console.WriteLine($"Battle lasted {battleResult.BattleDurationSeconds:F2} seconds");
+                            StateManager.State = GameState.MAP_VIEW;
+                            Thread.Sleep(2000);
+                        });
+                    }
+                    else
+                    {
+                        BattleEngine.Update();
+                        Renderer.RenderBattleMap();
+                    }                
                     break;
 
                 case GameState.PLANET_MANAGEMENT:
                     Renderer.RenderImage();
+                    Renderer.RenderSidebar();
                     break;
 
                 default:

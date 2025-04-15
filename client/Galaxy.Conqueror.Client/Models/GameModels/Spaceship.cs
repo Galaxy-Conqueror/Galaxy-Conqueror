@@ -3,6 +3,7 @@ using Galaxy.Conqueror.Client.Models.Menu;
 using Galaxy.Conqueror.Client.Operations.MenuOperations;
 using Galaxy.Conqueror.Client.Utils;
 using System.Drawing;
+using System.Xml.Linq;
 
 namespace Galaxy.Conqueror.Client.Models.GameModels
 {
@@ -14,9 +15,12 @@ namespace Galaxy.Conqueror.Client.Models.GameModels
         public int Level { get; set; }
         public int CurrentFuel { get; set; }
         public int CurrentHealth { get; set; }
+        public int MaxHealth { get; set; }
         public int ResourceReserve { get; set; }
 
         public bool Landed { get; set; } = false;
+        public int X { get; set; }
+        public int Y { get; set; }
 
         public Spaceship(int id, string name, Glyph glyph, Vector2I position, string design) : base(id, name, glyph, position)
         {
@@ -25,6 +29,26 @@ namespace Galaxy.Conqueror.Client.Models.GameModels
             Glyph = glyph;
             Position = position;
             Design = design;
+        }
+
+        public void TakeDamage(Bullet bullet)
+        {
+            CurrentHealth -= bullet.Damage;
+        }
+
+        public bool IsDestroyed()
+        {
+            return CurrentHealth <= 0;
+        }
+
+        public Spaceship ConvertFromRemoteSpaceship()
+        {
+            Design = Design.Replace("\\n", "\r\n");
+
+            Glyph = new Glyph('^', ConsoleColor.White);
+            Position = new Vector2I(X, Y);
+
+            return this;
         }
 
         public List<MenuItem> GetShipOperations(List<MenuItem> menuItems)
