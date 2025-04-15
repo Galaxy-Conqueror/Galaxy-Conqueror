@@ -32,6 +32,8 @@ namespace Galaxy.Conqueror.Client.Models.GameModels
 
         public Spaceship ConvertFromRemoteSpaceship()
         {
+            Design = Design.Replace("\\n", "\r\n");
+
             Glyph = new Glyph('^', ConsoleColor.White);
             Position = new Vector2I(X, Y);
 
