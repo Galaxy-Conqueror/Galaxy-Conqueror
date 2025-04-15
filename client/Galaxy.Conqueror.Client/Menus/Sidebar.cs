@@ -11,14 +11,10 @@ public static class Sidebar
 {
     public static Menu Content;
     private static readonly Dictionary<Vector2I, Glyph> sidebar = new();
-    public static bool stale = true;
+    public static bool Stale { get; set; } = true;
 
     public static Dictionary<Vector2I, Glyph> GetSidebar()
     {
-        MockMenu();
-
-        stale = false;
-
         return sidebar;
     }
 
@@ -82,7 +78,7 @@ public static class Sidebar
 
         if (MenuChanged(prevContent, Content.Items.ToList()))
         {
-            stale = true;
+            Stale = true;
         }
     }
 
