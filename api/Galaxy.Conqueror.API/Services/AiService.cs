@@ -6,7 +6,7 @@ public class AiService(
     IConfiguration configuration, 
     IHostEnvironment env)
 {
-    public async Task<string> AiGeneratorAsync(string prompt)
+    public async Task<string> AiGeneratorAsync(string prompt, int maxTokens)
     {
         try {
             string apiKey = env.IsDevelopment() 
@@ -18,7 +18,7 @@ public class AiService(
             {   
                 Model = new Model(ModelVariant6.Claude35SonnetLatest),
                 Messages = [new InputMessage(InputMessageRole.User, prompt)],
-                MaxTokens = 500,
+                MaxTokens = maxTokens,
                 Temperature = 1
             };
             

@@ -91,7 +91,9 @@ public class PlanetService(IDbConnectionFactory connectionFactory)
 
     public async Task<Planet?> UpdatePlanetName(Guid userId, string newName, AiService aiService)
     {
-        string description = await aiService.AiGeneratorAsync($"Generate a planet description from the planet name {newName}");
+        string description = await aiService.AiGeneratorAsync($"Write me a 20 to 30 word description of an interesting sci fi planet called {newName}. It should be vague and interesting without having too much specific detail. Just enough to create interest. The planet is sparsely populated so focus on the landscape and nature. Respond with just the description and no other text or commentary.", 30);
+        description = description.Length > 255 ? description[..255] : description;
+
         using var connection = connectionFactory.CreateConnection();
         const string sql = @"
             UPDATE planets
