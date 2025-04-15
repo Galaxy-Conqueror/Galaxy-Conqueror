@@ -23,6 +23,10 @@ public static class Renderer
     private static Dictionary<Vector2I, Glyph> currentSidebar = new Dictionary<Vector2I, Glyph>();
     private static Dictionary<Vector2I, Glyph> previousSidebar = new Dictionary<Vector2I, Glyph>();
 
+    private static Dictionary<Vector2I, Glyph> currentImage = new Dictionary<Vector2I, Glyph>();
+    private static Dictionary<Vector2I, Glyph> previousImage = new Dictionary<Vector2I, Glyph>();
+    private static bool imageRendered { get; set; } = false;
+
     private static Dictionary<Vector2I, Glyph> previousBattleMap = new();
     private static Vector2I previousSpaceship = Vector2I.ZERO;
 
@@ -129,24 +133,28 @@ public static class Renderer
     {
         Dictionary<Vector2I, Glyph> sidebar = Sidebar.GetSidebar();
 
-        int minX = 0;
-        int maxX = StateManager.MAP_SCREEN_WIDTH;
+        int minX = StateManager.MAP_SCREEN_WIDTH;
+        int maxX = (StateManager.MAP_SCREEN_WIDTH * 2) + StateManager.MENU_WIDTH;
         int minY = 0;
-        int maxY = StateManager.MAP_SCREEN_HEIGHT;
+        int maxY = StateManager.MAP_SCREEN_HEIGHT * 2;
 
         foreach (var (position, glyph) in sidebar)
         {
-            if (position.X < minX || position.X > maxX ||
-                position.Y < minY || position.Y > maxY)
-                continue;
-
             var canvasX = position.X + StateManager.MAP_SCREEN_WIDTH * 2 + StateManager.MENU_MARGIN;
             var canvasY = position.Y;
+
+            if (canvasX < minX || canvasX > maxX ||
+                canvasY < minY || canvasY > maxY)
+                continue;
 
             if (IsInCanvas(canvasX, canvasY))
             {
                 Vector2I pos = new Vector2I(canvasX, canvasY);
 
+                if (currentSidebar.ContainsKey(pos))
+                {
+                    currentSidebar.Remove(pos);
+                }
                 currentSidebar.Add(pos, glyph);
                 previousSidebar.Remove(pos);
 
@@ -154,7 +162,6 @@ public static class Renderer
                 ConsolePrinter.PrintGlyph(glyph);
             }
         }
-
         ClearSidebar();
     }
 
@@ -168,6 +175,59 @@ public static class Renderer
 
         previousSidebar = new Dictionary<Vector2I, Glyph>(currentSidebar);
         currentSidebar.Clear();
+    }
+
+    public static void RenderImage()
+    {
+        Dictionary<Vector2I, Glyph> image = PlanetView.GetScreen();
+
+        int minX = 0;
+        int maxX = (StateManager.MAP_SCREEN_WIDTH * 2);
+        int minY = 0;
+        int maxY = StateManager.MAP_SCREEN_HEIGHT * 2;
+
+        if (imageRendered)
+            return;
+
+        foreach (var (position, glyph) in image)
+        {
+            var canvasX = (position.X * 2) - StateManager.MAP_SCREEN_WIDTH / 2;
+            var canvasY = position.Y - StateManager.MAP_SCREEN_HEIGHT / 4;
+
+            if (canvasX < minX || canvasX > maxX ||
+                canvasY < minY || canvasY > maxY)
+                continue;
+
+            if (IsInCanvas(canvasX, canvasY))
+            {
+                Vector2I pos = new Vector2I(canvasX, canvasY);
+
+                if (currentImage.ContainsKey(pos))
+                {
+                    currentImage.Remove(pos);
+                }
+                currentImage.Add(pos, glyph);
+                previousImage.Remove(pos);
+
+                Console.SetCursorPosition(canvasX, canvasY);
+                ConsolePrinter.PrintGlyph(glyph);
+            }
+        }
+        imageRendered = true;
+
+        ClearImage();
+    }
+
+    private static void ClearImage()
+    {
+        foreach (var (position, glyph) in previousImage)
+        {
+            Console.SetCursorPosition(position.X, position.Y);
+            ConsolePrinter.ClearGlyph();
+        }
+
+        previousImage = new Dictionary<Vector2I, Glyph>(currentImage);
+        currentImage.Clear();
     }
 
     public static void RenderBattleMap()

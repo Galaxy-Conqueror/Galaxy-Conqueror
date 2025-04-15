@@ -33,27 +33,6 @@ public class PlanetView
         return planets["blank"];
     }
 
-    private static void InitMap()
-    {
-        const double starDensity = 0.05;
-        Random rand = new();
-
-        for (int y = 0; y < StateManager.MAP_HEIGHT; y++)
-        {
-            for (int x = 0; x < StateManager.MAP_WIDTH; x++)
-            {
-                //if (x == 0 || x == StateManager.MAP_WIDTH - 1 || y == 0 || y == StateManager.MAP_HEIGHT - 1)
-                //{
-                //    map.Add(new Vector2I(x, y), '#');
-                //}
-                //if (rand.Next(1, 100) / 100.0 < starDensity)
-                //{
-                    map.Add(new Vector2I(x, y), new Glyph('.', ConsoleColor.White));
-                //}
-            }
-        }
-    }
-
     public static void LoadPlanetAsciiFromJson(string jsonContent)
     {
         try

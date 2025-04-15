@@ -20,6 +20,7 @@ public static class Client
 
         MapView.Initialise();
         EntityManager.Initialize();
+        Sidebar.MockMenu();
 
         Console.SetWindowSize(StateManager.CanvasWidth, StateManager.CanvasHeight);
         Console.SetBufferSize(StateManager.CanvasWidth, StateManager.CanvasHeight);
@@ -43,7 +44,7 @@ public static class Client
             {
                 case GameState.MAP_VIEW:
                     Renderer.RenderMap();
-                    // Renderer.RenderSidebar(); // adding this makes everything render weirdly when you go close to planets
+                    Renderer.RenderSidebar();
                     break;
 
                 case GameState.BATTLE:
@@ -51,11 +52,15 @@ public static class Client
                     Renderer.RenderBattleMap();
                     break;
 
+                case GameState.PLANET_MANAGEMENT:
+                    Renderer.RenderImage();
+                    break;
+
                 default:
                     break;
             }
 
-            if (stateHasChanged()) Console.Clear();
+            if (stateHasChanged() && StateManager.State != GameState.PLANET_MANAGEMENT) Console.Clear();
 
             prevGameState = StateManager.State;
         }
