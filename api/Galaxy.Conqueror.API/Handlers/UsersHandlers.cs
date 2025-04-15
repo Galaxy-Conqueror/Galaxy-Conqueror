@@ -61,7 +61,7 @@ public class UsersHandlers {
         CancellationToken ct
     )
     {
-        var userId = "1bafe6fc-1c69-4377-b9f6-78a07f98d4b1";
+        Guid userId = Guid.Parse("1bafe6fc-1c69-4377-b9f6-78a07f98d4b1");
         try
         {
             

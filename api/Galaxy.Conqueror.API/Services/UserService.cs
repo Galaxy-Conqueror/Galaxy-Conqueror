@@ -7,7 +7,7 @@ using Galaxy.Conqueror.API.Models.Responses;
 
 namespace Galaxy.Conqueror.API.Services;
 
-public class UserService(IDbConnectionFactory connectionFactory, ISetupService setupService)
+public class UserService(IDbConnectionFactory connectionFactory, ISetupService setupService) : IUserService
 {
     public async Task<User?> GetUserById(Guid id)
     {
@@ -71,7 +71,7 @@ public class UserService(IDbConnectionFactory connectionFactory, ISetupService s
         return await connection.QuerySingleOrDefaultAsync<User>(sql, new { Id = id, Username = username });
     }
 
-    public async Task DeleteUser(string id)
+    public async Task DeleteUser(Guid id)
     {
         using var connection = connectionFactory.CreateConnection();
         const string sql = "DELETE FROM users WHERE id = @Id";

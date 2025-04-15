@@ -37,7 +37,7 @@ public class SetupService(
             // TODO generate random position for planet
             var planet = await planetService.CreatePlanet(user.Id, transaction);
             var resourceExtractor = await resourceExtractorService.CreateResourceExtractor(planet.Id, transaction);
-            var turret = turretService.CreateTurret(planet.Id, transaction);
+            var turret = await turretService.CreateTurret(planet.Id, transaction);
             var spaceship = await spaceshipService.CreateSpaceship(user.Id, planet, transaction);
 
             await transaction.CommitAsync();
