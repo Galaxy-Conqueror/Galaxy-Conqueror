@@ -72,10 +72,19 @@ resource "aws_iam_policy" "ecs_task_policy" {
         Action = [
           "rds:Connect"
         ],
-        Effect = "Allow",
+        Effect   = "Allow",
         Resource = "*"
+      },
+      {
+        Action = [
+          "secretsmanager:GetSecretValue"
+        ],
+        Effect = "Allow",
+        Resource = [
+          aws_secretsmanager_secret.google_client_id.arn,
+          aws_secretsmanager_secret.google_client_secret.arn
+        ]
       }
     ]
   })
 }
-

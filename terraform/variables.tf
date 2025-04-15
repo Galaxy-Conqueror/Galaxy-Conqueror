@@ -27,3 +27,13 @@ variable "ecs_service_name" {
   type = string
   default = "galaxy-conqueror-api-service"
 }
+
+variable "google_client_id" {
+  type        = string
+  sensitive   = true
+}
+
+variable "google_client_secret" {
+  type        = string
+  sensitive   = true
+}

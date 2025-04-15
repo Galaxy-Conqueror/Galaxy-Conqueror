@@ -44,8 +44,16 @@ resource "aws_ecs_task_definition" "ecs_task_definition" {
         }
 
       ],
-      secrets: [
-      ]
+      secrets = [
+        {
+          name      = "GOOGLE_CLIENT_ID"
+          valueFrom = aws_secretsmanager_secret.google_client_id.arn
+        },
+        {
+          name      = "GOOGLE_CLIENT_SECRET"
+          valueFrom = aws_secretsmanager_secret.google_client_secret.arn
+        }
+      ],
       logConfiguration = {
         logDriver = "awslogs"
         options = {
