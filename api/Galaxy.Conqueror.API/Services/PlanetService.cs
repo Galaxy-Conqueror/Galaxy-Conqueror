@@ -1,6 +1,7 @@
 ﻿using System.Data.Common;
 using Dapper;
 using Galaxy.Conqueror.API.Configuration.Database;
+using Galaxy.Conqueror.API.Models;
 using Galaxy.Conqueror.API.Models.Database;
 using Galaxy.Conqueror.API.Utils;
 
@@ -91,14 +92,20 @@ public class PlanetService(IDbConnectionFactory connectionFactory)
 
     public async Task<Planet?> UpdatePlanetName(Guid userId, string newName, AiService aiService)
     {
-        string description = await aiService.AiGeneratorAsync($"Write me a 20 to 30 word description of an interesting sci fi planet called {newName}. It should be vague and interesting without having too much specific detail. Just enough to create interest. The planet is sparsely populated so focus on the landscape and nature. Respond with just the description and no other text or commentary.", 30);
-        description = description.Length > 255 ? description[..255] : description;
+
+        Random random = new();
+        Array values = Enum.GetValues(typeof(PlanetTypes));
+        string design = values.GetValue(random.Next(values.Length))?.ToString() ?? "Ice";
+
+        string description = await aiService.AiGeneratorAsync($"Write me a 100 word description of an interesting sci fi {design} planet called {newName}. It should be vague and interesting without having too much specific detail. Just enough to create interest. The planet is sparsely populated so focus on the landscape and nature. Respond with just the description and no other text or commentary.", 500);
+        description = description.Length > 2056 ? description[..2056] : description;       
 
         using var connection = connectionFactory.CreateConnection();
         const string sql = @"
             UPDATE planets
             SET name = @Name,
-            description = @Description
+            description = @Description,
+            design = @Design
             WHERE user_id = @UserId
             RETURNING *;
         ";
@@ -107,7 +114,8 @@ public class PlanetService(IDbConnectionFactory connectionFactory)
         {
             Name = newName,
             UserId = userId,
-            Description = description ?? $"{newName} is a large barren planet"
+            Description = description ?? $"{newName} is a large barren planet",
+            Design = design
         });
     }
 
