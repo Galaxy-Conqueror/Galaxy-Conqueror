@@ -77,6 +77,13 @@ resource "aws_iam_policy" "ecs_task_policy" {
       },
       {
         Action = [
+          "ecr:GetAuthorizationToken",
+          "ecr:BatchCheckLayerAvailability",
+          "ecr:GetDownloadUrlForLayer",
+          "ecr:BatchGetImage",
+          "logs:CreateLogStream",
+          "logs:PutLogEvents",
+          "logs:CreateLogGroup",
           "secretsmanager:GetSecretValue"
         ],
         Effect = "Allow",
