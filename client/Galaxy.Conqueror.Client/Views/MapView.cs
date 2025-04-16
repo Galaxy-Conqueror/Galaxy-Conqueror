@@ -9,7 +9,7 @@ using System.Threading;
 
 public class MapView
 {
-    private static readonly Dictionary<Vector2I, Glyph> map = new();
+    private static Dictionary<Vector2I, Glyph> map = new();
 
     public static bool stale = true;
 
@@ -28,22 +28,28 @@ public class MapView
     private static void InitMap()
     {
         const double starDensity = 0.05;
+
+        map = GenerateStarryMap(starDensity, StateManager.MAP_WIDTH, StateManager.MAP_HEIGHT);
+    }
+
+    public static Dictionary<Vector2I, Glyph> GenerateStarryMap(double starDensity, int width, int height)
+    {
         Random rand = new();
 
-        for (int y = 0; y < StateManager.MAP_HEIGHT; y++)
+        Dictionary<Vector2I, Glyph> starryMap = new();
+
+        for (int y = 0; y < height; y++)
         {
-            for (int x = 0; x < StateManager.MAP_WIDTH; x++)
+            for (int x = 0; x < width; x++)
             {
-                //if (x == 0 || x == StateManager.MAP_WIDTH - 1 || y == 0 || y == StateManager.MAP_HEIGHT - 1)
-                //{
-                //    map.Add(new Vector2I(x, y), '#');
-                //}
                 if (rand.Next(1, 100) / 100.0 < starDensity)
                 {
-                    map.Add(new Vector2I(x, y), new Glyph('.', ConsoleColor.White));
+                    starryMap.Add(new Vector2I(x, y), new Glyph('.', ConsoleColor.White));
                 }
             }
         }
+
+        return starryMap;
     }
 }
 

@@ -47,6 +47,8 @@ public static class BattleEngine
     private static float TURRET_MOVE_RATE_MULTIPLIER = 0.2f;
     private static float MIN_TURRET_MOVE_RATE = 1f;
 
+    private static Dictionary<Vector2I, Glyph> StarryMap;
+
     public static void Initialise(Spaceship playerSpaceship, Turret enemyTurret, int planetResourceReserve)
     {
         Spaceship = playerSpaceship;
@@ -72,6 +74,8 @@ public static class BattleEngine
         DamageToTurret = 0;
 
         PlanetResourceReserve = planetResourceReserve;
+
+        StarryMap = MapView.GenerateStarryMap(0.1, MAP_WIDTH, MAP_HEIGHT);
 
         GameRunning = true;
     }
@@ -392,17 +396,16 @@ public static class BattleEngine
 
     public static Dictionary<Vector2I, Glyph> GetMap()
     {
-        var map = new Dictionary<Vector2I, Glyph>();
-
-        map.Add(Turret.GetPosition(), Turret.Glyph);
+        var map = new Dictionary<Vector2I, Glyph>(StarryMap);
 
         foreach (var bullet in Bullets)
         {
-            if (!map.Remove(bullet.GetPosition()))
-            {
-                map.Add(bullet.GetPosition(), bullet.Glyph);
-            }
+            map.Remove(bullet.GetPosition());
+            map.Add(bullet.GetPosition(), bullet.Glyph);
         }
+
+        map.Remove(Turret.GetPosition());
+        map.Add(Turret.GetPosition(), Turret.Glyph);
 
         return map;
     }

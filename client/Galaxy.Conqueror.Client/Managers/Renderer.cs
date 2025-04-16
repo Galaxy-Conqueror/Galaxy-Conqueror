@@ -122,8 +122,7 @@ public static class Renderer
     {
         foreach (var (position, glyph) in previousMap)
         {
-            Console.SetCursorPosition(position.X, position.Y);
-            ConsolePrinter.ClearGlyph();
+            SafelyAttemptGlyphClear(position.X, position.Y);
         }
 
         previousMap = new Dictionary<Vector2I, Glyph>(currentMap);
@@ -172,11 +171,7 @@ public static class Renderer
     {
         foreach (var (position, glyph) in previousSidebar)
         {
-            if (IsInCanvas(position.X, position.Y))
-            {
-                Console.SetCursorPosition(position.X, position.Y);
-                ConsolePrinter.ClearGlyph();
-            }
+            SafelyAttemptGlyphClear(position.X, position.Y);
         }
 
         previousSidebar = new Dictionary<Vector2I, Glyph>(currentSidebar);
@@ -228,8 +223,7 @@ public static class Renderer
     {
         foreach (var (position, glyph) in previousImage)
         {
-            Console.SetCursorPosition(position.X, position.Y);
-            ConsolePrinter.ClearGlyph();
+            SafelyAttemptGlyphClear(position.X, position.Y);
         }
 
         previousImage = new Dictionary<Vector2I, Glyph>(currentImage);
