@@ -12,15 +12,15 @@ public static class Battles
             .Produces<BattleResponse>(StatusCodes.Status200OK)
             .Produces<string>(StatusCodes.Status400BadRequest)
             .Produces<string>(StatusCodes.Status404NotFound)
-            .Produces(StatusCodes.Status500InternalServerError);
-            //.RequireAuthorization();
+            .Produces(StatusCodes.Status500InternalServerError)
+            .RequireAuthorization();
 
         endpoint.MapPost("api/battle/{planetId:int}/log", BattleHandlers.BattleLogHandler)
             .Produces<Battle>(StatusCodes.Status200OK)
             .Produces<string>(StatusCodes.Status400BadRequest)
             .Produces<string>(StatusCodes.Status404NotFound)
-            .Produces(StatusCodes.Status500InternalServerError);
-            //.RequireAuthorization();
+            .Produces(StatusCodes.Status500InternalServerError)
+            .RequireAuthorization();
 
         return endpoint;
     }

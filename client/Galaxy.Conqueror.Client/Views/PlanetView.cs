@@ -18,11 +18,15 @@ public class PlanetView
 
     public static void Initialise()
     {
-        LoadPlanetFromFile("C:\\Users\\bbdnet2817\\OneDrive - BBD Software Development\\BBD\\grad_program\\C#\\Galaxy-Conqueror\\client\\Galaxy.Conqueror.Client\\PlanetAscii\\water.json");
+        LoadPlanetFromFile("PlanetAscii\\water.json");
 
         //InitMap();
 
         planets.Add("blank", map);
+
+        LoadPlanetFromFile("PlanetAscii\\water.json");
+
+        planets.Add("desert", map);
 
         Stale = true;
     }
@@ -67,40 +71,36 @@ public class PlanetView
 
     public static void AddPlayerShip(Vector2I origin)
     {
-        var entity = EntityManager.Entities.First(x => x.Id == StateManager.PlayerShipID);
-        if (entity is Spaceship ship)
+        if (string.IsNullOrEmpty(StateManager.PlayerSpaceship.Design))
+            return;
+
+        string[] rectangle = StateManager.PlayerSpaceship.Design.Split("\r\n");
+
+        for (int y = 0; y < rectangle.Length; y++)
         {
-            if (string.IsNullOrEmpty(ship.Design))
-                return;
-
-            string[] rectangle = ship.Design.Split("\r\n");
-
-            for (int y = 0; y < rectangle.Length; y++)
+            string line = rectangle[y];
+            for (int x = 0; x < line.Length; x++)
             {
-                string line = rectangle[y];
-                for (int x = 0; x < line.Length; x++)
-                {
-                    char c = line[x];
-                    Vector2I position = new Vector2I(origin.X + x, origin.Y + y);
+                char c = line[x];
+                Vector2I position = new Vector2I(origin.X + x, origin.Y + y);
 
-                    if (c != 'S')
+                if (c != 'S')
+                {
+                    if (map.ContainsKey(position))
                     {
-                        if (map.ContainsKey(position))
-                        {
-                            map.Remove(position);
-                        }
-                        map.Add(position, new Glyph(c, ship.Glyph.Color));
+                        map.Remove(position);
                     }
-                    else
+                    map.Add(position, new Glyph(c, StateManager.PlayerSpaceship.Glyph.Color));
+                }
+                else
+                {
+                    if (map.ContainsKey(position))
                     {
-                        if (map.ContainsKey(position))
-                        {
-                            map.Remove(position);
-                        }
+                        map.Remove(position);
                     }
                 }
             }
-        }
+        }   
     }
 
     private static void ProcessAsciiLine(string line, int y)
@@ -207,7 +207,8 @@ public class PlanetView
     {
         try
         {
-            string jsonContent = File.ReadAllText(filePath);
+            string jsonContent = File.ReadAllText(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, filePath));
+
             LoadPlanetAsciiFromJson(jsonContent);
             AddPlayerShip(new Vector2I((StateManager.MAP_SCREEN_WIDTH) - 8, StateManager.MAP_SCREEN_HEIGHT - 8));
         }

@@ -7,12 +7,11 @@ namespace Galaxy.Conqueror.API.Handlers.Spaceships;
 public class MoveHandlers {
 
     public static async Task<IResult> MoveSpaceshipHandler(
-        [FromServices] UserService userService,
+        [FromServices] IUserService userService,
         [FromServices] SpaceshipService spaceshipService,
         [FromQuery] int x,
         [FromQuery] int y,
-        HttpContext context,
-        CancellationToken ct
+        HttpContext context
     )
     {
         try

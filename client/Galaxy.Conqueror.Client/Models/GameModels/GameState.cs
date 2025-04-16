@@ -11,6 +11,7 @@ public enum GameState
     MAP_VIEW,
     QUIT_REQUESTED,
     IDLE,
-    PLANET_MANAGEMENT,
+    PLANET_VIEW,
     BATTLE,
+    INTRO_VIEW,
 }

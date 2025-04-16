@@ -12,13 +12,12 @@ public class BattleHandlers {
     
     public static async Task<IResult> BattleHandler(
         [FromRoute] int planetId,
-        [FromServices] UserService userService,
+        [FromServices] IUserService userService,
         [FromServices] SpaceshipService spaceshipService,
         [FromServices] PlanetService planetService,
         [FromServices] TurretService turretService,
-        HttpContext context,
-        CancellationToken ct
-        )
+        HttpContext context
+    )
     {
         try
         {
@@ -63,7 +62,7 @@ public class BattleHandlers {
         [FromRoute] int planetId,
         [FromBody] BattleLogRequest battleLog,
         [FromServices] IDbConnectionFactory connectionFactory,
-        [FromServices] UserService userService,
+        [FromServices] IUserService userService,
         [FromServices] SpaceshipService spaceshipService,
         [FromServices] PlanetService planetService,
         [FromServices] TurretService turretService,

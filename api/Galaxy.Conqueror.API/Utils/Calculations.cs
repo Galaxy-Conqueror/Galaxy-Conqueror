@@ -15,7 +15,6 @@ public class Calculations
     public static int GetTurretUpgradeCost(int turretLevel) => turretLevel * 200;
     public static int GetTurretUpgradeEffect(int turretLevel) => turretLevel * 20;
 
-
     // ***** SPACESHIPS *****
     public static int GetSpaceshipMaxResources(int spaceshipLevel) => spaceshipLevel * 100;
     public static int GetSpaceshipMaxHealth(int spaceshipLevel) => spaceshipLevel * 100;

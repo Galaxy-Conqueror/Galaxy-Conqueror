@@ -32,6 +32,7 @@ public static class Renderer
 
     private static readonly HashSet<int> visibleEntityIds = new();
 
+    public static bool ReRender { get; set; } = true;
 
     public static void ClearAll()
     {
@@ -49,16 +50,16 @@ public static class Renderer
             currentMap.Clear();
         }
 
-        var playerShip = EntityManager.Entities.FirstOrDefault(x => x.Id == StateManager.PlayerShipID);
-
-        if (playerShip == null) return;
+        if (StateManager.PlayerSpaceship == null) return;
 
         previousCameraPosition = new Vector2I(cameraPosition.X, cameraPosition.Y);
-        cameraPosition = new Vector2I(playerShip.Position.X, playerShip.Position.Y);
+        cameraPosition = new Vector2I(StateManager.PlayerSpaceship.Position.X, StateManager.PlayerSpaceship.Position.Y);
 
         bool cameraChanged = !cameraPosition.Equals(previousCameraPosition);
 
-        if (!cameraChanged) return;
+        if (!cameraChanged && !ReRender) return;
+
+        ReRender = false;
 
         int MAP_WIDTH = StateManager.MAP_SCREEN_WIDTH;
         int MAP_HEIGHT = StateManager.MAP_SCREEN_HEIGHT;
@@ -129,9 +130,11 @@ public static class Renderer
         currentMap.Clear();
     }
 
-    public static void RenderSidebar()
+    public async static Task RenderSidebar()
     {
+        await Sidebar.CheckSidebarState();
         Dictionary<Vector2I, Glyph> sidebar = Sidebar.GetSidebar();
+        var items = Sidebar.Content.Items;
 
         int minX = StateManager.MAP_SCREEN_WIDTH;
         int maxX = (StateManager.MAP_SCREEN_WIDTH * 2) + StateManager.MENU_WIDTH;
@@ -169,8 +172,11 @@ public static class Renderer
     {
         foreach (var (position, glyph) in previousSidebar)
         {
-            Console.SetCursorPosition(position.X, position.Y);
-            ConsolePrinter.ClearGlyph();
+            if (IsInCanvas(position.X, position.Y))
+            {
+                Console.SetCursorPosition(position.X, position.Y);
+                ConsolePrinter.ClearGlyph();
+            }
         }
 
         previousSidebar = new Dictionary<Vector2I, Glyph>(currentSidebar);
@@ -213,8 +219,6 @@ public static class Renderer
                 ConsolePrinter.PrintGlyph(glyph);
             }
         }
-        imageRendered = true;
-
         ClearImage();
     }
 
@@ -264,7 +268,25 @@ public static class Renderer
 
         previousSpaceship = currentSpaceship;
         previousBattleMap = currentMap;
+
+        var state = BattleEngine.GetBattleState();
+
+        int hudX = BattleEngine.MAP_WIDTH * 2 + 2; 
+        int line = 0;
+
+        void PrintHudLine(string text)
+        {
+            Console.SetCursorPosition(hudX, line++);
+            Console.Write(text.PadRight(40));
+        }
+
+        PrintHudLine("=== Battle Status ===");
+        PrintHudLine($"Spaceship HP: {state.SpaceshipHealth}");
+        PrintHudLine($"Turret HP:    {state.TurretHealth}");
+        PrintHudLine($"Winner:       {state.WinnerName}");
+        PrintHudLine($"Duration:     {state.BattleDurationSeconds:F2}s");
     }
+
 
     public static bool IsInCanvas(int x, int y)
     {

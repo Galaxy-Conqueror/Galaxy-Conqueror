@@ -15,8 +15,11 @@ public class SpaceshipService(IDbConnectionFactory connectionFactory)
         return await connection.QuerySingleOrDefaultAsync<Spaceship>(sql, new { UserId = userId });
     }
 
-    public async Task<Spaceship> CreateSpaceship(Guid userId, Planet planet, DbTransaction? transaction = null)
+    public async Task<Spaceship> CreateSpaceship(Guid userId, Planet planet, IAiService aiService, DbTransaction? transaction = null)
     {
+        string design = await aiService.AiGeneratorAsync("give me detailed ascii art making use of various characters that show a futuristic spaceship facing towards the top of the screen, it must look like a fighter spaceship and is strictly limited to 10 wide (left to right) and 6 high (up down) use special characters like ╔, ╬, ═ for weapons and sparingly Use six▼ for thrusters. and ▓ for armor. I want it to have as much detail as possible. And include a single prominent weapon on the center column protrudes beyond the rest of the ship upwards, try and incorporate as much detail as possible using as many characters as you can, the ship must be symmetrical. In the center of the ships mass must be a cockpit. Use as many different characters as possible to add greebles. do not provide any other text or comment just the ascii.  Instead of using spaces to align everything use the character \"S\". Limit the characters you use to those found in standard windows fonts. Try and keep the ship wide like a space fighter. \n\nHere is an example of a good ship: SSSS△SSSS\\r\\nSS◣▓╬▓◢SS\\r\\nS◤╔▒╬▒╗◥S\\r\\n▲▓▓◙█◙▓▓▲\\r\\n█╗▓▓╬▓▓╔█\\r\\nSS▼▼▼▼▼▼SS\n\nVariate on this basic shape. It must be noticably different than this\n", 500);
+        design = design.Length > 255 ? design[..255] : design;
+
         var connection = transaction?.Connection;
         if (connection == null)
             connection = connectionFactory.CreateConnection();
@@ -30,8 +33,8 @@ public class SpaceshipService(IDbConnectionFactory connectionFactory)
         var spaceship = new Spaceship()
         {
             UserId = userId,
-            Design = "",
-            Description = "",
+            Design = design ?? "SSSS║SSSS\nSS◢▓╬▓◣SS\nS╔▓░♦░▓╗S\n◄▓▒█▣█▒▓►\n╠▓▓▲╬▲▓▓╣\nSS▼▼▼▼▼▼SS",
+            Description = "This spaceship can shoot things",
             Level = 1,
             CurrentFuel = Calculations.GetSpaceshipMaxFuel(1),
             CurrentHealth = Calculations.GetSpaceshipMaxHealth(1),

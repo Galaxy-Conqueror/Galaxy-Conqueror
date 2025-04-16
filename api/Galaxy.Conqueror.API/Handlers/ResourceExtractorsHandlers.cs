@@ -9,11 +9,9 @@ namespace Galaxy.Conqueror.API.Handlers;
 public class ResourceExtractorHandlers {
     
     public static async Task<IResult> GetExtractorDetailsHandler(
-        [FromServices] UserService userService,
-        [FromServices] PlanetService planetService,
+        [FromServices] IUserService userService,
         [FromServices] ResourceExtractorService resourceExtractorService,
-        HttpContext context,
-        CancellationToken ct
+        HttpContext context
     )
     {
         try
@@ -46,12 +44,11 @@ public class ResourceExtractorHandlers {
     }
 
     public static async Task<IResult> UpgradeExtractorHandler(
-        [FromServices] UserService userService,
+        [FromServices] IUserService userService,
         [FromServices] SpaceshipService spaceshipService,
         [FromServices] PlanetService planetService,
         [FromServices] ResourceExtractorService resourceExtractorService,
-        HttpContext context,
-        CancellationToken ct
+        HttpContext context
     )
     {
         try

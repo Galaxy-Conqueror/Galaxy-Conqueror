@@ -8,10 +8,9 @@ namespace Galaxy.Conqueror.API.Handlers.Spaceships;
 public class DetailsHandlers {
     
 public static async Task<IResult> GetSpaceshipDetailsHandler(
-        [FromServices] UserService userService,
+        [FromServices] IUserService userService,
         [FromServices] SpaceshipService spaceshipService,
-        HttpContext context,
-        CancellationToken ct
+        HttpContext context
     )
     {
         try
@@ -39,7 +38,8 @@ public static async Task<IResult> GetSpaceshipDetailsHandler(
                 Damage = Calculations.GetSpaceshipDamage(spaceship.Level),
                 MaxHealth = Calculations.GetSpaceshipMaxHealth(spaceship.Level),
                 MaxResources = Calculations.GetSpaceshipMaxResources(spaceship.Level),
-                MaxFuel = Calculations.GetSpaceshipMaxFuel(spaceship.Level)
+                MaxFuel = Calculations.GetSpaceshipMaxFuel(spaceship.Level),
+                UpgradeCost = Calculations.GetSpaceshipUpgradeCost(spaceship.Level)
             };
 
             return Results.Ok(spaceshipResponse);

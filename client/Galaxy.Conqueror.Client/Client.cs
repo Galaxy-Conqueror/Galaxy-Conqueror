@@ -11,15 +11,16 @@ namespace Galaxy.Conqueror.Client;
 
 public static class Client
 {
-    static GameState prevGameState = GameState.IDLE;
+    static GameState prevGameState = GameState.INTRO_VIEW;
 
     public static async Task Start()
     {
-
-        // await AuthHelper.Authenticate();
+        StateManager.State = GameState.INTRO_VIEW;
+        await AuthHelper.Authenticate();
 
         MapView.Initialise();
-        EntityManager.Initialize();
+        await EntityManager.Initialize();
+        await StateManager.PlayerSpaceship.UpdateShipState();
         Sidebar.MockMenu();
 
         Console.SetWindowSize(StateManager.CanvasWidth, StateManager.CanvasHeight);
@@ -44,23 +45,56 @@ public static class Client
             {
                 case GameState.MAP_VIEW:
                     Renderer.RenderMap();
-                    Renderer.RenderSidebar();
+                    await Renderer.RenderSidebar();
                     break;
 
                 case GameState.BATTLE:
-                    BattleEngine.Update();
-                    Renderer.RenderBattleMap();
+                    if (!BattleEngine.gameRunning)
+                    {
+                        Spaceship spaceship = new Spaceship(1, "Player", new Glyph('⋀', ConsoleColor.Yellow), new Vector2I(0, 0), "");
+                        spaceship.Level = 400;
+                        spaceship.CurrentHealth = 100;
+                        Turret turret = new Turret(2, "Enemy", new Glyph('V', ConsoleColor.Red), new Vector2I(0, 0));
+                        turret.Level = 600;
+                        turret.CurrentHealth = 100;
+                        BattleEngine.Initialise(StateManager.MAP_SCREEN_WIDTH, StateManager.MAP_SCREEN_HEIGHT, spaceship, turret);
+
+                        BattleEngine.OnBattleConcluded(battleResult =>
+                        {
+                            Console.Clear();
+                            Console.WriteLine($"Battle over! Winner: {battleResult.WinnerName}");
+                            Console.WriteLine($"Spaceship HP: {battleResult.SpaceshipHealth}, Turret HP: {battleResult.TurretHealth}");
+                            Console.WriteLine($"Battle lasted {battleResult.BattleDurationSeconds:F2} seconds");
+                            StateManager.State = GameState.PLANET_VIEW;
+                            Thread.Sleep(2000);
+                        });
+                    }
+                    else
+                    {
+                        BattleEngine.Update();
+                        Renderer.RenderBattleMap();
+                    }                
                     break;
 
-                case GameState.PLANET_MANAGEMENT:
+                case GameState.PLANET_VIEW:
                     Renderer.RenderImage();
+                    await Renderer.RenderSidebar();
+                    break;
+
+                case GameState.INTRO_VIEW:
+                    Renderer.RenderImage();
+                    await Renderer.RenderSidebar();
                     break;
 
                 default:
                     break;
             }
 
-            if (stateHasChanged() && StateManager.State != GameState.PLANET_MANAGEMENT) Console.Clear();
+            if (stateHasChanged() && StateManager.State != GameState.PLANET_VIEW)
+            {
+                Renderer.ReRender = true;
+                Console.Clear();
+            }
 
             prevGameState = StateManager.State;
         }

@@ -21,19 +21,21 @@ public static class UserInputHandler
         else
             return;
 
-        var ship = EntityManager.Entities.FirstOrDefault(x => x.Id == StateManager.PlayerShipID);
-        if (ship == null) return;
 
-        var prevPosition = new Vector2I(ship.Position);
+        var prevPosition = new Vector2I(StateManager.PlayerSpaceship.Position);
 
         switch (StateManager.State)
         {
             case GameState.MAP_VIEW:
-                HandleMapViewInput(key, ship);
+                HandleMapViewInput(key, StateManager.PlayerSpaceship);
                 break;
 
             case GameState.BATTLE:
                 HandleBattleInput(key);
+                break;
+
+            case GameState.INTRO_VIEW:
+                StateManager.State = GameState.MAP_VIEW;
                 break;
 
             default:
@@ -106,15 +108,6 @@ public static class UserInputHandler
 
     private static void HandleMenuInput(ConsoleKey key)
     {
-        if (key == ConsoleKey.B)
-        {
-            StateManager.State = GameState.BATTLE;
-            Spaceship spaceship = new Spaceship(1, "Greg", new Glyph('⋀', ConsoleColor.Yellow), new Vector2I(0, 0), "");
-            spaceship.Level = 200;
-            BattleEngine.Initialize(40, 40, spaceship, 100);
-            return;
-        }
-
         var menuIndex = (int)key - 'A';
         var menuItems = Sidebar.Content.Items;
 

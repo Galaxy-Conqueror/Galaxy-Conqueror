@@ -15,4 +15,6 @@ public class SpaceshipResponse
     public int MaxHealth { get; set; }
     public int MaxResources { get; set; }
     public int MaxFuel { get; set; }
+    public int UpgradeCost { get; set; }
+
 }
