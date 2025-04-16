@@ -243,7 +243,7 @@ public static class Renderer
 
         Vector2I currentSpaceship = spaceship.Item1;
 
-        SafelyAttemptGlyphPrint(spaceship.Item2, currentSpaceship.X * 2, currentSpaceship.Y)
+        SafelyAttemptGlyphPrint(spaceship.Item2, currentSpaceship.X * 2, currentSpaceship.Y);
 
         var currentMap = new Dictionary<Vector2I, Glyph>(map);
         currentMap.Remove(currentSpaceship);
@@ -289,7 +289,7 @@ public static class Renderer
         return x >= 0 && x < Console.BufferWidth && y >= 0 && y < Console.BufferHeight;
     }
 
-    public static bool SafelyAttemptGlyphPrint(Glyph glyph, int x, int y)
+    public static void SafelyAttemptGlyphPrint(Glyph glyph, int x, int y)
     {
         if (IsInCanvas(x, y))
         {
@@ -298,7 +298,7 @@ public static class Renderer
         }
     }
 
-    public static bool SafelyAttemptGlyphClear(int x, int y)
+    public static void SafelyAttemptGlyphClear(int x, int y)
     {
         if (IsInCanvas(x, y))
         {
