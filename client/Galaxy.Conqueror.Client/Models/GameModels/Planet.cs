@@ -1,4 +1,5 @@
 ﻿using Battle;
+using Galaxy.Conqueror.API.Models.Responses;
 using Galaxy.Conqueror.Client.Handlers;
 using Galaxy.Conqueror.Client.Managers;
 using Galaxy.Conqueror.Client.Models.Menu;
@@ -68,9 +69,48 @@ namespace Galaxy.Conqueror.Client.Models.GameModels
             StateManager.State = GameState.MAP_VIEW;
         }
 
-        public void AttackPlanet()
+        public async void AttackPlanet()
         {
             StateManager.State = GameState.BATTLE;
+
+            var response = await BattleService.GetBattleAsync(Id);
+
+            Spaceship ship = (Spaceship)EntityManager.Entities.FirstOrDefault(x => x.Id == StateManager.PlayerShipID);
+            if (ship == null) return;
+
+            Spaceship spaceship = new Spaceship(ship.Id, ship.Name, new Glyph('⋀', ConsoleColor.Yellow), new Vector2I(0, 0), response.SpaceshipDesign);
+            spaceship.Level = ship.Level;
+            spaceship.MaxResources = response.SpaceshipMaxResources;
+            spaceship.ResourceReserve = response.SpaceshipResourceReserve;
+            spaceship.CurrentHealth = response.SpaceshipHealth;
+            spaceship.Damage = response.SpaceshipDamage;
+
+            Turret turret = new Turret(Id, Name, new Glyph('V', ConsoleColor.Red), new Vector2I(0, 0));
+            turret.CurrentHealth = response.TurretHealth;
+            turret.Damage = response.TurretDamage;
+            turret.Level = 1;
+
+            BattleEngine.Initialise(StateManager.MAP_SCREEN_WIDTH, StateManager.MAP_SCREEN_HEIGHT, spaceship, turret, response.PlanetResourceReserve);
+
+            BattleEngine.OnBattleConcluded(async battleResult =>
+            { 
+                Console.Clear();
+
+                Console.WriteLine($"Started At: {battleResult.StartedAt}");
+                Console.WriteLine($"Ended At: {battleResult.EndedAt}");
+                Console.WriteLine($"Damage to Spaceship: {battleResult.DamageToSpaceship}");
+                Console.WriteLine($"Damage to Turret: {battleResult.DamageToTurret}");
+                Console.WriteLine($"Resources Looted: {battleResult.ResourcesLooted}");
+
+                var battleResultResponse = await BattleService.LogBattleAsync(Id, battleResult);
+
+                ship.ResourceReserve += battleResultResponse.ResourcesLooted;
+
+                Thread.Sleep(4000);
+
+                Console.Clear();
+                StateManager.State = GameState.PLANET_VIEW;
+            });
         }
     }
 }

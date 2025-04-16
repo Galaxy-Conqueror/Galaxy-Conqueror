@@ -6,6 +6,7 @@ public class Turret : Entity
     public int Level { get; set; }
     public int CurrentHealth { get; set; }
     public int MaxHealth { get; set; }
+    public int Damage { get; set; }
 
     public Turret(int id, string name, Glyph glyph, Vector2I position) : base(id, name, glyph, position)
     {

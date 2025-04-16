@@ -18,6 +18,8 @@ namespace Galaxy.Conqueror.Client.Models.GameModels
         public int CurrentHealth { get; set; }
         public int MaxHealth { get; set; }
         public int ResourceReserve { get; set; }
+        public int MaxResources { get; set; }
+        public int Damage { get; set; }
 
         public bool Landed { get; set; } = false;
         public int X { get; set; }
@@ -45,7 +47,7 @@ namespace Galaxy.Conqueror.Client.Models.GameModels
         public Spaceship ConvertFromRemoteSpaceship()
         {
             Design = Design.Replace("\\n", "\r\n");
-
+            Id += 999;
             Glyph = new Glyph('^', ConsoleColor.White);
             Position = new Vector2I(X, Y);
 
