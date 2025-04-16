@@ -54,6 +54,7 @@ public class Turret : Entity
     public void TakeDamage(Bullet bullet)
     {
         CurrentHealth -= bullet.Damage;
+        CurrentHealth = Math.Max(CurrentHealth, 0);
     }
 
     public bool IsDestroyed()

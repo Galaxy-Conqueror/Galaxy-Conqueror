@@ -1,4 +1,4 @@
-using Galaxy.Conqueror.Client.Handlers;
+﻿using Galaxy.Conqueror.Client.Handlers;
 using Galaxy.Conqueror.Client.Managers;
 using Galaxy.Conqueror.Client.Models.Menu;
 using Galaxy.Conqueror.Client.Operations.MenuOperations;
@@ -39,6 +39,7 @@ namespace Galaxy.Conqueror.Client.Models.GameModels
         public void TakeDamage(Bullet bullet)
         {
             CurrentHealth -= bullet.Damage;
+            CurrentHealth = Math.Max(CurrentHealth, 0);
         }
 
         public bool IsDestroyed()
@@ -73,12 +74,22 @@ namespace Galaxy.Conqueror.Client.Models.GameModels
 
                     if (isOwnPlanet)
                     {
-                        menuItems.Add(new MenuItem($"Repair [2/Level/hp]", Repair, ConsoleColor.White));
+                        int repairCost = MaxHealth - CurrentHealth;
+
+                        if (repairCost <= StateManager.PlayerPlanet.ResourceReserve)
+                        {
+                            menuItems.Add(new MenuItem($"Repair [Cost: {repairCost}]", Repair, ConsoleColor.White));
+                        }
+                        else
+                        {
+                            menuItems.Add(new MenuItem($"Repair [Cost: {repairCost}]", Repair, ConsoleColor.Red));
+                        }
 
                         if (UpgradeCost <= StateManager.PlayerPlanet.ResourceReserve)
                         {
                             menuItems.Add(new MenuItem($"Upgrade ship [Cost: {UpgradeCost}]", Upgrade, ConsoleColor.White));
-                        } else
+                        }
+                        else
                         {
                             menuItems.Add(new MenuItem($"Upgrade ship [Cost: {UpgradeCost}]", () => { }, ConsoleColor.Red));
                         }
@@ -86,21 +97,23 @@ namespace Galaxy.Conqueror.Client.Models.GameModels
                         if (ResourceReserve > 0)
                         {
                             menuItems.Add(new MenuItem($"Deposit [Material: {ResourceReserve}]", Deposit, ConsoleColor.White));
-                        } else
+                        }
+                        else
                         {
                             menuItems.Add(new MenuItem($"Deposit [Material: {ResourceReserve}]", () => { }, ConsoleColor.Red));
                         }
-                            
+
                     }
 
                     if (isOwnPlanet)
                     {
                         await StateManager.PlayerPlanet.GetPlanetOperations(menuItems);
-                    } else
+                    }
+                    else
                     {
                         await adjacentPlanet.GetPlanetOperations(menuItems);
                     }
-                                  
+
                 }
 
                 if (!Landed && adjacentPlanet != null)
@@ -108,7 +121,7 @@ namespace Galaxy.Conqueror.Client.Models.GameModels
                     menuItems.Add(new MenuItem($"Enter orbit around {adjacentPlanet.Name}", LandOnPlanet, ConsoleColor.White));
                 }
 
-                
+
             }
 
             if (!Landed)
