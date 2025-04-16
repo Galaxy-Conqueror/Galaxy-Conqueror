@@ -1,4 +1,5 @@
-﻿using Galaxy.Conqueror.API.Models.Responses;
+﻿using Galaxy.Conqueror.API.Models.Database;
+using Galaxy.Conqueror.API.Models.Responses;
 using Galaxy.Conqueror.Client.Managers;
 using Galaxy.Conqueror.Client.Models.GameModels;
 using Galaxy.Conqueror.Client.Utils;
@@ -7,6 +8,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Json;
+using System.Reflection.Emit;
+using System.Resources;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -142,15 +145,11 @@ namespace Galaxy.Conqueror.Client.Handlers
             }
         }
 
-        public static async Task<SpaceshipRepairResponse> RepairSpaceshipAsync()
+        public static async Task RepairSpaceshipAsync()
         {
             try
             {
-                var response = await RequestHelper.PutRequestAsync("/api/spaceship/repair");
-
-                var data = await response.Content.ReadFromJsonAsync<SpaceshipRepairResponse>();
-
-                return data;
+                await RequestHelper.PutRequestAsync("/api/spaceship/repair");
             }
             catch (Exception ex)
             {
@@ -174,7 +173,7 @@ namespace Galaxy.Conqueror.Client.Handlers
             }
         }
 
-        public static async Task<ResourceExtractorDetailResponse> GetOwnExtractor()
+        public static async Task<ResourceExtractor> GetOwnExtractor()
         {
             try
             {
@@ -182,7 +181,17 @@ namespace Galaxy.Conqueror.Client.Handlers
 
                 var data = await response.Content.ReadFromJsonAsync<ResourceExtractorDetailResponse>();
 
-                return data;
+                var extractor = new ResourceExtractor();
+
+                extractor.Level = data.Level;
+                extractor.UpgradeCost = data.UpgradeCost;
+                extractor.ResourceGen = data.ResourceGen;
+                extractor.Id = data.Id;
+                extractor.PlanetId = data.PlanetId;
+                extractor.UpgradeCost = data.UpgradeCost;
+                extractor.UpgradedResourceGen = data.UpgradedResourceGen;
+
+                return extractor;
             }
             catch (Exception ex)
             {
@@ -190,7 +199,7 @@ namespace Galaxy.Conqueror.Client.Handlers
             }
         }
 
-        public static async Task<TurretDetailResponse> GetOwnTurret()
+        public static async Task<Turret> GetOwnTurret()
         {
             try
             {
@@ -198,7 +207,17 @@ namespace Galaxy.Conqueror.Client.Handlers
 
                 var data = await response.Content.ReadFromJsonAsync<TurretDetailResponse>();
 
-                return data;
+                var turret = new Turret();
+
+                turret.Id = data.Id;
+                turret.Level = data.Level;
+                turret.CurrentHealth = data.Health;
+                turret.Damage = data.Damage;
+                turret.MaxHealth = data.Health;
+                turret.UpgradeCost = data.UpgradeCost;
+
+                return turret;
+
             }
             catch (Exception ex)
             {

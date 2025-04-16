@@ -27,8 +27,9 @@ namespace Galaxy.Conqueror.Client.Managers
 
         public static Spaceship PlayerSpaceship { get; set; } = new(-1, "", new Glyph('V', ConsoleColor.White), new Vector2I(0, 0), "");
         public static Planet PlayerPlanet { get; set; } = new(-1, Guid.NewGuid(), "blank", new Glyph('O', ConsoleColor.Blue), Vector2I.ZERO, "", "", 0);
-        public static Turret PlayerTurret { get; set; } = new(0, "blank", new Glyph('T', ConsoleColor.Red), new Vector2I(0,0));
-        public static ResourceExtractor PlayerExtractor { get; set; } = new();
+
+        public static Turret CurrentTurret { get; set; } = new(0, "blank", new Glyph('T', ConsoleColor.Red), new Vector2I(0, 0));
+        public static ResourceExtractor CurrentExtractor { get; set; } = new();
 
         public static int CanvasWidth = (MAP_WIDTH * 2) + MENU_WIDTH + MENU_MARGIN;
         public static int CanvasHeight = MAP_HEIGHT;
@@ -72,30 +73,9 @@ namespace Galaxy.Conqueror.Client.Managers
             PlayerPlanet.Position = new Vector2I(serverPlanet.X, serverPlanet.Y);
         }
 
-        public async static Task<ResourceExtractor> UpdateExtractor()
+        public async static Task UpdateExtractor()
         {
-            var serverExtractor = await ApiService.GetOwnExtractor();
-
-            PlayerExtractor = new ResourceExtractor()
-            {
-                Id = serverExtractor.Id,
-                Level = serverExtractor.Level,
-                PlanetId = serverExtractor.PlanetId,
-                ResourceGen = serverExtractor.ResourceGen,
-                UpgradeCost = serverExtractor.UpgradeCost,
-                UpgradedResourceGen = serverExtractor.UpgradedResourceGen
-            };
-
-            return PlayerExtractor;
-        }
-
-        public async static Task<Turret> UpdateTurret()
-        {
-            var serverTurret = await ApiService.GetOwnTurret();
-
-            PlayerTurret = Turret.GetTurretFromServerModel(serverTurret);
-
-            return PlayerTurret;
+            await ApiService.GetOwnExtractor();
         }
     }
 }
