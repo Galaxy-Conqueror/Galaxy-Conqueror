@@ -43,18 +43,18 @@ resource "aws_ecs_task_definition" "ecs_task_definition" {
           "value": "Production"
         },
         {
-          name  = "GOOGLE_REDIRECT_URI"
+          name  = "REDIRECT_URI"
           value = "http://localhost:9090/callback/"
         }
 
       ],
       secrets = [
         {
-          name      = "GOOGLE_CLIENT_ID"
+          name      = "CLIENT_ID"
           valueFrom = aws_secretsmanager_secret.google_client_id.arn
         },
         {
-          name      = "GOOGLE_CLIENT_SECRET"
+          name      = "CLIENT_SECRET"
           valueFrom = aws_secretsmanager_secret.google_client_secret.arn
         },
         {
