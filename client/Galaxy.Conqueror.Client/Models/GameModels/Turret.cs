@@ -11,6 +11,8 @@ public class Turret : Entity
     public int Damage { get; set; }
     public int UpgradeCost { get; set; }
 
+    public int DirectionX { get; set; }
+
     public Turret()
     {
         Id = int.MaxValue;

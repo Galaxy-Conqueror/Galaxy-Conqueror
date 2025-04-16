@@ -99,43 +99,40 @@ namespace Galaxy.Conqueror.Client.Models.GameModels
             StateManager.State = GameState.BATTLE;
 
             var response = await BattleService.GetBattleAsync(Id);
+            if (response == null || StateManager.PlayerSpaceship == null) return;
 
-            Spaceship ship = StateManager.PlayerSpaceship;
-            if (ship == null) return;
+            var ship = StateManager.PlayerSpaceship;
 
-            Spaceship spaceship = new Spaceship(ship.Id, ship.Name, new Glyph('⋀', ConsoleColor.Yellow), new Vector2I(0, 0), response.SpaceshipDesign);
-            spaceship.Level = ship.Level;
-            spaceship.MaxResources = response.SpaceshipMaxResources;
-            spaceship.ResourceReserve = response.SpaceshipResourceReserve;
-            spaceship.CurrentHealth = response.SpaceshipHealth;
-            spaceship.Damage = response.SpaceshipDamage;
+            var spaceship = new Spaceship(ship.Id, ship.Name, new Glyph('⋀', ConsoleColor.Yellow), new Vector2I(0, 0), response.SpaceshipDesign)
+            {
+                Level = ship.Level,
+                MaxResources = response.SpaceshipMaxResources,
+                ResourceReserve = response.SpaceshipResourceReserve,
+                CurrentHealth = response.SpaceshipHealth,
+                Damage = response.SpaceshipDamage
+            };
 
-            Turret turret = new Turret(Id, Name, new Glyph('V', ConsoleColor.Red), new Vector2I(0, 0));
-            turret.CurrentHealth = response.TurretHealth;
-            turret.Damage = response.TurretDamage;
-            turret.Level = 1;
+            var turret = new Turret(Id, Name, new Glyph('V', ConsoleColor.Red), new Vector2I(0, 0))
+            {
+                CurrentHealth = response.TurretHealth,
+                Damage = response.TurretDamage,
+                Level = 20
+            };
 
-            BattleEngine.Initialise(StateManager.MAP_SCREEN_WIDTH, StateManager.MAP_SCREEN_HEIGHT, spaceship, turret, response.PlanetResourceReserve);
+            BattleEngine.Initialise(spaceship, turret, response.PlanetResourceReserve);
 
-            BattleEngine.OnBattleConcluded(async battleResult =>
-            { 
-                Console.Clear();
+            BattleEngine.OnBattleConcluded(async result =>
+            {
+                if (result == null) return;
 
-                Console.WriteLine($"Started At: {battleResult.StartedAt}");
-                Console.WriteLine($"Ended At: {battleResult.EndedAt}");
-                Console.WriteLine($"Damage to Spaceship: {battleResult.DamageToSpaceship}");
-                Console.WriteLine($"Damage to Turret: {battleResult.DamageToTurret}");
-                Console.WriteLine($"Resources Looted: {battleResult.ResourcesLooted}");
-
-                var battleResultResponse = await BattleService.LogBattleAsync(Id, battleResult);
-
-                ship.ResourceReserve += battleResultResponse.ResourcesLooted;
-
-                Thread.Sleep(4000);
+                var logResponse = await BattleService.LogBattleAsync(Id, result);
+                if (logResponse != null)
+                    ship.ResourceReserve += logResponse.ResourcesLooted;
 
                 Console.Clear();
                 StateManager.State = GameState.PLANET_VIEW;
             });
         }
+
     }
 }
