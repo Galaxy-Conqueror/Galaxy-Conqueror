@@ -41,10 +41,10 @@ public static class BattleEngine
     private static int PlanetResourceReserve;
 
     private static float MIN_BULLET_SPEED = 8f;
-    private static float BULLET_SPEED_MULTIPLIER = 0.5f;
+    private static float BULLET_SPEED_MULTIPLIER = 4f;
     private static float MIN_FIRING_RATE = 0.2f;
-    private static float FIRING_RATE_MULTIPLIER = 0.02f;
-    private static float TURRET_MOVE_RATE_MULTIPLIER = 0.2f;
+    private static float FIRING_RATE_MULTIPLIER = 0.2f;
+    private static float TURRET_MOVE_RATE_MULTIPLIER = 2f;
     private static float MIN_TURRET_MOVE_RATE = 1f;
 
     private static Dictionary<Vector2I, Glyph> StarryMap;

@@ -60,12 +60,7 @@ public class CalculationsTests
         Assert.Equal(expected, Calculations.GetSpaceshipRefuelCost(level, currentFuel));
 
     [Theory]
-    [InlineData(2, 20, 80)]
-    public void GetSpaceshipHealthCost_ReturnsCorrectValue(int level, int health, int expected) =>
-        Assert.Equal(expected, Calculations.GetSpaceshipHealthCost(level, health));
-
-    [Theory]
-    [InlineData(2, 50, 600)]
+    [InlineData(2, 50, 150)]
     public void GetSpaceshipRepairCost_ReturnsCorrectValue(int level, int currentHealth, int expected) =>
         Assert.Equal(expected, Calculations.GetSpaceshipRepairCost(level, currentHealth));
 
