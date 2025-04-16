@@ -20,8 +20,8 @@ jobs:
           dotnet-version: '8.0.x'
 
       - name: Restore dependencies
-        working-directory: D:/a/Galaxy-Conqueror/Galaxy-Conqueror/client/Galaxy.Conqueror.Client
-        run: dotnet restore
+        # working-directory: D:/a/Galaxy-Conqueror/Galaxy-Conqueror/client/Galaxy.Conqueror.Client
+        run: dotnet restore ./client/Galaxy.Conqueror.Client/Galaxy.Conqueror.Client.csproj
 
       - name: Build
         run: dotnet build ./client/Galaxy.Conqueror.Client/Galaxy.Conqueror.Client.csproj --configuration Release --no-restore
@@ -30,7 +30,7 @@ jobs:
         run: dotnet publish ./client/Galaxy.Conqueror.Client/Galaxy.Conqueror.Client.csproj --configuration Release --output ./publish
 
       - name: Zip output
-        run: zip -r release-artifact.zip ./publish
+        run: Compress-Archive -Path ./publish/* -DestinationPath release-artifact.zip
 
       - name: GitHub Release
         uses: softprops/action-gh-release@v2
