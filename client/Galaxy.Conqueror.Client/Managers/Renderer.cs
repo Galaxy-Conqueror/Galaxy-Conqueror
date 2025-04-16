@@ -281,9 +281,8 @@ public static class Renderer
         }
 
         PrintHudLine("=== Battle Status ===");
-        PrintHudLine($"Spaceship HP: {state.SpaceshipHealth}");
-        PrintHudLine($"Turret HP:    {state.TurretHealth}");
-        PrintHudLine($"Winner:       {state.WinnerName}");
+        PrintHudLine($"Spaceship Health: {state.SpaceshipHealth}");
+        PrintHudLine($"Turret Health:    {state.TurretHealth}");
         PrintHudLine($"Duration:     {state.BattleDurationSeconds:F2}s");
     }
 

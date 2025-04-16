@@ -21,6 +21,7 @@ public class Turret : Entity
         UpgradeCost = 0;
     }
 
+
     public Turret(int id, string name, Glyph glyph, Vector2I position) : base(id, name, glyph, position)
     {
         Id = id;

@@ -48,10 +48,10 @@ namespace Galaxy.Conqueror.Client.Models.GameModels
 
         public Spaceship ConvertFromRemoteSpaceship()
         {
+
             Design = Design.Replace("\n", "\r\n").Replace("\\n", "\r\n");
-
-
             Id = Id + 999;
+
             Glyph = new Glyph('^', ConsoleColor.White);
             Position = new Vector2I(X, Y);
 
