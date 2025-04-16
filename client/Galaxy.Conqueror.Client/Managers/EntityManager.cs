@@ -26,7 +26,7 @@ namespace Galaxy.Conqueror.Client.Managers
                 Entities.Add(newPlanet);
             }
 
-            StateManager.UpdateOwnPlanet();
+            await StateManager.UpdateOwnPlanet();
 
             StateManager.PlayerSpaceship = (await ApiService.GetSpaceshipAsync()).ConvertFromRemoteSpaceship();
 

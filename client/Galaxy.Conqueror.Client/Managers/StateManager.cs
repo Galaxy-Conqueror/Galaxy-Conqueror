@@ -65,10 +65,11 @@ namespace Galaxy.Conqueror.Client.Managers
             return planet;
         }
 
-        public async static void UpdateOwnPlanet()
+        public async static Task UpdateOwnPlanet()
         {
             var serverPlanet = await ApiService.GetPlanetAsync();
             PlayerPlanet.Name = serverPlanet.Name;
+            PlayerPlanet.UserId = serverPlanet.UserId;
             PlayerPlanet.ResourceReserve = serverPlanet.ResourceReserve;
             PlayerPlanet.Position = new Vector2I(serverPlanet.X, serverPlanet.Y);
         }
