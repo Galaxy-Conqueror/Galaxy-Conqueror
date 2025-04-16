@@ -10,6 +10,7 @@ public class SetupService(
     SpaceshipService spaceshipService,
     ResourceExtractorService resourceExtractorService,
     TurretService turretService,
+    AiService aiService,
     ILogger<SetupService> logger) : ISetupService
 {
     public async Task<User> SetupPlayerDefaults(string email, string googleId, string username)
@@ -38,7 +39,7 @@ public class SetupService(
             var planet = await planetService.CreatePlanet(user.Id, transaction);
             var resourceExtractor = await resourceExtractorService.CreateResourceExtractor(planet.Id, transaction);
             var turret = turretService.CreateTurret(planet.Id, transaction);
-            var spaceship = await spaceshipService.CreateSpaceship(user.Id, planet, transaction);
+            var spaceship = await spaceshipService.CreateSpaceship(user.Id, planet, aiService, transaction);
 
             await transaction.CommitAsync();
             logger.LogInformation("Successfully setup new user");

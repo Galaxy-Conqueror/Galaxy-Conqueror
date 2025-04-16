@@ -10,15 +10,15 @@ public static class Turrets {
             .Produces<TurretDetailResponse>(StatusCodes.Status200OK)
             .Produces<string>(StatusCodes.Status400BadRequest)
             .Produces<string>(StatusCodes.Status404NotFound)
-            .Produces(StatusCodes.Status500InternalServerError);
-            //.RequireAuthorization();
+            .Produces(StatusCodes.Status500InternalServerError)
+            .RequireAuthorization();
 
         endpoint.MapPut("api/turret/upgrade", TurretsHandlers.UpgradeTurretHandler)
             .Produces<TurretUpgradedResponse>(StatusCodes.Status200OK)
             .Produces<string>(StatusCodes.Status400BadRequest)
             .Produces<string>(StatusCodes.Status404NotFound)
-            .Produces(StatusCodes.Status500InternalServerError);
-            //.RequireAuthorization();
+            .Produces(StatusCodes.Status500InternalServerError)
+            .RequireAuthorization();
 
         return endpoint;
     }

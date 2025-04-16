@@ -12,8 +12,8 @@ public static class Spaceships
             .Produces<SpaceshipResponse>(StatusCodes.Status200OK)
             .Produces<string>(StatusCodes.Status400BadRequest)
             .Produces<string>(StatusCodes.Status404NotFound)
-            .Produces(StatusCodes.Status500InternalServerError);
-            //.RequireAuthorization();
+            .Produces(StatusCodes.Status500InternalServerError)
+            .RequireAuthorization();
         return endpoint;
     }
 
@@ -23,15 +23,15 @@ public static class Spaceships
             .Produces<SpaceshipUpgradeResponse>(StatusCodes.Status200OK)
             .Produces<string>(StatusCodes.Status400BadRequest)
             .Produces<string>(StatusCodes.Status404NotFound)
-            .Produces(StatusCodes.Status500InternalServerError);
-            //.RequireAuthorization();
+            .Produces(StatusCodes.Status500InternalServerError)
+            .RequireAuthorization();
 
             endpoint.MapPut("api/spaceship/upgrade", UpgradeHandlers.UpgradeSpaceshipHandler)
             .Produces<SpaceshipUpgradedResponse>(StatusCodes.Status200OK)
             .Produces<string>(StatusCodes.Status400BadRequest)
             .Produces<string>(StatusCodes.Status404NotFound)
-            .Produces(StatusCodes.Status500InternalServerError);
-            //.RequireAuthorization();
+            .Produces(StatusCodes.Status500InternalServerError)
+            .RequireAuthorization();
 
         return endpoint;
     }
@@ -42,15 +42,15 @@ public static class Spaceships
             .Produces<int>(StatusCodes.Status200OK)
             .Produces<string>(StatusCodes.Status400BadRequest)
             .Produces<string>(StatusCodes.Status404NotFound)
-            .Produces(StatusCodes.Status500InternalServerError);
-            //.RequireAuthorization();
+            .Produces(StatusCodes.Status500InternalServerError)
+            .RequireAuthorization();
 
         endpoint.MapPut("api/spaceship/refuel", RefuelHandlers.RefuelSpaceshipHandler)
             .Produces<SpaceshipRefuelResponse>(StatusCodes.Status200OK)
             .Produces<string>(StatusCodes.Status400BadRequest)
             .Produces<string>(StatusCodes.Status404NotFound)
-            .Produces(StatusCodes.Status500InternalServerError);
-            //.RequireAuthorization();
+            .Produces(StatusCodes.Status500InternalServerError)
+            .RequireAuthorization();
 
         return endpoint;
     }
@@ -61,15 +61,15 @@ public static class Spaceships
             .Produces<int>(StatusCodes.Status200OK)
             .Produces<string>(StatusCodes.Status400BadRequest)
             .Produces<string>(StatusCodes.Status404NotFound)
-            .Produces(StatusCodes.Status500InternalServerError);
-            //.RequireAuthorization();
+            .Produces(StatusCodes.Status500InternalServerError)
+            .RequireAuthorization();
 
         endpoint.MapPut("api/spaceship/repair", RepairHandlers.RepairSpaceshipHandler)
             .Produces<SpaceshipRepairResponse>(StatusCodes.Status200OK)
             .Produces<string>(StatusCodes.Status400BadRequest)
             .Produces<string>(StatusCodes.Status404NotFound)
-            .Produces(StatusCodes.Status500InternalServerError);
-            //.RequireAuthorization();
+            .Produces(StatusCodes.Status500InternalServerError)
+            .RequireAuthorization();
 
         return endpoint;
 
@@ -81,8 +81,8 @@ public static class Spaceships
             .Produces<Spaceship>(StatusCodes.Status200OK)
             .Produces<string>(StatusCodes.Status400BadRequest)
             .Produces<string>(StatusCodes.Status404NotFound)
-            .Produces(StatusCodes.Status500InternalServerError);
-            //.RequireAuthorization();
+            .Produces(StatusCodes.Status500InternalServerError)
+            .RequireAuthorization();
 
         return endpoint;
     }
@@ -93,8 +93,8 @@ public static class Spaceships
             .Produces<Planet>(StatusCodes.Status200OK)
             .Produces<string>(StatusCodes.Status400BadRequest)
             .Produces<string>(StatusCodes.Status404NotFound)
-            .Produces(StatusCodes.Status500InternalServerError);
-            //.RequireAuthorization();
+            .Produces(StatusCodes.Status500InternalServerError)
+            .RequireAuthorization();
 
         return endpoint;
 

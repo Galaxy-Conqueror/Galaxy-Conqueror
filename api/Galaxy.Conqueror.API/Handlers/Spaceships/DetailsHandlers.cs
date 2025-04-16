@@ -39,7 +39,8 @@ public static async Task<IResult> GetSpaceshipDetailsHandler(
                 Damage = Calculations.GetSpaceshipDamage(spaceship.Level),
                 MaxHealth = Calculations.GetSpaceshipMaxHealth(spaceship.Level),
                 MaxResources = Calculations.GetSpaceshipMaxResources(spaceship.Level),
-                MaxFuel = Calculations.GetSpaceshipMaxFuel(spaceship.Level)
+                MaxFuel = Calculations.GetSpaceshipMaxFuel(spaceship.Level),
+                UpgradeCost = Calculations.GetSpaceshipUpgradeCost(spaceship.Level)
             };
 
             return Results.Ok(spaceshipResponse);

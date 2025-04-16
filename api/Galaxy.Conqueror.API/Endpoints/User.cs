@@ -33,7 +33,8 @@ public static class User
             .Produces(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status204NoContent)
             .Produces(StatusCodes.Status400BadRequest)
-            .Produces(StatusCodes.Status500InternalServerError);
+            .Produces(StatusCodes.Status500InternalServerError)
+            .RequireAuthorization();
         return endpoint;
     }
 
@@ -42,7 +43,9 @@ public static class User
         endpoint.MapDelete("api/user", UsersHandlers.DeleteUserHandler)
             .Produces(StatusCodes.Status204NoContent)
             .Produces(StatusCodes.Status400BadRequest)
-            .Produces(StatusCodes.Status500InternalServerError);
+            .Produces(StatusCodes.Status500InternalServerError)
+            .RequireAuthorization();
+
         return endpoint;
     }
 
