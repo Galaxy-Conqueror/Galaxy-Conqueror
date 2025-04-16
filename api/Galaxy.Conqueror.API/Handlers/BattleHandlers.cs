@@ -97,7 +97,8 @@ public class BattleHandlers {
             if (turret == null)
                 return Results.NotFound("Planet has no defenses");
 
-            bool attackerWon = (Calculations.GetTurretHealth(turret.Level) - battleLog.DamageToTurret) == 0;
+            bool attackerWon = (Calculations.GetTurretHealth(turret.Level) - battleLog.DamageToTurret) <= 0;
+
             if (attackerWon) {
                 await spaceshipService.LootResources(spaceship.Id, planetId, battleLog.ResourcesLooted, transaction);
                 await spaceshipService.UpdateSpaceshipHealth(spaceship.Id, battleLog.DamageToSpaceship,transaction);
