@@ -49,15 +49,11 @@ public static class Client
                     break;
 
                 case GameState.BATTLE:
-                    if (!BattleEngine.GameRunning)
-                    {
-                       
-                    }
-                    else
-                    {
-                        BattleEngine.Update();
+                    BattleEngine.Update();
+
+                    if (BattleEngine.GameRunning)
                         Renderer.RenderBattleMap();
-                    }                
+                                  
                     break;
 
                 case GameState.PLANET_VIEW:
