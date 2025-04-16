@@ -23,8 +23,9 @@ public static class Client
         await StateManager.PlayerSpaceship.UpdateShipState();
         Sidebar.MockMenu();
 
-        Console.SetWindowSize(StateManager.CanvasWidth, StateManager.CanvasHeight);
-        Console.SetBufferSize(StateManager.CanvasWidth, StateManager.CanvasHeight);
+        if (StateManager.PlayerPlanet.Name == "") {
+            await AuthHelper.SetPlanetName();
+        }
 
         Console.CursorVisible = false;
 

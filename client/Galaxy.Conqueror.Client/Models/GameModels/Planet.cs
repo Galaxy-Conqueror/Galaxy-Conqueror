@@ -26,7 +26,7 @@ namespace Galaxy.Conqueror.Client.Models.GameModels
         public int Y { get; set; }
 
 
-        public Planet(int id, Guid userId, string name, Glyph glyph, Vector2I position, string description, int resourceReserve) : base(id, name, glyph, position)
+        public Planet(int id, Guid userId, string name, Glyph glyph, Vector2I position, string description, string design, int resourceReserve) : base(id, name, glyph, position)
         {
             this.Id = id;
             this.UserId = userId;
@@ -34,34 +34,43 @@ namespace Galaxy.Conqueror.Client.Models.GameModels
             this.Glyph = glyph;
             this.Position = position;
             this.Description = description;
+            Design = design;
             this.ResourceReserve = resourceReserve;
         }
 
         public async Task<List<MenuItem>> GetPlanetOperations(List<MenuItem> menuItems)
         {
-            var extractor = await StateManager.UpdateExtractor();
-            var turret = await StateManager.UpdateTurret();
             var isOwnPlanet = UserId == AuthHelper.UserId;
 
             if (isOwnPlanet)
             {
-                menuItems.Add(new MenuItem($"Upgrade extractor [Cost: {extractor.UpgradeCost}]", UpgradeResourceExtractor));
-                menuItems.Add(new MenuItem($"Upgrade turret [Cost: {turret.UpgradeCost}]", UpgradeTurret));
-            } else
+                menuItems.Add(new MenuItem($"Upgrade extractor [Cost: {StateManager.PlayerExtractor.UpgradeCost}]", UpgradeResourceExtractor));
+                menuItems.Add(new MenuItem($"Upgrade turret [Cost: {StateManager.PlayerTurret.UpgradeCost}]", UpgradeTurret));
+            }
+            else
             {
                 menuItems.Add(new MenuItem("Attack", AttackPlanet));
             }
+            menuItems.Add(new MenuItem("Show planet description", () =>
+            {
+                StateManager.State = GameState.INTRO_VIEW;
+            }));
+
             return menuItems;
         }
 
         public async void UpgradeResourceExtractor()
         {
-            var response = await ApiService.UpgradeResourceExtractorAsync();
+            await ApiService.UpgradeResourceExtractorAsync();
+            StateManager.PlayerExtractor = await StateManager.UpdateExtractor();
+            StateManager.UpdateOwnPlanet();
         }
 
         public async void UpgradeTurret()
         {
-            var response = await ApiService.UpgradeTurretAsync();
+            ApiService.UpgradeTurretAsync();
+            StateManager.PlayerSpaceship.UpdateShipState();
+            StateManager.UpdateOwnPlanet();
         }
 
         public void TravelToPlanet()

@@ -66,9 +66,9 @@ public static class Sidebar
 
             await StateManager.PlayerSpaceship.GetShipOperations(menuItems);
 
-            menuItems.Add(new MenuItem("Pause", GameOperations.Pause));
+            //menuItems.Add(new MenuItem("Pause", GameOperations.Pause));
 
-            menuItems.Add(new MenuItem("Resume", GameOperations.Resume));
+            //menuItems.Add(new MenuItem("Resume", GameOperations.Resume));
 
             menuItems.Add(new MenuItem("Quit", GameOperations.Quit));
 
@@ -139,13 +139,16 @@ public static class Sidebar
         WriteMenuTextWithWordWrap(StateManager.MAP_SCREEN_HEIGHT - 15, $"Ship Resource Reserve: {StateManager.PlayerSpaceship.ResourceReserve}");
         WriteMenuTextWithWordWrap(StateManager.MAP_SCREEN_HEIGHT - 14, $"Last Recorded Planet Reserve: {StateManager.PlayerPlanet.ResourceReserve}");
 
-        int count = StateManager.MAP_SCREEN_HEIGHT - 21;
-
-        foreach (string line in StateManager.PlayerSpaceship.Design.PadLeft(StateManager.MENU_WIDTH / 4).Split("\r\n").ToList())
+        if (!StateManager.PlayerSpaceship.Landed)
         {
-            string spacedLine = string.Join(" ", line.Replace('S', ' ').ToCharArray());
-            WriteMenuLine(count, spacedLine);
-            count++;
+            int count = StateManager.MAP_SCREEN_HEIGHT - 25;
+
+            foreach (string line in StateManager.PlayerSpaceship.Design.Split("\r\n").ToList())
+            {
+                string spacedLine = string.Join(" ", line.Replace('S', ' ').ToCharArray());
+                WriteMenuLine(count, "          " + spacedLine);
+                count++;
+            }
         }
         
     }

@@ -165,7 +165,7 @@ namespace Galaxy.Conqueror.Client.Utils
             }
         }
 
-        private static async Task SetPlanetName() {
+        public static async Task SetPlanetName() {
             while (true)    
             {
                 Console.Write("Enter planet name: ");
