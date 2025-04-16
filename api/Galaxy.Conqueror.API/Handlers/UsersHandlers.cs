@@ -31,15 +31,6 @@ public class UsersHandlers {
         }
     }
 
-    //public static async Task<IResult> GetUsersHandler(
-    //   [FromServices] UserService userService,
-    //   CancellationToken ct
-    //   )
-    //{
-    //    var users = await userService.GetUsers();
-    //    return Results.Ok(users);
-    //}
-
     public static async Task<IResult> UpdateUserHandler(
         [FromBody] UsernameUpdateRequest request,
         [FromServices] IUserService userService,
@@ -66,9 +57,8 @@ public class UsersHandlers {
             await userService.DeleteUser(userId);
             return Results.NoContent();
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            //logger.LogError(ex, "Error deleting user with ID {UserId}", userId);
             return Results.StatusCode(StatusCodes.Status500InternalServerError);
         }
         

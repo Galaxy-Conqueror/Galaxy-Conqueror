@@ -48,10 +48,10 @@ namespace Galaxy.Conqueror.Client.Models.GameModels
 
         public Spaceship ConvertFromRemoteSpaceship()
         {
+
             Design = Design.Replace("\n", "\r\n").Replace("\\n", "\r\n");
-
-
             Id = Id + 999;
+
             Glyph = new Glyph('^', ConsoleColor.White);
             Position = new Vector2I(X, Y);
 
@@ -60,36 +60,69 @@ namespace Galaxy.Conqueror.Client.Models.GameModels
 
         public async Task<List<MenuItem>> GetShipOperations(List<MenuItem> menuItems)
         {
-            var adjacentEntity = EntityManager.Entities.Where(x => x != this).FirstOrDefault(x => Position.DistanceTo(x.Position) <= 1);
+            var adjacentEntity = EntityManager.Entities.Where(x => x != this).FirstOrDefault(x => Position.DistanceTo(x.Position) <= 2);
 
             if (adjacentEntity is Planet adjacentPlanet)
             {
-                var updatedPlanet = adjacentPlanet;
 
                 if (Landed)
                 {
-                    menuItems.Add(new MenuItem("Takeoff", TakeoffFromPlanet));
+                    menuItems.Add(new MenuItem("Leave orbit", TakeoffFromPlanet, ConsoleColor.White));
 
-                    var isOwnPlanet = updatedPlanet.UserId == AuthHelper.UserId;
+                    var isOwnPlanet = adjacentPlanet.UserId == AuthHelper.UserId;
 
                     if (isOwnPlanet)
                     {
-                        menuItems.Add(new MenuItem("Refuel [Cost: 100]", Refuel));
-                        menuItems.Add(new MenuItem($"Repair [Cost: 100]", Repair));
-                        menuItems.Add(new MenuItem($"Upgrade ship [Cost: {UpgradeCost}]", Upgrade));
-                        menuItems.Add(new MenuItem($"Deposit [Material: {ResourceReserve}]", Deposit));
+                        menuItems.Add(new MenuItem($"Repair [2/Level/hp]", Repair, ConsoleColor.White));
+
+                        if (UpgradeCost <= StateManager.PlayerPlanet.ResourceReserve)
+                        {
+                            menuItems.Add(new MenuItem($"Upgrade ship [Cost: {UpgradeCost}]", Upgrade, ConsoleColor.White));
+                        } else
+                        {
+                            menuItems.Add(new MenuItem($"Upgrade ship [Cost: {UpgradeCost}]", () => { }, ConsoleColor.Red));
+                        }
+
+                        if (ResourceReserve > 0)
+                        {
+                            menuItems.Add(new MenuItem($"Deposit [Material: {ResourceReserve}]", Deposit, ConsoleColor.White));
+                        } else
+                        {
+                            menuItems.Add(new MenuItem($"Deposit [Material: {ResourceReserve}]", () => { }, ConsoleColor.Red));
+                        }
+                            
                     }
 
-                    await updatedPlanet.GetPlanetOperations(menuItems);          
+                    if (isOwnPlanet)
+                    {
+                        await StateManager.PlayerPlanet.GetPlanetOperations(menuItems);
+                    } else
+                    {
+                        await adjacentPlanet.GetPlanetOperations(menuItems);
+                    }
+                                  
                 }
-                else if (updatedPlanet != null)
+
+                if (!Landed && adjacentPlanet != null)
                 {
-                    menuItems.Add(new MenuItem($"Enter orbit around {updatedPlanet.Name}", LandOnPlanet));
+                    menuItems.Add(new MenuItem($"Enter orbit around {adjacentPlanet.Name}", LandOnPlanet, ConsoleColor.White));
                 }
+
+                
+            }
+
+            if (!Landed)
+            {
+                menuItems.Add(new MenuItem($"Warp back to home {StateManager.PlayerPlanet.Name}", WarpHome, ConsoleColor.White));
             }
 
 
             return menuItems;
+        }
+
+        public void WarpHome()
+        {
+            StateManager.PlayerSpaceship.Position = StateManager.PlayerPlanet.Position;
         }
 
         public async Task UpdateShipState()
@@ -120,8 +153,10 @@ namespace Galaxy.Conqueror.Client.Models.GameModels
             StateManager.State = GameState.PLANET_VIEW;
 
             //Update ship state 
-            StateManager.UpdateOwnPlanet();
+            await StateManager.UpdateOwnPlanet();
             await UpdateShipState();
+            StateManager.CurrentExtractor = await ApiService.GetOwnExtractor();
+            StateManager.CurrentTurret = await ApiService.GetOwnTurret();
 
             Landed = true;
         }
@@ -129,6 +164,7 @@ namespace Galaxy.Conqueror.Client.Models.GameModels
         public async void TakeoffFromPlanet()
         {
             StateManager.State = GameState.MAP_VIEW;
+            await StateManager.UpdateOwnPlanet();
             await UpdateShipState();
             Landed = false;
         }
@@ -142,12 +178,14 @@ namespace Galaxy.Conqueror.Client.Models.GameModels
         {
             var response = ApiService.RefuelSpaceshipAsync();
             await UpdateShipState();
+            await StateManager.UpdateOwnPlanet();
         }
 
         public async void Repair()
         {
-            var response = ApiService.RepairSpaceshipAsync();
+            await ApiService.RepairSpaceshipAsync();
             await UpdateShipState();
+            await StateManager.UpdateOwnPlanet();
         }
 
         public async void Upgrade()
@@ -155,16 +193,19 @@ namespace Galaxy.Conqueror.Client.Models.GameModels
             var response = await ApiService.UpgradeSpaceshipAsync();
 
             MaxHealth = response.MaxHealth;
-            UpgradeCost = response.UpgradeCost;
             Damage = response.Damage;
             MaxFuel = response.MaxFuel;
             MaxResources = response.MaxResources;
+
+            await UpdateShipState();
+            await StateManager.UpdateOwnPlanet();
         }
 
         public async void Deposit()
         {
             var response = ApiService.DepositAsync();
             await UpdateShipState();
+            await StateManager.UpdateOwnPlanet();
         }
 
     }

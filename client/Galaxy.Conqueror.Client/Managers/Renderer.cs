@@ -122,8 +122,7 @@ public static class Renderer
     {
         foreach (var (position, glyph) in previousMap)
         {
-            Console.SetCursorPosition(position.X, position.Y);
-            ConsolePrinter.ClearGlyph();
+            SafelyAttemptGlyphClear(position.X, position.Y);
         }
 
         previousMap = new Dictionary<Vector2I, Glyph>(currentMap);
@@ -172,11 +171,7 @@ public static class Renderer
     {
         foreach (var (position, glyph) in previousSidebar)
         {
-            if (IsInCanvas(position.X, position.Y))
-            {
-                Console.SetCursorPosition(position.X, position.Y);
-                ConsolePrinter.ClearGlyph();
-            }
+            SafelyAttemptGlyphClear(position.X, position.Y);
         }
 
         previousSidebar = new Dictionary<Vector2I, Glyph>(currentSidebar);
@@ -197,6 +192,8 @@ public static class Renderer
 
         foreach (var (position, glyph) in image)
         {
+            if (glyph.Character == ' ') continue;
+
             var canvasX = (position.X * 2) - StateManager.MAP_SCREEN_WIDTH / 2;
             var canvasY = position.Y - StateManager.MAP_SCREEN_HEIGHT / 4;
 
@@ -226,8 +223,7 @@ public static class Renderer
     {
         foreach (var (position, glyph) in previousImage)
         {
-            Console.SetCursorPosition(position.X, position.Y);
-            ConsolePrinter.ClearGlyph();
+            SafelyAttemptGlyphClear(position.X, position.Y);
         }
 
         previousImage = new Dictionary<Vector2I, Glyph>(currentImage);
@@ -241,8 +237,7 @@ public static class Renderer
 
         Vector2I currentSpaceship = spaceship.Item1;
 
-        Console.SetCursorPosition(currentSpaceship.X * 2, currentSpaceship.Y);
-        ConsolePrinter.PrintGlyph(spaceship.Item2);
+        SafelyAttemptGlyphPrint(spaceship.Item2, currentSpaceship.X * 2, currentSpaceship.Y);
 
         var currentMap = new Dictionary<Vector2I, Glyph>(map);
         currentMap.Remove(currentSpaceship);
@@ -250,20 +245,17 @@ public static class Renderer
         foreach (var (position, glyph) in currentMap)
         {
             previousBattleMap.Remove(position);
-            Console.SetCursorPosition(position.X * 2, position.Y);
-            ConsolePrinter.PrintGlyph(glyph);
+            SafelyAttemptGlyphPrint(glyph, position.X * 2, position.Y);
         }
 
         foreach (var (position, _) in previousBattleMap)
         {
-            Console.SetCursorPosition(position.X * 2, position.Y);
-            ConsolePrinter.ClearGlyph();
+            SafelyAttemptGlyphClear(position.X * 2, position.Y);
         }
 
         if (!currentSpaceship.Equals(previousSpaceship))
         {
-            Console.SetCursorPosition(previousSpaceship.X * 2, previousSpaceship.Y);
-            ConsolePrinter.ClearGlyph();
+            SafelyAttemptGlyphClear(previousSpaceship.X * 2, previousSpaceship.Y);
         }
 
         previousSpaceship = currentSpaceship;
@@ -271,7 +263,7 @@ public static class Renderer
 
         var state = BattleEngine.GetBattleState();
 
-        int hudX = BattleEngine.MAP_WIDTH * 2 + 2; 
+        int hudX = BattleEngine.MAP_WIDTH * 2 + 2;
         int line = 0;
 
         void PrintHudLine(string text)
@@ -281,15 +273,31 @@ public static class Renderer
         }
 
         PrintHudLine("=== Battle Status ===");
-        PrintHudLine($"Spaceship HP: {state.SpaceshipHealth}");
-        PrintHudLine($"Turret HP:    {state.TurretHealth}");
-        PrintHudLine($"Winner:       {state.WinnerName}");
+        PrintHudLine($"Spaceship Health: {state.SpaceshipHealth}");
+        PrintHudLine($"Turret Health:    {state.TurretHealth}");
         PrintHudLine($"Duration:     {state.BattleDurationSeconds:F2}s");
     }
-
 
     public static bool IsInCanvas(int x, int y)
     {
         return x >= 0 && x < Console.BufferWidth && y >= 0 && y < Console.BufferHeight;
+    }
+
+    public static void SafelyAttemptGlyphPrint(Glyph glyph, int x, int y)
+    {
+        if (IsInCanvas(x, y))
+        {
+            Console.SetCursorPosition(x, y);
+            ConsolePrinter.PrintGlyph(glyph);
+        }
+    }
+
+    public static void SafelyAttemptGlyphClear(int x, int y)
+    {
+        if (IsInCanvas(x, y))
+        {
+            Console.SetCursorPosition(x, y);
+            ConsolePrinter.ClearGlyph();
+        }
     }
 }

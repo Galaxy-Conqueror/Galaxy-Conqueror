@@ -1,16 +1,18 @@
-﻿namespace Battle;
-public struct BattleResult
+﻿namespace Galaxy.Conqueror.Client.Models.GameModels;
+public class BattleResult
 {
-    public int SpaceshipHealth { get; set; }
-    public int TurretHealth { get; set; }
-    public string WinnerName { get; set; }
-    public float BattleDurationSeconds { get; set; }
+    public DateTime StartedAt { get; set; }
+    public DateTime EndedAt { get; set; }
+    public int DamageToSpaceship { get; set; }
+    public int DamageToTurret { get; set; }
+    public int ResourcesLooted { get; set; }
 
-    public BattleResult(int spaceshipHealth, int turretHealth, string winnerName, float duration)
+    public BattleResult(DateTime startedAt, DateTime endedAt, int damageToSpaceship, int damageToTurret, int resourcesLooted)
     {
-        SpaceshipHealth = spaceshipHealth;
-        TurretHealth = turretHealth;
-        WinnerName = winnerName;
-        BattleDurationSeconds = duration;
+        StartedAt = startedAt;
+        EndedAt = endedAt;
+        DamageToSpaceship = damageToSpaceship;
+        DamageToTurret = damageToTurret;
+        ResourcesLooted = resourcesLooted;
     }
 }

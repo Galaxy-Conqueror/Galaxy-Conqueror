@@ -7,4 +7,5 @@ public class SpaceshipUpgradedResponse
     public int MaxResources { get; set; }
     public int MaxFuel { get; set; }
     public int PlanetResourceReserve { get; set; }
+    public int UpgradeCost { get; set; }
 }

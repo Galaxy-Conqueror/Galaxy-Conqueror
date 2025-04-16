@@ -17,15 +17,6 @@ public static class User
         return endpoint;
     }
 
-    //public static IEndpointRouteBuilder GetUsers(this IEndpointRouteBuilder endpoint)
-    //{
-    //    endpoint.MapGet("api/user", UsersHandlers.GetUsersHandler)
-    //        .Produces(StatusCodes.Status200OK)
-    //        .Produces(StatusCodes.Status400BadRequest)
-    //        .Produces(StatusCodes.Status500InternalServerError);
-    //    return endpoint;
-    //}
-
     public static IEndpointRouteBuilder UpdateUser(this IEndpointRouteBuilder endpoint)
     {
         endpoint.MapPut("api/user", UsersHandlers.UpdateUserHandler)

@@ -26,7 +26,6 @@ public class UserService(IDbConnectionFactory connectionFactory, ISetupService s
     public async Task<User?> GetUserByContext(HttpContext context)
     {
         var email = context.User.FindFirst(ClaimTypes.Email)?.Value;
-        // var email = "user1@example.com";
 
         if (string.IsNullOrEmpty(email))
             return null;

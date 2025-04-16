@@ -11,6 +11,8 @@ public class Turret : Entity
     public int Damage { get; set; }
     public int UpgradeCost { get; set; }
 
+    public int DirectionX { get; set; }
+
     public Turret()
     {
         Id = int.MaxValue;
@@ -21,6 +23,7 @@ public class Turret : Entity
         UpgradeCost = 0;
     }
 
+
     public Turret(int id, string name, Glyph glyph, Vector2I position) : base(id, name, glyph, position)
     {
         Id = id;
@@ -29,15 +32,15 @@ public class Turret : Entity
         Position = position;
     }
 
-    public static Turret GetTurretFromServerModel(TurretDetailResponse serverTurret)
+    public static Turret GetTurretFromServerModel(Turret serverTurret)
     {
         var turret = new Turret();
 
         turret.Id = serverTurret.Id;
         turret.Level = serverTurret.Level;
-        turret.CurrentHealth = serverTurret.Health;
+        turret.CurrentHealth = serverTurret.CurrentHealth;
         turret.Damage = serverTurret.Damage;
-        turret.MaxHealth = serverTurret.Health;
+        turret.MaxHealth = serverTurret.MaxHealth;
         turret.UpgradeCost = serverTurret.UpgradeCost;
 
         return turret;

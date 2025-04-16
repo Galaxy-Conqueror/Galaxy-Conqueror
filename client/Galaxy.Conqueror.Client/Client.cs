@@ -21,10 +21,13 @@ public static class Client
         MapView.Initialise();
         await EntityManager.Initialize();
         await StateManager.PlayerSpaceship.UpdateShipState();
+        StateManager.CurrentExtractor = await ApiService.GetOwnExtractor();
+        StateManager.CurrentTurret = await ApiService.GetOwnTurret();
         Sidebar.MockMenu();
 
-        Console.SetWindowSize(StateManager.CanvasWidth, StateManager.CanvasHeight);
-        Console.SetBufferSize(StateManager.CanvasWidth, StateManager.CanvasHeight);
+        if (StateManager.PlayerPlanet.Name == "") {
+            await AuthHelper.SetPlanetName();
+        }
 
         Console.CursorVisible = false;
 
@@ -49,31 +52,11 @@ public static class Client
                     break;
 
                 case GameState.BATTLE:
-                    if (!BattleEngine.gameRunning)
-                    {
-                        Spaceship spaceship = new Spaceship(1, "Player", new Glyph('⋀', ConsoleColor.Yellow), new Vector2I(0, 0), "");
-                        spaceship.Level = 400;
-                        spaceship.CurrentHealth = 100;
-                        Turret turret = new Turret(2, "Enemy", new Glyph('V', ConsoleColor.Red), new Vector2I(0, 0));
-                        turret.Level = 600;
-                        turret.CurrentHealth = 100;
-                        BattleEngine.Initialise(StateManager.MAP_SCREEN_WIDTH, StateManager.MAP_SCREEN_HEIGHT, spaceship, turret);
+                    BattleEngine.Update();
 
-                        BattleEngine.OnBattleConcluded(battleResult =>
-                        {
-                            Console.Clear();
-                            Console.WriteLine($"Battle over! Winner: {battleResult.WinnerName}");
-                            Console.WriteLine($"Spaceship HP: {battleResult.SpaceshipHealth}, Turret HP: {battleResult.TurretHealth}");
-                            Console.WriteLine($"Battle lasted {battleResult.BattleDurationSeconds:F2} seconds");
-                            StateManager.State = GameState.PLANET_VIEW;
-                            Thread.Sleep(2000);
-                        });
-                    }
-                    else
-                    {
-                        BattleEngine.Update();
+                    if (BattleEngine.GameRunning)
                         Renderer.RenderBattleMap();
-                    }                
+                                  
                     break;
 
                 case GameState.PLANET_VIEW:
