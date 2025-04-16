@@ -20,15 +20,13 @@ jobs:
           dotnet-version: '8.0.x'
 
       - name: Restore dependencies
-        working-directory: D:/a/Galaxy-Conqueror/Galaxy-Conqueror/client/Galaxy.Conqueror.Client
-        run: dotnet restore
+        run: dotnet restore ./Galaxy-Conqueror/client/Galaxy.Conqueror.Client/Galaxy.Conqueror.Client.csproj
 
       - name: Build
-        working-directory: D:/a/Galaxy-Conqueror/Galaxy-Conqueror/client/Galaxy.Conqueror.Client
-        run: dotnet build --configuration Release --no-restore
+        run: dotnet build ./Galaxy-Conqueror/client/Galaxy.Conqueror.Client/Galaxy.Conqueror.Client.csproj --configuration Release --no-restore
 
       - name: Publish
-        run: dotnet publish --configuration Release --output ./publish
+        run: dotnet publish ./Galaxy-Conqueror/client/Galaxy.Conqueror.Client/Galaxy.Conqueror.Client.csproj --configuration Release --output ./publish
 
       - name: Zip output
         run: zip -r release-artifact.zip ./publish
