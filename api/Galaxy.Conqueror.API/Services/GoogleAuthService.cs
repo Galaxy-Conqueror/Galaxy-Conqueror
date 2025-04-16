@@ -1,18 +1,16 @@
 ﻿using System.Text.Json;
-using Galaxy.Conqueror.API.Models;
+using Galaxy.Conqueror.API.Models.Database;
+using Galaxy.Conqueror.API.Models.Responses;
 
 namespace Galaxy.Conqueror.API.Services;
 
 public class GoogleAuthService(
     HttpClient httpClient,
-    UserService userService,
-    IConfiguration configuration)
+    IUserService userService,
+    IConfiguration configuration, 
+    IHostEnvironment env)
 {
-    private readonly HttpClient _httpClient = httpClient;
-    private readonly string _clientId = configuration["Google:ClientId"];
-    private readonly string _clientSecret = configuration["Google:ClientSecret"];
-    private readonly string _redirectUri = configuration["Google:RedirectUri"];
-
+    private readonly HttpClient httpClient = httpClient;
     public async Task<LoginResponse> Login (string authCode)
     {
         var tokens = await ExchangeAuthCodeForTokens(authCode);
@@ -23,18 +21,31 @@ public class GoogleAuthService(
 
     private async Task<TokenResponse> ExchangeAuthCodeForTokens(string authCode)
     {
+ 
+        string clientId, clientSecret, redirectUri;
+        if (env.IsDevelopment())
+        {
+            clientId = configuration["Google:ClientId"] ?? "";
+            clientSecret = configuration["Google:ClientSecret"] ?? "";
+            redirectUri = configuration["Google:RedirectUri"] ?? "";
+        } else
+        {
+            clientId = Environment.GetEnvironmentVariable("CLIENT_ID") ?? "";
+            clientSecret = Environment.GetEnvironmentVariable("CLIENT_SECRET") ?? "";
+            redirectUri = Environment.GetEnvironmentVariable("REDIRECT_URI") ?? "";
+        }
         var requestData = new Dictionary<string, string>
         {
             { "code", authCode },
-            { "client_id", _clientId },
-            { "client_secret", _clientSecret },
-            { "redirect_uri", _redirectUri },
+            { "client_id", clientId },
+            { "client_secret", clientSecret },
+            { "redirect_uri", redirectUri },
             { "grant_type", "authorization_code" }
         };
 
         var requestContent = new FormUrlEncodedContent(requestData);
 
-        var response = await _httpClient.PostAsync("https://oauth2.googleapis.com/token", requestContent);
+        var response = await httpClient.PostAsync("https://oauth2.googleapis.com/token", requestContent);
 
         var responseContent = await response.Content.ReadAsStringAsync();
 
@@ -49,7 +60,7 @@ public class GoogleAuthService(
 
     private async Task<User> GetUserInfo(string access_token)
     {
-        var userInfoResponse = await _httpClient.GetAsync($"https://www.googleapis.com/oauth2/v3/tokeninfo?access_token={access_token}");
+        var userInfoResponse = await httpClient.GetAsync($"https://www.googleapis.com/oauth2/v3/tokeninfo?access_token={access_token}");
         var userInfoResponseContent = await userInfoResponse.Content.ReadAsStringAsync();
 
         var userInfo = JsonSerializer.Deserialize<UserInfoResponse>(userInfoResponseContent);

@@ -14,6 +14,8 @@ namespace Galaxy.Conqueror.Client.Utils
         private const string REDIRECT_URI = "http://localhost:9090/callback/";
         private static string jwtToken = "";
 
+        public static Guid UserId { get; set; }
+
         public static string GetJwt()
         {
             return jwtToken;
@@ -40,13 +42,18 @@ namespace Galaxy.Conqueror.Client.Utils
                 Console.WriteLine("Error opening browser. Go to this URL to login: \n" + authUrl);
             }
 
-            await GetJwtTokenAsync();
+            bool newUser = await GetJwtTokenAsync();
+            if (newUser) {
+                await SetUsername();
+                await SetPlanetName();
+            }
             return;
         }
 
-        private static async Task GetJwtTokenAsync()
+        private static async Task<bool> GetJwtTokenAsync()
         {
             bool success = false;
+            bool newUser = false;
             var callbackServer = new HttpListener();
             callbackServer.Prefixes.Add(REDIRECT_URI);
             callbackServer.Start();
@@ -74,7 +81,6 @@ namespace Galaxy.Conqueror.Client.Utils
                                 "",
                                 JsonSerializer.Serialize(requestBody)
                             );
-                            // TODO Ensure this is successful
 
                             var responseContent = await response.Content.ReadAsStringAsync();
 
@@ -89,42 +95,15 @@ namespace Galaxy.Conqueror.Client.Utils
                                     options
                                 );
 
-                                OutputHelper.DebugPrint("USER ID: " + loginResponse?.User.Id);
-                                OutputHelper.DebugPrint(
-                                    "GOOGLE ID: " + loginResponse?.User.GoogleId
-                                );
-                                OutputHelper.DebugPrint("USER EMAIL: " + loginResponse?.User.Email);
-                                OutputHelper.DebugPrint(
-                                    "USERNAME: " + loginResponse?.User.Username
-                                );
                                 OutputHelper.DebugPrint("JWT: " + loginResponse?.JWT);
 
                                 jwtToken = loginResponse != null ? loginResponse.JWT : "";
-                                success = true;
+                                success = jwtToken != "";
 
-                                var userResponse = await RequestHelper.GetRequestAsync(
-                                    "/api/user",
-                                    ""
-                                );
+                                UserId = loginResponse?.User?.Id ?? Guid.NewGuid();
 
-                                if (userResponse.IsSuccessStatusCode)
-                                {
-                                    var userResponseContent =
-                                        await userResponse.Content.ReadAsStringAsync();
-                                    var user = JsonSerializer.Deserialize<User>(
-                                        userResponseContent,
-                                        options
-                                    );
-
-                                    Console.WriteLine("User details:");
-                                    Console.WriteLine($"User ID: {user?.Id}");
-                                    Console.WriteLine($"Google ID: {user?.GoogleId}");
-                                    Console.WriteLine($"Email: {user?.Email}");
-                                    Console.WriteLine($"Username: {user?.Username}");
-                                }
-                                else
-                                {
-                                    Console.WriteLine("Failed to retrieve user data");
+                                if (loginResponse?.User?.Username?.Length == 0) {
+                                    newUser = true;
                                 }
                             }
                         }
@@ -157,6 +136,60 @@ namespace Galaxy.Conqueror.Client.Utils
                 responseOutput.OutputStream.Close();
                 callbackServer.Stop();
             }
+            return newUser;
         }
+
+        private static async Task SetUsername() {
+            while (true)    
+            {
+                Console.Write("Enter username: ");
+                var username = Console.ReadLine();
+
+                if (string.IsNullOrWhiteSpace(username))
+                {
+                    Console.WriteLine("Username cannot be empty, try again.\n");
+                    continue;
+                }
+
+                var request = new { Username = username };
+                var response = await RequestHelper.PutRequestAsync(
+                    "/api/user",
+                    "",
+                    JsonSerializer.Serialize(request)
+                );
+
+                if (response.IsSuccessStatusCode)
+                    break;
+
+                Console.WriteLine("Failed to set username, try again.\n");
+            }
+        }
+
+        private static async Task SetPlanetName() {
+            while (true)    
+            {
+                Console.Write("Enter planet name: ");
+                var planetName = Console.ReadLine();
+
+                if (string.IsNullOrWhiteSpace(planetName))
+                {
+                    Console.WriteLine("Planet name cannot be empty, try again.\n");
+                    continue;
+                }
+
+                var request = new { PlanetName = planetName };
+                var response = await RequestHelper.PutRequestAsync(
+                    "/api/planet",
+                    "",
+                    JsonSerializer.Serialize(request)
+                );
+
+                if (response.IsSuccessStatusCode)
+                    break;
+
+                Console.WriteLine("Failed to set planet name, try again.\n");
+            }
+        }
+
     }
 }

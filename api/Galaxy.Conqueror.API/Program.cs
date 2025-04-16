@@ -36,12 +36,15 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddAuthorization();
 builder.Services.AddHttpClient<GoogleAuthService>();
-builder.Services.AddScoped<UserService>();
+builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<SpaceshipService>();
 builder.Services.AddScoped<PlanetService>();
 builder.Services.AddScoped<BattleService>();
 builder.Services.AddScoped<ResourceExtractorService>();
 builder.Services.AddScoped<TurretService>();
+builder.Services.AddScoped<IAiService, AiService>();
+
+builder.Services.AddScoped<ISetupService, SetupService>();
 
 builder.Services.AddHostedService<ResourceUpdaterService>();
 

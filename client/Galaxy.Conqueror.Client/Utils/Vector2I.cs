@@ -48,4 +48,11 @@ public class Vector2I
     {
         return (X << 16) ^ Y;
     }
+
+    public double DistanceTo(Vector2I other)
+    {
+        int dx = X - other.X;
+        int dy = Y - other.Y;
+        return Math.Sqrt(dx * dx + dy * dy);
+    }
 }

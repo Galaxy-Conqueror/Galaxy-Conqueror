@@ -1,68 +1,222 @@
 ﻿using Galaxy.Conqueror.Client.Managers;
-using Galaxy.Conqueror.Client.Models;
+using Galaxy.Conqueror.Client.Models.GameModels;
+using Galaxy.Conqueror.Client.Models.Menu;
+using Galaxy.Conqueror.Client.Operations.MenuOperations;
 using Galaxy.Conqueror.Client.Utils;
+using System.Text;
 
 
 namespace Galaxy.Conqueror.Client.Menus;
 
 public static class Sidebar
 {
-    public static List<MenuItem> sidebarItems = new List<MenuItem>();
-    private static readonly Dictionary<Vector2I, char> sidebar = new();
-    public static bool stale = true;
+    public static Menu Content;
+    private static readonly Dictionary<Vector2I, Glyph> sidebar = new();
+    public static bool Stale { get; set; } = true;
 
-    public static Dictionary<Vector2I, char> GetSidebar()
+    public static Dictionary<Vector2I, Glyph> GetSidebar()
     {
-        MockMenu();
-
-        stale = false;
-
         return sidebar;
     }
 
-    public static void MockMenu()
+    public async static void MockMenu()
     {
-        var maxY = (StateManager.MAP_SCREEN_HEIGHT / 2) - StateManager.MENU_MARGIN;
+        Content = new Menu(new List<MenuItem>());
 
-        for (int y = 0; y <  maxY; y++)
+        await CheckSidebarState();
+
+        var maxY = (StateManager.MAP_SCREEN_HEIGHT) - StateManager.MENU_MARGIN;
+
+        for (int y = 0; y < maxY; y++)
         {
-            for (int x = 0; x <  StateManager.MENU_WIDTH; x++)
+            for (int x = 0; x < StateManager.MENU_WIDTH; x++)
             {
-                if (x ==  StateManager.MENU_WIDTH - 1 || x == 0)
+                if (x == StateManager.MENU_WIDTH - 1 || x == 0)
                 {
-                    sidebar[new Vector2I(x, y)] = '|';
+                    sidebar[new Vector2I(x, y)] = new Glyph('|', ConsoleColor.White);
                 }
                 else if (y == maxY - 1 || y == 0)
                 {
-                    sidebar[new Vector2I(x, y)] = '-';
+                    sidebar[new Vector2I(x, y)] = new Glyph('-', ConsoleColor.White);
                 }
 
             }
-            Console.WriteLine();
         }
 
-        WriteMenuLine(5, "a. Testing");
+        var itemStrings = Content.ItemStrings();
+
+        for (int i = 0; i < itemStrings.Count; i++)
+        {
+            WriteMenuLine(i + 5, itemStrings[i]);
+        }
+    }
+
+    public async static Task CheckSidebarState()
+    {
+        var menuItems = new List<MenuItem>();
+        var prevContent = new List<MenuItem>();
+
+        if (StateManager.State != GameState.INTRO_VIEW)
+        {
+
+            foreach (var x in Content.Items)
+            {
+                prevContent.Add(x);
+            }
+
+            await StateManager.PlayerSpaceship.GetShipOperations(menuItems);
+
+            //menuItems.Add(new MenuItem("Pause", GameOperations.Pause));
+
+            //menuItems.Add(new MenuItem("Resume", GameOperations.Resume));
+
+            menuItems.Add(new MenuItem("Quit", GameOperations.Quit));
+
+            if (MenuChanged(prevContent, Content.Items.ToList()))
+            {
+                Stale = true;
+            }
+        } else
+        {
+            var playerPlanet = EntityManager.Entities.Where((x =>
+            {
+                if (x is Planet planet)
+                {
+                    return planet.UserId == AuthHelper.UserId;
+                }
+                return false;
+            })).First() as Planet;
+
+            if (playerPlanet != null)
+            {
+                var description = playerPlanet?.Description ?? "A planet.";
+
+                int linesUsed = WriteMenuTextWithWordWrap(StateManager.MENU_MARGIN, description);
+
+                WriteMenuTextWithWordWrap(linesUsed + 5, "Press any key to continue...");
+
+                Stale = true;
+            }
+        }
+        Content.Items = menuItems.Where(x => x.Name != "").ToArray();
+    }
+
+    private static bool MenuChanged(List<MenuItem> prevItems, List<MenuItem> currItems)
+    {
+        if (prevItems.Count != currItems.Count)
+            return true;
+
+        for (int i = 0; i < prevItems.Count; i++)
+        {
+            if (prevItems[i].Name != currItems[i].Name)
+                return true;
+        }
+
+        var itemStrings = Content.ItemStrings();
+
+        ClearMenu();
+
+        for (int i = 0; i < itemStrings.Count; i++)
+        {
+            WriteMenuLine(i + 2, itemStrings[i]);
+        }
+
+        return false;
+    }
+
+    private static void ClearMenu()
+    {
+        var maxY = (StateManager.MAP_SCREEN_HEIGHT) - StateManager.MENU_MARGIN;
+
+        for (int y = 1; y < maxY - 1; y++)
+        {
+            for (int x = 1; x < StateManager.MENU_WIDTH - 1; x++)
+            {
+                sidebar.Remove(new Vector2I(x, y));
+            }
+        }
+
+        WriteMenuTextWithWordWrap(StateManager.MAP_SCREEN_HEIGHT - 15, $"Ship Resource Reserve: {StateManager.PlayerSpaceship.ResourceReserve}");
+        WriteMenuTextWithWordWrap(StateManager.MAP_SCREEN_HEIGHT - 14, $"Last Recorded Planet Reserve: {StateManager.PlayerPlanet.ResourceReserve}");
+
+        if (!StateManager.PlayerSpaceship.Landed)
+        {
+            int count = StateManager.MAP_SCREEN_HEIGHT - 25;
+
+            foreach (string line in StateManager.PlayerSpaceship.Design.Split("\r\n").ToList())
+            {
+                string spacedLine = string.Join(" ", line.Replace('S', ' ').ToCharArray());
+                WriteMenuLine(count, "          " + spacedLine);
+                count++;
+            }
+        }
+        
     }
 
     private static void WriteMenuLine(int index, string line)
     {
-        if (line.Length +  StateManager.MENU_MARGIN <  StateManager.MENU_WIDTH)
+        if (line.Length + StateManager.MENU_MARGIN < StateManager.MENU_WIDTH)
         {
-            for (int i = 0; i < line.Length; i++)
+            for (int i = 0; i < StateManager.MENU_WIDTH; i++)
             {
                 var position = new Vector2I(StateManager.MENU_MARGIN + i, index);
 
-                if (sidebar.ContainsKey(position)) 
+                if (sidebar.ContainsKey(position) && i < line.Length)
                 {
-                    sidebar[position] = line[i];
+                    sidebar[position] = new Glyph(line[i], ConsoleColor.White);
+                }
+                else if (i < line.Length)
+                {
+                    sidebar.Add(position, new Glyph(line[i], ConsoleColor.White));
                 }
                 else
                 {
-                    sidebar.Add(position, line[i]);
+                    sidebar.Remove(position);
                 }
-                    
+
             }
         }
     }
 
+    public static int WriteMenuTextWithWordWrap(int startIndex, string text)
+    {
+        if (string.IsNullOrEmpty(text))
+        {
+            return 0;
+        }
+
+        int currentLineIndex = startIndex;
+        int lineWidth = StateManager.MENU_WIDTH - (StateManager.MENU_MARGIN * 2);
+        List<string> words = text.Split(' ').ToList();
+
+        StringBuilder currentLine = new StringBuilder();
+
+        foreach (string word in words)
+        {
+            if (currentLine.Length + word.Length + (currentLine.Length > 0 ? 1 : 0) > lineWidth)
+            {
+                WriteMenuLine(currentLineIndex, currentLine.ToString());
+                currentLineIndex++;
+
+                currentLine.Clear();
+                currentLine.Append(word);
+            }
+            else
+            {
+                if (currentLine.Length > 0)
+                {
+                    currentLine.Append(' ');
+                }
+                currentLine.Append(word);
+            }
+        }
+
+        if (currentLine.Length > 0)
+        {
+            WriteMenuLine(currentLineIndex, currentLine.ToString());
+            currentLineIndex++;
+        }
+
+        return currentLineIndex - startIndex;
+    }
 }

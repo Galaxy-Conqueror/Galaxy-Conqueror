@@ -6,7 +6,7 @@ namespace Galaxy.Conqueror.Client.Utils
 {
     public static class RequestHelper
     {
-        private static readonly string BASE_URL = "https://localhost:7292";
+        private static readonly string BASE_URL = "http://localhost:5232";
         private static readonly HttpClient CLIENT = new();
 
         private static string BuildUrl(string path, string queryParams)
@@ -47,7 +47,7 @@ namespace Galaxy.Conqueror.Client.Utils
 
         public static async Task<HttpResponseMessage> GetRequestAsync(
             string path,
-            string queryParams
+            string? queryParams = ""
         )
         {
             OutputHelper.DebugPrint("GET REQUEST");
@@ -73,8 +73,8 @@ namespace Galaxy.Conqueror.Client.Utils
 
         public static async Task<HttpResponseMessage> PostRequestAsync(
             string path,
-            string queryParams,
-            string body
+            string? queryParams = "",
+            string? body = ""
         )
         {
             OutputHelper.DebugPrint("POST REQUEST");
@@ -123,8 +123,8 @@ namespace Galaxy.Conqueror.Client.Utils
 
         public static async Task<HttpResponseMessage> PutRequestAsync(
             string path,
-            string queryParams,
-            string body
+            string? queryParams = "",
+            string? body = ""
         )
         {
             OutputHelper.DebugPrint("PUT REQUEST");
