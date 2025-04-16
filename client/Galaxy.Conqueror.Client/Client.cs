@@ -21,6 +21,8 @@ public static class Client
         MapView.Initialise();
         await EntityManager.Initialize();
         await StateManager.PlayerSpaceship.UpdateShipState();
+        StateManager.CurrentExtractor = await ApiService.GetOwnExtractor();
+        StateManager.CurrentTurret = await ApiService.GetOwnTurret();
         Sidebar.MockMenu();
 
         if (StateManager.PlayerPlanet.Name == "") {
