@@ -129,9 +129,9 @@ public static class Renderer
         currentMap.Clear();
     }
 
-    public static void RenderSidebar()
+    public async static Task RenderSidebar()
     {
-        Sidebar.CheckSidebarState();
+        await Sidebar.CheckSidebarState();
         Dictionary<Vector2I, Glyph> sidebar = Sidebar.GetSidebar();
         var items = Sidebar.Content.Items;
 
@@ -215,8 +215,6 @@ public static class Renderer
                 ConsolePrinter.PrintGlyph(glyph);
             }
         }
-        //imageRendered = true;
-
         ClearImage();
     }
 

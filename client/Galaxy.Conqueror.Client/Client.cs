@@ -44,7 +44,7 @@ public static class Client
             {
                 case GameState.MAP_VIEW:
                     Renderer.RenderMap();
-                    Renderer.RenderSidebar();
+                    await Renderer.RenderSidebar();
                     break;
 
                 case GameState.BATTLE:
@@ -77,7 +77,7 @@ public static class Client
 
                 case GameState.PLANET_VIEW:
                     Renderer.RenderImage();
-                    Renderer.RenderSidebar();
+                    await Renderer.RenderSidebar();
                     break;
 
                 default:
