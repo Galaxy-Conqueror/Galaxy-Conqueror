@@ -1,5 +1,6 @@
 using System;
 using Dapper;
+using Moq;
 using Galaxy.Conqueror.API.Models.Database;
 using Galaxy.Conqueror.API.Models.Responses;
 using Galaxy.Conqueror.API.Services;
@@ -16,14 +17,17 @@ public class UserServiceIntegrationTests : IClassFixture<PostgreSqlFixture>, IAs
     {
         this.fixture = fixture;
         var factory = new TestDbConnectionFactory(this.fixture.Connection.ConnectionString);
+        var aiServiceMock = new Mock<IAiService>();
+        aiServiceMock
+            .Setup(a => a.AiGeneratorAsync(It.IsAny<string>(), It.IsAny<int>()))
+            .ReturnsAsync("Mocked AI Response");
 
-        // Dependencies
         var planetService = new PlanetService(factory);
         var spaceshipService = new SpaceshipService(factory);
         var resourceExtractorService = new ResourceExtractorService(factory);
         var turretService = new TurretService(factory);
         var logger = new LoggerFactory().CreateLogger<SetupService>();
-        var setupService = new SetupService(factory, planetService, spaceshipService, resourceExtractorService, turretService, logger);
+        var setupService = new SetupService(factory, planetService, spaceshipService, resourceExtractorService, turretService, aiServiceMock.Object, logger);
 
         userService = new UserService(factory, setupService);
     }
@@ -38,21 +42,17 @@ public class UserServiceIntegrationTests : IClassFixture<PostgreSqlFixture>, IAs
     [Fact]
     public async Task CreateUser_ShouldInsertUserAndSetupDefaults()
     {
-        // Arrange
         var userInfo = new UserInfoResponse
         {
             email = "newplayer@example.com",
             sub = Guid.NewGuid().ToString()
         };
 
-        // Act
         var user = await userService.CreateUser(userInfo);
 
-        // Assert
         Assert.NotNull(user);
         Assert.Equal(userInfo.email, user.Email);
 
-        // Ensure related records were created
         var planet = await fixture.Connection.QuerySingleOrDefaultAsync<Planet>("SELECT * FROM planets WHERE user_id = @UserId", new { UserId = user.Id });
 
         Assert.NotNull(planet);
@@ -70,7 +70,6 @@ public class UserServiceIntegrationTests : IClassFixture<PostgreSqlFixture>, IAs
     [Fact]
     public async Task GetUserByEmail()
     {
-        // Arrange
         var userInfo = new UserInfoResponse
         {
             email = "existing@example.com",
@@ -78,10 +77,8 @@ public class UserServiceIntegrationTests : IClassFixture<PostgreSqlFixture>, IAs
         };
         var created = await userService.CreateUser(userInfo);
 
-        // Act
         var found = await userService.GetUserByEmail(userInfo.email);
 
-        // Assert
         Assert.NotNull(found);
         Assert.Equal(created!.Id, found!.Id);
     }
@@ -89,7 +86,6 @@ public class UserServiceIntegrationTests : IClassFixture<PostgreSqlFixture>, IAs
     [Fact]
     public async Task UpdatingTheUser()
     {
-        // Arrange
         var userInfo = new UserInfoResponse
         {
             email = "updatable@example.com",
@@ -97,10 +93,8 @@ public class UserServiceIntegrationTests : IClassFixture<PostgreSqlFixture>, IAs
         };
         var user = await userService.CreateUser(userInfo);
 
-        // Act
         var updated = await userService.UpdateUser(user!.Id, "GalaxyMaster");
 
-        // Assert
         Assert.NotNull(updated);
         Assert.Equal("GalaxyMaster", updated!.Username);
     }
@@ -108,7 +102,6 @@ public class UserServiceIntegrationTests : IClassFixture<PostgreSqlFixture>, IAs
     [Fact]
     public async Task DeletingTheUser()
     {
-        // Arrange
         var userInfo = new UserInfoResponse
         {
             email = "delete@example.com",
@@ -116,10 +109,8 @@ public class UserServiceIntegrationTests : IClassFixture<PostgreSqlFixture>, IAs
         };
         var user = await userService.CreateUser(userInfo);
 
-        // Act
         await userService.DeleteUser(user!.Id);
 
-        // Assert
         var result = await userService.GetUserById(user.Id);
         Assert.Null(result);
     }

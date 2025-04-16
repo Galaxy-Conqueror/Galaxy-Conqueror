@@ -2,10 +2,15 @@ namespace Galaxy.Conqueror.API.Services;
 using Anthropic;
 
 
-public class AiService(
-    IConfiguration configuration, 
-    IHostEnvironment env)
+public class AiService : IAiService
 {
+    private readonly IConfiguration configuration;
+    private readonly IHostEnvironment env;
+    public AiService(IConfiguration configuration, IHostEnvironment env)
+    {
+        this.configuration = configuration;
+        this.env = env;
+    }
     public async Task<string> AiGeneratorAsync(string prompt, int maxTokens)
     {
         try {

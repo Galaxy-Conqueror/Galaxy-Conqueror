@@ -70,7 +70,7 @@ public class PlanetsHandlers {
     public static async Task<IResult> UpdatePlanetNameHandler(
         [FromServices] IUserService userService,
         [FromServices] PlanetService planetService,
-        [FromServices] AiService aiService,
+        [FromServices] IAiService aiService,
         [FromBody] PlanetNameRequest request,
         HttpContext context
     )

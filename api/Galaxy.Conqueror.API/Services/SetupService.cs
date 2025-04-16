@@ -1,4 +1,4 @@
-using Dapper;
+﻿using Dapper;
 using Galaxy.Conqueror.API.Configuration.Database;
 using Galaxy.Conqueror.API.Models.Database;
 
@@ -10,7 +10,7 @@ public class SetupService(
     SpaceshipService spaceshipService,
     ResourceExtractorService resourceExtractorService,
     TurretService turretService,
-    AiService aiService,
+    IAiService aiService,
     ILogger<SetupService> logger) : ISetupService
 {
     public async Task<User> SetupPlayerDefaults(string email, string googleId, string username)
