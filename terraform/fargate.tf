@@ -52,6 +52,10 @@ resource "aws_ecs_task_definition" "ecs_task_definition" {
         {
           name      = "GOOGLE_CLIENT_SECRET"
           valueFrom = aws_secretsmanager_secret.google_client_secret.arn
+        },
+        {
+          name      = "ANTHROPIC_API_KEY"
+          valueFrom = aws_secretsmanager_secret.anthropic_api_key.arn
         }
       ],
       logConfiguration = {

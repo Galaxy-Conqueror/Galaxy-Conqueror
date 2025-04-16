@@ -82,7 +82,8 @@ resource "aws_iam_policy" "ecs_task_policy" {
         Effect = "Allow",
         Resource = [
           aws_secretsmanager_secret.google_client_id.arn,
-          aws_secretsmanager_secret.google_client_secret.arn
+          aws_secretsmanager_secret.google_client_secret.arn,
+          aws_secretsmanager_secret.anthropic_api_key.arn
         ]
       }
     ]

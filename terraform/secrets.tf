@@ -36,3 +36,12 @@ resource "aws_secretsmanager_secret_version" "google_client_secret_version" {
   secret_id     = aws_secretsmanager_secret.google_client_secret.id
   secret_string = var.google_client_secret
 }
+
+resource "aws_secretsmanager_secret" "anthropic_api_key" {
+  name = "anthropic-api-key"
+}
+
+resource "aws_secretsmanager_secret_version" "anthropic_api_key_version" {
+  secret_id     = aws_secretsmanager_secret.anthropic_api_key.id
+  secret_string = var.anthropic_api_key
+}
