@@ -13,13 +13,16 @@
     <None Update="PlanetAscii\blank-planet.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="PlanetAscii\ice.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="PlanetAscii\desert.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="PlanetAscii\test.json">
+    <None Update="PlanetAscii\planet_water.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="PlanetAscii\water.json">
+    <None Update="PlanetAscii\test.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="PlanetAscii\water_planet.json">

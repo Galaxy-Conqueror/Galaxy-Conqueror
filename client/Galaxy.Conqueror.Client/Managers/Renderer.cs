@@ -197,6 +197,8 @@ public static class Renderer
 
         foreach (var (position, glyph) in image)
         {
+            if (glyph.Character == ' ') continue;
+
             var canvasX = (position.X * 2) - StateManager.MAP_SCREEN_WIDTH / 2;
             var canvasY = position.Y - StateManager.MAP_SCREEN_HEIGHT / 4;
 

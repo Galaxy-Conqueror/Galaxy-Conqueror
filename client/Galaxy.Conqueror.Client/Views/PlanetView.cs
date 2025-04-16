@@ -12,29 +12,50 @@ using System.Threading;
 
 public class PlanetView
 {
-    private static readonly Dictionary<Vector2I, Glyph> map = new();
-    private static readonly Dictionary<string, Dictionary<Vector2I, Glyph>> planets = new();
+    private static Dictionary<Vector2I, Glyph> map { get; set; } = new();
+    private static readonly Dictionary<PlanetTypes, Dictionary<Vector2I, Glyph>> planets = new();
     public static bool Stale = true;
 
     public static void Initialise()
     {
-        LoadPlanetFromFile("PlanetAscii\\water.json");
+        LoadPlanetFromFile("PlanetAscii\\planet_water.json");
+        planets.Add(PlanetTypes.Water, map);
 
-        //InitMap();
+        LoadPlanetFromFile("PlanetAscii\\desert.json");
+        planets.Add(PlanetTypes.Desert, map);
 
-        planets.Add("blank", map);
+        LoadPlanetFromFile("PlanetAscii\\jungle.json");
+        planets.Add(PlanetTypes.Jungle, map);
 
-        LoadPlanetFromFile("PlanetAscii\\water.json");
-
-        planets.Add("desert", map);
+        LoadPlanetFromFile("PlanetAscii\\ice.json");
+        planets.Add(PlanetTypes.Ice, map);
 
         Stale = true;
     }
 
     public static Dictionary<Vector2I, Glyph> GetScreen()
     {
+        var adjacentEntity = EntityManager.Entities.Where(x => x != StateManager.PlayerSpaceship).FirstOrDefault(x => StateManager.PlayerSpaceship.Position.DistanceTo(x.Position) <= 2);
         Stale = false;
-        return planets["blank"];
+
+        if (adjacentEntity is Planet adjacentPlanet)
+        {
+            switch (adjacentPlanet.Design)
+            {
+                case "Desert":
+                    return planets[PlanetTypes.Desert];                
+                case "Jungle":
+                    return planets[PlanetTypes.Desert];
+                case "Water":
+                    return planets[PlanetTypes.Water];
+                case "Ice":
+                    return planets[PlanetTypes.Ice];
+                default:
+                    return planets[PlanetTypes.Desert];
+            }
+        }
+            
+        return planets[PlanetTypes.Desert];
     }
 
     public static void LoadPlanetAsciiFromJson(string jsonContent)
@@ -43,13 +64,13 @@ public class PlanetView
         {
             var jsonDocument = JsonDocument.Parse(jsonContent);
             var root = jsonDocument.RootElement;
+            map = new();
 
             if (root.TryGetProperty("picture", out JsonElement pictureElement) &&
                 pictureElement.ValueKind == JsonValueKind.Array)
             {
                 int arrayLength = pictureElement.GetArrayLength();
 
-                // Clear the existing map
                 map.Clear();
 
                 for (int i = 0; i < arrayLength; i++)
@@ -214,7 +235,7 @@ public class PlanetView
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error reading file: {ex.Message}");
+            
         }
     }
 }

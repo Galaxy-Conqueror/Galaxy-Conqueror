@@ -22,7 +22,7 @@ namespace Galaxy.Conqueror.Client.Managers
 
             foreach (var planet in planets)
             {
-                var newPlanet = new Planet(planet.Id, planet.UserId, planet.Name, new Glyph('O', ConsoleColor.Blue), new Vector2I(planet.X, planet.Y), planet.Description, planet.ResourceReserve);
+                var newPlanet = new Planet(planet.Id, planet.UserId, planet.Name, new Glyph('O', ConsoleColor.Blue), new Vector2I(planet.X, planet.Y), planet.Description, planet.Design, planet.ResourceReserve);
                 Entities.Add(newPlanet);
             }
 

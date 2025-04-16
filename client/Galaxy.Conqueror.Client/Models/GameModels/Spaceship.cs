@@ -60,7 +60,7 @@ namespace Galaxy.Conqueror.Client.Models.GameModels
 
         public async Task<List<MenuItem>> GetShipOperations(List<MenuItem> menuItems)
         {
-            var adjacentEntity = EntityManager.Entities.Where(x => x != this).FirstOrDefault(x => Position.DistanceTo(x.Position) <= 1);
+            var adjacentEntity = EntityManager.Entities.Where(x => x != this).FirstOrDefault(x => Position.DistanceTo(x.Position) <= 2);
 
             if (adjacentEntity is Planet adjacentPlanet)
             {
@@ -68,7 +68,7 @@ namespace Galaxy.Conqueror.Client.Models.GameModels
 
                 if (Landed)
                 {
-                    menuItems.Add(new MenuItem("Takeoff", TakeoffFromPlanet));
+                    menuItems.Add(new MenuItem("Leave orbit", TakeoffFromPlanet));
 
                     var isOwnPlanet = updatedPlanet.UserId == AuthHelper.UserId;
 
@@ -82,14 +82,27 @@ namespace Galaxy.Conqueror.Client.Models.GameModels
 
                     await updatedPlanet.GetPlanetOperations(menuItems);          
                 }
-                else if (updatedPlanet != null)
+
+                if (!Landed && updatedPlanet != null)
                 {
                     menuItems.Add(new MenuItem($"Enter orbit around {updatedPlanet.Name}", LandOnPlanet));
                 }
+
+                
+            }
+
+            if (!Landed)
+            {
+                menuItems.Add(new MenuItem($"Warp back to home {StateManager.PlayerPlanet.Name}", WarpHome));
             }
 
 
             return menuItems;
+        }
+
+        public void WarpHome()
+        {
+            StateManager.PlayerSpaceship.Position = StateManager.PlayerPlanet.Position;
         }
 
         public async Task UpdateShipState()
@@ -129,6 +142,7 @@ namespace Galaxy.Conqueror.Client.Models.GameModels
         public async void TakeoffFromPlanet()
         {
             StateManager.State = GameState.MAP_VIEW;
+            StateManager.UpdateOwnPlanet();
             await UpdateShipState();
             Landed = false;
         }
@@ -142,12 +156,14 @@ namespace Galaxy.Conqueror.Client.Models.GameModels
         {
             var response = ApiService.RefuelSpaceshipAsync();
             await UpdateShipState();
+            StateManager.UpdateOwnPlanet();
         }
 
         public async void Repair()
         {
             var response = ApiService.RepairSpaceshipAsync();
             await UpdateShipState();
+            StateManager.UpdateOwnPlanet();
         }
 
         public async void Upgrade()
@@ -155,16 +171,19 @@ namespace Galaxy.Conqueror.Client.Models.GameModels
             var response = await ApiService.UpgradeSpaceshipAsync();
 
             MaxHealth = response.MaxHealth;
-            UpgradeCost = response.UpgradeCost;
             Damage = response.Damage;
             MaxFuel = response.MaxFuel;
             MaxResources = response.MaxResources;
+
+            await UpdateShipState();
+            StateManager.UpdateOwnPlanet();
         }
 
         public async void Deposit()
         {
             var response = ApiService.DepositAsync();
             await UpdateShipState();
+            StateManager.UpdateOwnPlanet();
         }
 
     }
