@@ -7,9 +7,18 @@ using System.Threading.Tasks;
 
 namespace Galaxy.Conqueror.Client.Models.Menu;
 
-public class MenuItem(string name, MenuItemOperation onSelect)
+public class MenuItem
 {
-    public string Name { get; set; } = name;
+    public string Name { get; set; }
 
-    public MenuItemOperation OnSelect { get; set; } = onSelect;
+    public MenuItemOperation OnSelect { get; set; }
+
+    public ConsoleColor Color { get; set; }
+
+    public MenuItem(string name, MenuItemOperation onSelect, ConsoleColor color)
+    {
+        Name = name;
+        OnSelect = onSelect;
+        Color = color;
+    }
 }

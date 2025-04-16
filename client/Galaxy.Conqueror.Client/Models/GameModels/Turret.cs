@@ -30,15 +30,15 @@ public class Turret : Entity
         Position = position;
     }
 
-    public static Turret GetTurretFromServerModel(TurretDetailResponse serverTurret)
+    public static Turret GetTurretFromServerModel(Turret serverTurret)
     {
         var turret = new Turret();
 
         turret.Id = serverTurret.Id;
         turret.Level = serverTurret.Level;
-        turret.CurrentHealth = serverTurret.Health;
+        turret.CurrentHealth = serverTurret.CurrentHealth;
         turret.Damage = serverTurret.Damage;
-        turret.MaxHealth = serverTurret.Health;
+        turret.MaxHealth = serverTurret.MaxHealth;
         turret.UpgradeCost = serverTurret.UpgradeCost;
 
         return turret;

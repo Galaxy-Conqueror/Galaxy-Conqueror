@@ -17,13 +17,13 @@ public class Menu
         Items = items.ToArray();
     }
 
-    public List<string> ItemStrings()
+    public List<(string, ConsoleColor)> ItemStrings()
     {
-        var stringItems = new List<String>();
+        var stringItems = new List<(string, ConsoleColor)>();
 
         for (int i = 0; i < Items.Length; i++)
         {
-            stringItems.Add($"{(char)('a' + i)}. {Items[i].Name}");
+            stringItems.Add(($"{(char)('a' + i)}. {Items[i].Name}", Items[i].Color));
         }
 
         return stringItems;

@@ -68,16 +68,30 @@ namespace Galaxy.Conqueror.Client.Models.GameModels
 
                 if (Landed)
                 {
-                    menuItems.Add(new MenuItem("Leave orbit", TakeoffFromPlanet));
+                    menuItems.Add(new MenuItem("Leave orbit", TakeoffFromPlanet, ConsoleColor.White));
 
                     var isOwnPlanet = updatedPlanet.UserId == AuthHelper.UserId;
 
                     if (isOwnPlanet)
                     {
-                        menuItems.Add(new MenuItem("Refuel [Cost: 100]", Refuel));
-                        menuItems.Add(new MenuItem($"Repair [Cost: 100]", Repair));
-                        menuItems.Add(new MenuItem($"Upgrade ship [Cost: {UpgradeCost}]", Upgrade));
-                        menuItems.Add(new MenuItem($"Deposit [Material: {ResourceReserve}]", Deposit));
+                        menuItems.Add(new MenuItem($"Repair [2/Level/hp]", Repair, ConsoleColor.White));
+
+                        if (UpgradeCost <= StateManager.PlayerPlanet.ResourceReserve)
+                        {
+                            menuItems.Add(new MenuItem($"Upgrade ship [Cost: {UpgradeCost}]", Upgrade, ConsoleColor.White));
+                        } else
+                        {
+                            menuItems.Add(new MenuItem($"Upgrade ship [Cost: {UpgradeCost}]", () => { }, ConsoleColor.Red));
+                        }
+
+                        if (ResourceReserve > 0)
+                        {
+                            menuItems.Add(new MenuItem($"Deposit [Material: {ResourceReserve}]", Deposit, ConsoleColor.White));
+                        } else
+                        {
+                            menuItems.Add(new MenuItem($"Deposit [Material: {ResourceReserve}]", () => { }, ConsoleColor.Red));
+                        }
+                            
                     }
 
                     await updatedPlanet.GetPlanetOperations(menuItems);          
@@ -85,7 +99,7 @@ namespace Galaxy.Conqueror.Client.Models.GameModels
 
                 if (!Landed && updatedPlanet != null)
                 {
-                    menuItems.Add(new MenuItem($"Enter orbit around {updatedPlanet.Name}", LandOnPlanet));
+                    menuItems.Add(new MenuItem($"Enter orbit around {updatedPlanet.Name}", LandOnPlanet, ConsoleColor.White));
                 }
 
                 
@@ -93,7 +107,7 @@ namespace Galaxy.Conqueror.Client.Models.GameModels
 
             if (!Landed)
             {
-                menuItems.Add(new MenuItem($"Warp back to home {StateManager.PlayerPlanet.Name}", WarpHome));
+                menuItems.Add(new MenuItem($"Warp back to home {StateManager.PlayerPlanet.Name}", WarpHome, ConsoleColor.White));
             }
 
 
@@ -135,6 +149,8 @@ namespace Galaxy.Conqueror.Client.Models.GameModels
             //Update ship state 
             StateManager.UpdateOwnPlanet();
             await UpdateShipState();
+            StateManager.CurrentExtractor = await ApiService.GetOwnExtractor();
+            StateManager.CurrentTurret = await ApiService.GetOwnTurret();
 
             Landed = true;
         }
@@ -161,7 +177,7 @@ namespace Galaxy.Conqueror.Client.Models.GameModels
 
         public async void Repair()
         {
-            var response = ApiService.RepairSpaceshipAsync();
+            await ApiService.RepairSpaceshipAsync();
             await UpdateShipState();
             StateManager.UpdateOwnPlanet();
         }

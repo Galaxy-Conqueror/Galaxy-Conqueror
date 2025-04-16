@@ -70,7 +70,7 @@ public static class Sidebar
 
             //menuItems.Add(new MenuItem("Resume", GameOperations.Resume));
 
-            menuItems.Add(new MenuItem("Quit", GameOperations.Quit));
+            menuItems.Add(new MenuItem("Quit", GameOperations.Quit, ConsoleColor.White));
 
             if (MenuChanged(prevContent, Content.Items.ToList()))
             {
@@ -136,8 +136,8 @@ public static class Sidebar
             }
         }
 
-        WriteMenuTextWithWordWrap(StateManager.MAP_SCREEN_HEIGHT - 15, $"Ship Resource Reserve: {StateManager.PlayerSpaceship.ResourceReserve}");
-        WriteMenuTextWithWordWrap(StateManager.MAP_SCREEN_HEIGHT - 14, $"Last Recorded Planet Reserve: {StateManager.PlayerPlanet.ResourceReserve}");
+        WriteMenuTextWithWordWrap(StateManager.MAP_SCREEN_HEIGHT - 17, $"Ship Resource Reserve: {StateManager.PlayerSpaceship.ResourceReserve}");
+        WriteMenuTextWithWordWrap(StateManager.MAP_SCREEN_HEIGHT - 16, $"Last Recorded Planet Reserve: {StateManager.PlayerPlanet.ResourceReserve}");
 
         if (!StateManager.PlayerSpaceship.Landed)
         {
@@ -146,15 +146,29 @@ public static class Sidebar
             foreach (string line in StateManager.PlayerSpaceship.Design.Split("\r\n").ToList())
             {
                 string spacedLine = string.Join(" ", line.Replace('S', ' ').ToCharArray());
-                WriteMenuLine(count, "          " + spacedLine);
+                WriteMenuLine(count, ("          " + spacedLine, ConsoleColor.White));
                 count++;
             }
         }
-        
+        else
+        {
+            var adjacentEntity = EntityManager.Entities.Where(x => x != StateManager.PlayerSpaceship).FirstOrDefault(x => StateManager.PlayerSpaceship.Position.DistanceTo(x.Position) <= 2);
+            Stale = false;
+
+            if (adjacentEntity is Planet adjacentPlanet)
+            {
+                WriteMenuTextWithWordWrap(StateManager.MAP_SCREEN_HEIGHT - 14, $"Turret level: {StateManager.CurrentTurret.Level}");
+                WriteMenuTextWithWordWrap(StateManager.MAP_SCREEN_HEIGHT - 13, $"Extractor level: {StateManager.CurrentExtractor.Level}");
+                WriteMenuTextWithWordWrap(StateManager.MAP_SCREEN_HEIGHT - 12, $"Extraction rate: {StateManager.CurrentExtractor.ResourceGen}");
+            }
+        }
     }
 
-    private static void WriteMenuLine(int index, string line)
+    private static void WriteMenuLine(int index, (string, ConsoleColor) item)
     {
+        var line = item.Item1;
+        var color = item.Item2;
+
         if (line.Length + StateManager.MENU_MARGIN < StateManager.MENU_WIDTH)
         {
             for (int i = 0; i < StateManager.MENU_WIDTH; i++)
@@ -163,11 +177,11 @@ public static class Sidebar
 
                 if (sidebar.ContainsKey(position) && i < line.Length)
                 {
-                    sidebar[position] = new Glyph(line[i], ConsoleColor.White);
+                    sidebar[position] = new Glyph(line[i], color);
                 }
                 else if (i < line.Length)
                 {
-                    sidebar.Add(position, new Glyph(line[i], ConsoleColor.White));
+                    sidebar.Add(position, new Glyph(line[i], color));
                 }
                 else
                 {
@@ -195,7 +209,7 @@ public static class Sidebar
         {
             if (currentLine.Length + word.Length + (currentLine.Length > 0 ? 1 : 0) > lineWidth)
             {
-                WriteMenuLine(currentLineIndex, currentLine.ToString());
+                WriteMenuLine(currentLineIndex, (currentLine.ToString(), ConsoleColor.White));
                 currentLineIndex++;
 
                 currentLine.Clear();
@@ -213,7 +227,7 @@ public static class Sidebar
 
         if (currentLine.Length > 0)
         {
-            WriteMenuLine(currentLineIndex, currentLine.ToString());
+            WriteMenuLine(currentLineIndex, (currentLine.ToString(), ConsoleColor.White));
             currentLineIndex++;
         }
 

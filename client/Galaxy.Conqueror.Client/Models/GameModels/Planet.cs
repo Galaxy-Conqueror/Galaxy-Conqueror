@@ -44,16 +44,30 @@ namespace Galaxy.Conqueror.Client.Models.GameModels
 
             if (isOwnPlanet)
             {
-                menuItems.Add(new MenuItem($"Upgrade extractor [Cost: {StateManager.PlayerExtractor.UpgradeCost}]", UpgradeResourceExtractor));
-                menuItems.Add(new MenuItem($"Upgrade turret [Cost: {StateManager.PlayerTurret.UpgradeCost}]", UpgradeTurret));
+                if (ResourceReserve > StateManager.CurrentExtractor.UpgradeCost)
+                {
+                    menuItems.Add(new MenuItem($"Upgrade extractor [Cost: {StateManager.CurrentExtractor.UpgradeCost}]", UpgradeResourceExtractor, ConsoleColor.White));
+                } else
+                {
+                    menuItems.Add(new MenuItem($"Upgrade extractor [Cost: {StateManager.CurrentExtractor.UpgradeCost}]", () => { }, ConsoleColor.Red));
+                }
+
+                if (ResourceReserve > StateManager.CurrentTurret.UpgradeCost)
+                {
+                    menuItems.Add(new MenuItem($"Upgrade turret [Cost: {StateManager.CurrentTurret.UpgradeCost}]", UpgradeTurret, ConsoleColor.White));
+                }
+                else
+                {
+                    menuItems.Add(new MenuItem($"Upgrade turret [Cost: {StateManager.CurrentTurret.UpgradeCost}]", () => { }, ConsoleColor.Red));
+                }
             } else
             {
-                menuItems.Add(new MenuItem("Attack", AttackPlanet));
+                menuItems.Add(new MenuItem("Attack", AttackPlanet, ConsoleColor.White));
             }
             menuItems.Add(new MenuItem("Show planet description", () =>
             {
                 StateManager.State = GameState.INTRO_VIEW;
-            }));
+            }, ConsoleColor.White));
 
             return menuItems;
         }
@@ -61,8 +75,10 @@ namespace Galaxy.Conqueror.Client.Models.GameModels
         public async void UpgradeResourceExtractor()
         {
             await ApiService.UpgradeResourceExtractorAsync();
-            StateManager.PlayerExtractor = await StateManager.UpdateExtractor();
+            await StateManager.UpdateExtractor();
+        
             StateManager.UpdateOwnPlanet();
+            StateManager.CurrentExtractor = await ApiService.GetOwnExtractor();
         }
 
         public async void UpgradeTurret()
@@ -70,6 +86,7 @@ namespace Galaxy.Conqueror.Client.Models.GameModels
             ApiService.UpgradeTurretAsync();
             StateManager.PlayerSpaceship.UpdateShipState();
             StateManager.UpdateOwnPlanet();
+            StateManager.CurrentTurret = await ApiService.GetOwnTurret();
         }
 
         public void TravelToPlanet()
