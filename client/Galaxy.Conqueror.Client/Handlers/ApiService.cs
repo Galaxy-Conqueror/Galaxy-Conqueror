@@ -126,13 +126,13 @@ namespace Galaxy.Conqueror.Client.Handlers
             }
         }
 
-        public static async Task<SpaceshipUpgradeResponse> UpgradeSpaceshipAsync()
+        public static async Task<SpaceshipUpgradedResponse> UpgradeSpaceshipAsync()
         {
             try
             {
                 var response = await RequestHelper.PutRequestAsync("/api/spaceship/upgrade");
 
-                var data = await response.Content.ReadFromJsonAsync<SpaceshipUpgradeResponse>();
+                var data = await response.Content.ReadFromJsonAsync<SpaceshipUpgradedResponse>();
 
                 return data;
             }
