@@ -42,11 +42,13 @@ public class BattleHandlers {
                 PlanetResourceReserve = planet.ResourceReserve,
                 TurretHealth = Calculations.GetTurretHealth(turret.Level),
                 TurretDamage = Calculations.GetTurretDamage(turret.Level),
+                TurretLevel = turret.Level,
                 SpaceshipMaxResources = Calculations.GetSpaceshipMaxResources(spaceship.Level),
                 SpaceshipResourceReserve = spaceship.ResourceReserve,
                 SpaceshipHealth = spaceship.CurrentHealth,
                 SpaceshipDamage = Calculations.GetSpaceshipDamage(spaceship.Level),
-                SpaceshipDesign = spaceship.Design ?? ""
+                SpaceshipDesign = spaceship.Design ?? "",
+                SpaceshipLevel = spaceship.Level,
             };
 
             return Results.Ok(battleResponse);

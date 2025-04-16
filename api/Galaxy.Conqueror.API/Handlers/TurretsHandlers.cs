@@ -73,7 +73,7 @@ public class TurretsHandlers {
             if (!Calculations.IsInRange(spaceship.X, spaceship.Y, planet.X, planet.Y, 1))
                 return Results.BadRequest("Error upgrading turret: Planet out of range");
 
-            var upgradeCost = Calculations.GetExtractorUpgradeCost(turret.Level);
+            var upgradeCost = Calculations.GetTurretUpgradeCost(turret.Level);
             if (planet.ResourceReserve < upgradeCost)
                 return Results.BadRequest("Error upgrading turret: Insufficient resources");
 
