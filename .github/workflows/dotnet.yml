@@ -63,5 +63,5 @@ jobs:
           body: "Stable .NET console app release."
           draft: false
           prerelease: false
-          files: app-release/*.exe
+          files: app-release/**/*.exe
 
