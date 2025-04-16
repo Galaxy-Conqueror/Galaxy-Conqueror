@@ -24,9 +24,7 @@ public class Calculations
     public static int GetSpaceshipFuelCost(int spaceshipLevel, int fuelAmount) => spaceshipLevel * fuelAmount * 1;
     public static int GetSpaceshipRefuelCost(int spaceshipLevel, int currentFuel) => 
         GetSpaceshipFuelCost(spaceshipLevel, GetSpaceshipMaxFuel(spaceshipLevel) - currentFuel);
-    public static int GetSpaceshipHealthCost(int spaceshipLevel, int healthAmount) => spaceshipLevel * healthAmount * 2;
-    public static int GetSpaceshipRepairCost(int spaceshipLevel, int currentHealth) => 
-        GetSpaceshipHealthCost(spaceshipLevel, GetSpaceshipMaxHealth(spaceshipLevel) - currentHealth);
+    public static int GetSpaceshipRepairCost(int spaceshipLevel, int currentHealth) => GetSpaceshipMaxHealth(spaceshipLevel) - currentHealth;
 
 
     // ***** RESOURCE EXTRACTORS *****
