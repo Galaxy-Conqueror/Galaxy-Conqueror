@@ -6,7 +6,7 @@ namespace Galaxy.Conqueror.Client.Utils
 {
     public static class RequestHelper
     {
-        private static readonly string BASE_URL = "http://13.246.15.180:8080";
+        private static readonly string BASE_URL = "https://localhost:7292";
         private static readonly HttpClient CLIENT = new();
 
         private static string BuildUrl(string path, string queryParams)
