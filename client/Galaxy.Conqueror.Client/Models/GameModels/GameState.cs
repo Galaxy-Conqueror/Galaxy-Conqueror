@@ -13,4 +13,5 @@ public enum GameState
     IDLE,
     PLANET_VIEW,
     BATTLE,
+    INTRO_VIEW,
 }
