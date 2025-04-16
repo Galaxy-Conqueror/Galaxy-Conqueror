@@ -14,12 +14,6 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: SHOW FILES
-        run: pwd
-
-      - name: List repo contents
-        run: ls -R
-
       - name: Setup .NET
         uses: actions/setup-dotnet@v3
         with:
@@ -57,16 +51,13 @@ jobs:
           name: Galaxy-Conqueror
           path: app-release
 
-      - name: List downloaded artifact contents
-        run: ls -la app-release
-
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
         with:
           token: ${{ secrets.TEST_CLI_DEPLOY }}
           tag_name: ${{ github.ref_name }}
           name: "Release ${{ github.ref_name }}"
-          body: "Stable .NET console app release."
+          body: "Galaxy Conqueror CLI application"
           draft: false
           prerelease: false
           files: app-release/**/*.exe
