@@ -1,4 +1,4 @@
-﻿using Dapper;
+using Dapper;
 using Galaxy.Conqueror.API.Configuration.Database;
 using Galaxy.Conqueror.API.Models.Database;
 
@@ -10,6 +10,7 @@ public class SetupService(
     SpaceshipService spaceshipService,
     ResourceExtractorService resourceExtractorService,
     TurretService turretService,
+    AiService aiService,
     ILogger<SetupService> logger) : ISetupService
 {
     public async Task<User> SetupPlayerDefaults(string email, string googleId, string username)
@@ -34,11 +35,11 @@ public class SetupService(
 
             var user = await connection.QuerySingleOrDefaultAsync<User>(insertSql, newUser, transaction);
 
-            // TODO generate random position for planet
             var planet = await planetService.CreatePlanet(user.Id, transaction);
             var resourceExtractor = await resourceExtractorService.CreateResourceExtractor(planet.Id, transaction);
+            
             var turret = await turretService.CreateTurret(planet.Id, transaction);
-            var spaceship = await spaceshipService.CreateSpaceship(user.Id, planet, transaction);
+            var spaceship = await spaceshipService.CreateSpaceship(user.Id, planet, aiService, transaction);
 
             await transaction.CommitAsync();
             logger.LogInformation("Successfully setup new user");

@@ -75,6 +75,7 @@ public class PlanetsHandlers {
     public static async Task<IResult> UpdatePlanetNameHandler(
         [FromServices] UserService userService,
         [FromServices] PlanetService planetService,
+        [FromServices] AiService aiService,
         [FromBody] PlanetNameRequest request,
         HttpContext context
     )
@@ -85,7 +86,7 @@ public class PlanetsHandlers {
             if (user == null)
                 return Results.NotFound("User not found.");
 
-            var planet = await planetService.UpdatePlanetName(user.Id, request.PlanetName);
+            var planet = await planetService.UpdatePlanetName(user.Id, request.PlanetName, aiService);
 
             return Results.Ok(planet);
         }

@@ -1,8 +1,10 @@
-﻿using Galaxy.Conqueror.Client.Models.GameModels;
+﻿using Galaxy.Conqueror.Client.Handlers;
+using Galaxy.Conqueror.Client.Models.GameModels;
 using Galaxy.Conqueror.Client.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -14,16 +16,20 @@ namespace Galaxy.Conqueror.Client.Managers
 
         public static Dictionary<int, Vector2I> PrevEntityPositions { get; set; } = [];
 
-        public static void Initialize()
+        public static async Task Initialize()
         {
-            //Entities.Add(new Spaceship(1, "Spaceship", new Glyph('V', ConsoleColor.Yellow), new Vector2I(StateManager.MAP_WIDTH / 2, StateManager.MAP_HEIGHT / 2), "SSSS△SSSS\r\nSS:▓╬▓:SS\r\nS:╔▒╬▒╗:S\r\n:▓▓◙█◙▓▓:\r\n█╗▓▓╬▓▓╔█\r\nSS▼▼▼▼▼▼SS"));
-            Entities.Add(new Spaceship(1, "Spaceship", new Glyph('V', ConsoleColor.Yellow), new Vector2I(StateManager.MAP_WIDTH / 2, StateManager.MAP_HEIGHT / 2), "SSSS╦SSSS\r\nSS◣▓Ψ▓◢SS\r\nS◤╔≡╬≡╗◥S\r\n◄▓░◙█◙░▓►\r\n█╝▓▓╣▓▓╚█\r\nSS▼▼▼▼▼▼SS"));
+            var planets = await ApiService.GetPlanetsAsync();
 
-            Entities.Add(new Planet(2, "Planet-test", new Glyph('O', ConsoleColor.Blue), new Vector2I(StateManager.MAP_WIDTH / 2, StateManager.MAP_HEIGHT / 2)));
-            Entities.Add(new Planet(3, "Planet-test", new Glyph('O', ConsoleColor.Blue), new Vector2I(25, 25)));
-            Entities.Add(new Planet(4, "Planet-test", new Glyph('O', ConsoleColor.Blue), new Vector2I(1, 30)));;
-            Entities.Add(new Planet(5, "Planet-test", new Glyph('O', ConsoleColor.Blue), new Vector2I(30, 10)));
-            Entities.Add(new Planet(6, "Planet-test", new Glyph('O', ConsoleColor.Blue), new Vector2I(7, 0)));
+            foreach (var planet in planets)
+            {
+                var newPlanet = new Planet(planet.Id, planet.UserId, planet.Name, new Glyph('O', ConsoleColor.Blue), new Vector2I(planet.X, planet.Y), planet.Description, planet.ResourceReserve);
+                Entities.Add(newPlanet);
+            }
+
+            var playerShip = (await ApiService.GetSpaceshipAsync()).ConvertFromRemoteSpaceship();
+
+            Entities.Add(playerShip);
+            StateManager.PlayerShipID = playerShip.Id;
         }
     }
 }

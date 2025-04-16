@@ -129,9 +129,11 @@ public static class Renderer
         currentMap.Clear();
     }
 
-    public static void RenderSidebar()
+    public async static Task RenderSidebar()
     {
+        await Sidebar.CheckSidebarState();
         Dictionary<Vector2I, Glyph> sidebar = Sidebar.GetSidebar();
+        var items = Sidebar.Content.Items;
 
         int minX = StateManager.MAP_SCREEN_WIDTH;
         int maxX = (StateManager.MAP_SCREEN_WIDTH * 2) + StateManager.MENU_WIDTH;
@@ -213,8 +215,6 @@ public static class Renderer
                 ConsolePrinter.PrintGlyph(glyph);
             }
         }
-        imageRendered = true;
-
         ClearImage();
     }
 
@@ -264,7 +264,25 @@ public static class Renderer
 
         previousSpaceship = currentSpaceship;
         previousBattleMap = currentMap;
+
+        var state = BattleEngine.GetBattleState();
+
+        int hudX = BattleEngine.MAP_WIDTH * 2 + 2; 
+        int line = 0;
+
+        void PrintHudLine(string text)
+        {
+            Console.SetCursorPosition(hudX, line++);
+            Console.Write(text.PadRight(40));
+        }
+
+        PrintHudLine("=== Battle Status ===");
+        PrintHudLine($"Spaceship HP: {state.SpaceshipHealth}");
+        PrintHudLine($"Turret HP:    {state.TurretHealth}");
+        PrintHudLine($"Winner:       {state.WinnerName}");
+        PrintHudLine($"Duration:     {state.BattleDurationSeconds:F2}s");
     }
+
 
     public static bool IsInCanvas(int x, int y)
     {
