@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using Dapper;
+using Moq;
 using Galaxy.Conqueror.API.Models.Database;
 using Galaxy.Conqueror.API.Services;
 using Microsoft.Extensions.Logging;
@@ -21,9 +22,22 @@ public class SetupServiceIntegrationTests : IClassFixture<PostgreSqlFixture>, IA
         var spaceshipService = new SpaceshipService(factory);
         var resourceExtractorService = new ResourceExtractorService(factory);
         var turretService = new TurretService(factory);
+
+        var aiServiceMock = new Mock<IAiService>();
+        aiServiceMock
+            .Setup(a => a.AiGeneratorAsync(It.IsAny<string>(), It.IsAny<int>()))
+            .ReturnsAsync("Mocked AI response");
+
         var logger = new LoggerFactory().CreateLogger<SetupService>();
 
-        setupService = new SetupService(factory, planetService, spaceshipService, resourceExtractorService, turretService, logger);
+        setupService = new SetupService(
+            factory,
+            planetService,
+            spaceshipService,
+            resourceExtractorService,
+            turretService,
+            aiServiceMock.Object,
+            logger);
     }
 
     public async Task InitializeAsync()

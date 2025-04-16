@@ -2,6 +2,8 @@ using System;
 using Dapper;
 using Galaxy.Conqueror.API.Models.Database;
 using Galaxy.Conqueror.API.Services;
+using Moq;
+using Xunit;
 
 namespace Galaxy.Conqueror.Tests.Integration.Services
 {
@@ -9,12 +11,18 @@ namespace Galaxy.Conqueror.Tests.Integration.Services
     {
         private readonly PostgreSqlFixture fixture;
         private readonly SpaceshipService spaceshipService;
+        private readonly Mock<IAiService> aiServiceMock;
 
         public SpaceshipServiceIntegrationTests(PostgreSqlFixture fixture)
         {
             this.fixture = fixture;
             var factory = new TestDbConnectionFactory(this.fixture.Connection.ConnectionString);
-            spaceshipService = new SpaceshipService(factory);
+            aiServiceMock = new Mock<IAiService>();
+            aiServiceMock
+                .Setup(a => a.AiGeneratorAsync(It.IsAny<string>(), It.IsAny<int>()))
+                .ReturnsAsync("Mocked AI Response");
+
+            this.spaceshipService = new SpaceshipService(factory);
         }
 
         public async Task InitializeAsync()
@@ -27,7 +35,6 @@ namespace Galaxy.Conqueror.Tests.Integration.Services
         [Fact]
         public async Task CreateSpaceship_ShouldInsertAndReturnSpaceship()
         {
-            // Arrange
             var userId = Guid.NewGuid();
             await fixture.Connection.ExecuteAsync(
                 "INSERT INTO users (id, google_id, email) VALUES (@Id, @GoogleId, @Email);",
@@ -48,10 +55,8 @@ namespace Galaxy.Conqueror.Tests.Integration.Services
                 "INSERT INTO planets (user_id, x, y, resource_reserve) VALUES (@UserId, @X, @Y, 100);",
                 new { UserId = userId, X = planet.X, Y = planet.Y });
 
-            // Act
-            var created = await spaceshipService.CreateSpaceship(userId, planet);
+            var created = await spaceshipService.CreateSpaceship(userId, planet, aiServiceMock.Object);
 
-            // Assert: fetch from DB
             var dbSpaceship = await fixture.Connection.QuerySingleAsync<Spaceship>(
                 "SELECT * FROM spaceships WHERE id = @Id", new { created.Id });
 
@@ -65,7 +70,6 @@ namespace Galaxy.Conqueror.Tests.Integration.Services
         [Fact]
         public async Task MoveSpaceship_ShouldUpdateCoordinates()
         {
-            // Arrange
             var userId = Guid.NewGuid();
             await fixture.Connection.ExecuteAsync(
                 "INSERT INTO users (id, google_id, email) VALUES (@Id, @GoogleId, @Email);",
@@ -81,12 +85,10 @@ namespace Galaxy.Conqueror.Tests.Integration.Services
                 "INSERT INTO planets (user_id, x, y, resource_reserve) VALUES (@UserId, @X, @Y, 100);",
                 new { UserId = userId, X = planet.X, Y = planet.Y });
 
-            var spaceship = await spaceshipService.CreateSpaceship(userId, planet);
+            var spaceship = await spaceshipService.CreateSpaceship(userId, planet, aiServiceMock.Object);
 
-            // Act
             await spaceshipService.MoveSpaceship(spaceship.Id, 5, 10, 20);
 
-            // Assert: fetch fresh from DB to verify the update
             var dbResult = await fixture.Connection.QuerySingleAsync<Spaceship>(
                 "SELECT * FROM spaceships WHERE id = @Id",
                 new { Id = spaceship.Id });
