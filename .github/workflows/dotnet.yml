@@ -14,23 +14,33 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
+      - name: SHOW FILES
+        run: pwd
+
+      - name: List repo contents
+        run: ls -R
+
       - name: Setup .NET
         uses: actions/setup-dotnet@v3
         with:
           dotnet-version: '8.0.x'
 
       - name: Restore dependencies
+        working-directory: D:/a/Galaxy-Conqueror/Galaxy-Conqueror/client/Galaxy.Conqueror.Client
         run: dotnet restore
 
       - name: Build and publish EXE
+        working-directory: D:/a/Galaxy-Conqueror/Galaxy-Conqueror/client/Galaxy.Conqueror.Client
         run: dotnet publish -c Release -r win-x64 --self-contained true /p:PublishSingleFile=true /p:IncludeNativeLibrariesForSelfExtract=true
 
       - name: Upload EXE Artifact
         uses: actions/upload-artifact@v4
         with:
           name: Galaxy-Conqueror
-          path: |
-            **/bin/Release/net*/win-x64/publish/*.exe
+          path: D:/a/Galaxy-Conqueror/Galaxy-Conqueror/client/Galaxy.Conqueror.Client/**/bin/Release/net*/win-x64/publish/*.exe
+
+      - name: List files in publish folder
+        run: dir D:/a/Galaxy-Conqueror/Galaxy-Conqueror/client/Galaxy.Conqueror.Client/**/bin/Release/net*/win-x64/publish/
 
   release:
     name: Update GitHub Release
@@ -47,6 +57,9 @@ jobs:
           name: Galaxy-Conqueror
           path: app-release
 
+      - name: List downloaded artifact contents
+        run: ls -la app-release
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
         with:
@@ -56,5 +69,5 @@ jobs:
           body: "Stable .NET console app release."
           draft: false
           prerelease: false
-          files: app-release/*.exe
+          files: app-release/**/*.exe
 

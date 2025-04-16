@@ -30,12 +30,27 @@ namespace Galaxy.Conqueror.Client.Handlers
             }
         }
 
+        public static async Task<Planet> GetPlanetAsync()
+        {
+            try
+            {
+                var planetResponse = await RequestHelper.GetRequestAsync("/api/planet");
+
+                var content = await planetResponse.Content.ReadFromJsonAsync<Planet>();
+
+                return content;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Unknown error occurred during the get operation: {ex.Message}", ex);
+            }
+        }
 
         public static async Task<Planet> GetPlanetByIdAsync(int planetId)
         {
             try
             {
-                var planetResponse = await RequestHelper.GetRequestAsync($"/api/planet/{planetId}");
+                var planetResponse = await RequestHelper.GetRequestAsync($"/api/planet/{planetId - 999}");
 
                 var content = await planetResponse.Content.ReadFromJsonAsync<Planet>();
 

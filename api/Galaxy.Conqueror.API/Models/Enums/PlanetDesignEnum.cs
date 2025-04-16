@@ -4,6 +4,5 @@ public enum PlanetTypes
 {
     Desert,
     Ice,
-    Jungle,
     Water
 }

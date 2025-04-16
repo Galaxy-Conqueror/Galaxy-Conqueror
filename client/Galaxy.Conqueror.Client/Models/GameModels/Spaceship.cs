@@ -48,7 +48,7 @@ namespace Galaxy.Conqueror.Client.Models.GameModels
 
         public Spaceship ConvertFromRemoteSpaceship()
         {
-            Design = Design.Replace("\\n", "\r\n");
+            Design = Design.Replace("\n", "\r\n").Replace("\\n", "\r\n");
 
 
             Id = Id + 999;
@@ -64,7 +64,7 @@ namespace Galaxy.Conqueror.Client.Models.GameModels
 
             if (adjacentEntity is Planet adjacentPlanet)
             {
-                var updatedPlanet = adjacentPlanet; //await StateManager.UpdatePlanetState(adjacentPlanet);
+                var updatedPlanet = adjacentPlanet;
 
                 if (Landed)
                 {
@@ -76,7 +76,7 @@ namespace Galaxy.Conqueror.Client.Models.GameModels
                     {
                         menuItems.Add(new MenuItem("Refuel [Cost: 100]", Refuel));
                         menuItems.Add(new MenuItem($"Repair [Cost: 100]", Repair));
-                        menuItems.Add(new MenuItem($"Upgrade [Cost: {UpgradeCost}]", Upgrade));
+                        menuItems.Add(new MenuItem($"Upgrade ship [Cost: {UpgradeCost}]", Upgrade));
                         menuItems.Add(new MenuItem($"Deposit [Material: {ResourceReserve}]", Deposit));
                     }
 
@@ -97,8 +97,6 @@ namespace Galaxy.Conqueror.Client.Models.GameModels
             var serverState = await ApiService.GetSpaceshipAsync();
 
             UserId = serverState.UserId;
-            Design = serverState.Design;
-            Description = serverState.Description;
             Level = serverState.Level;
             CurrentFuel = serverState.CurrentFuel;
             CurrentHealth = serverState.CurrentHealth;
@@ -108,12 +106,13 @@ namespace Galaxy.Conqueror.Client.Models.GameModels
             Damage = serverState.Damage;
             MaxFuel = serverState.MaxFuel;
             MaxResources = serverState.MaxResources;
-            Landed = serverState.Landed;
 
             if (!string.IsNullOrEmpty(serverState.Name))
             {
                 Name = serverState.Name;
             }
+
+            StateManager.PlayerSpaceship = this;
         }
 
         public async void LandOnPlanet()
@@ -121,14 +120,16 @@ namespace Galaxy.Conqueror.Client.Models.GameModels
             StateManager.State = GameState.PLANET_VIEW;
 
             //Update ship state 
+            StateManager.UpdateOwnPlanet();
             await UpdateShipState();
 
             Landed = true;
         }
 
-        public void TakeoffFromPlanet()
+        public async void TakeoffFromPlanet()
         {
             StateManager.State = GameState.MAP_VIEW;
+            await UpdateShipState();
             Landed = false;
         }
 
@@ -140,11 +141,13 @@ namespace Galaxy.Conqueror.Client.Models.GameModels
         public async void Refuel()
         {
             var response = ApiService.RefuelSpaceshipAsync();
+            await UpdateShipState();
         }
 
         public async void Repair()
         {
             var response = ApiService.RepairSpaceshipAsync();
+            await UpdateShipState();
         }
 
         public async void Upgrade()
@@ -161,6 +164,7 @@ namespace Galaxy.Conqueror.Client.Models.GameModels
         public async void Deposit()
         {
             var response = ApiService.DepositAsync();
+            await UpdateShipState();
         }
 
     }
