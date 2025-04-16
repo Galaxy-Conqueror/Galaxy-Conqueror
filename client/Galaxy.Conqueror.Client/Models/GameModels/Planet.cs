@@ -78,8 +78,9 @@ namespace Galaxy.Conqueror.Client.Models.GameModels
         {
             await ApiService.UpgradeResourceExtractorAsync();
             await StateManager.UpdateExtractor();
+       
+            await StateManager.UpdateOwnPlanet();
 
-            StateManager.UpdateOwnPlanet();
             StateManager.CurrentExtractor = await ApiService.GetOwnExtractor();
         }
 
@@ -87,7 +88,7 @@ namespace Galaxy.Conqueror.Client.Models.GameModels
         {
             ApiService.UpgradeTurretAsync();
             StateManager.PlayerSpaceship.UpdateShipState();
-            StateManager.UpdateOwnPlanet();
+            await StateManager.UpdateOwnPlanet();
             StateManager.CurrentTurret = await ApiService.GetOwnTurret();
         }
 

@@ -68,7 +68,7 @@ public static class Sidebar
 
             //menuItems.Add(new MenuItem("Pause", GameOperations.Pause));
 
-            //menuItems.Add(new MenuItem("Resume", GameOperations.Resume));
+            menuItems.Add(new MenuItem("Ping home planet (update info)", GameOperations.PingHome, ConsoleColor.Green));
 
             menuItems.Add(new MenuItem("Quit", GameOperations.Quit, ConsoleColor.White));
 

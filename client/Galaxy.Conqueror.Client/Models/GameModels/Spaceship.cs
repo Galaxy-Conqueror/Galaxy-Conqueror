@@ -64,13 +64,12 @@ namespace Galaxy.Conqueror.Client.Models.GameModels
 
             if (adjacentEntity is Planet adjacentPlanet)
             {
-                var updatedPlanet = adjacentPlanet;
 
                 if (Landed)
                 {
                     menuItems.Add(new MenuItem("Leave orbit", TakeoffFromPlanet, ConsoleColor.White));
 
-                    var isOwnPlanet = updatedPlanet.UserId == AuthHelper.UserId;
+                    var isOwnPlanet = adjacentPlanet.UserId == AuthHelper.UserId;
 
                     if (isOwnPlanet)
                     {
@@ -94,12 +93,19 @@ namespace Galaxy.Conqueror.Client.Models.GameModels
                             
                     }
 
-                    await updatedPlanet.GetPlanetOperations(menuItems);          
+                    if (isOwnPlanet)
+                    {
+                        await StateManager.PlayerPlanet.GetPlanetOperations(menuItems);
+                    } else
+                    {
+                        await adjacentPlanet.GetPlanetOperations(menuItems);
+                    }
+                                  
                 }
 
-                if (!Landed && updatedPlanet != null)
+                if (!Landed && adjacentPlanet != null)
                 {
-                    menuItems.Add(new MenuItem($"Enter orbit around {updatedPlanet.Name}", LandOnPlanet, ConsoleColor.White));
+                    menuItems.Add(new MenuItem($"Enter orbit around {adjacentPlanet.Name}", LandOnPlanet, ConsoleColor.White));
                 }
 
                 
@@ -147,7 +153,7 @@ namespace Galaxy.Conqueror.Client.Models.GameModels
             StateManager.State = GameState.PLANET_VIEW;
 
             //Update ship state 
-            StateManager.UpdateOwnPlanet();
+            await StateManager.UpdateOwnPlanet();
             await UpdateShipState();
             StateManager.CurrentExtractor = await ApiService.GetOwnExtractor();
             StateManager.CurrentTurret = await ApiService.GetOwnTurret();
@@ -158,7 +164,7 @@ namespace Galaxy.Conqueror.Client.Models.GameModels
         public async void TakeoffFromPlanet()
         {
             StateManager.State = GameState.MAP_VIEW;
-            StateManager.UpdateOwnPlanet();
+            await StateManager.UpdateOwnPlanet();
             await UpdateShipState();
             Landed = false;
         }
@@ -172,14 +178,14 @@ namespace Galaxy.Conqueror.Client.Models.GameModels
         {
             var response = ApiService.RefuelSpaceshipAsync();
             await UpdateShipState();
-            StateManager.UpdateOwnPlanet();
+            await StateManager.UpdateOwnPlanet();
         }
 
         public async void Repair()
         {
             await ApiService.RepairSpaceshipAsync();
             await UpdateShipState();
-            StateManager.UpdateOwnPlanet();
+            await StateManager.UpdateOwnPlanet();
         }
 
         public async void Upgrade()
@@ -192,14 +198,14 @@ namespace Galaxy.Conqueror.Client.Models.GameModels
             MaxResources = response.MaxResources;
 
             await UpdateShipState();
-            StateManager.UpdateOwnPlanet();
+            await StateManager.UpdateOwnPlanet();
         }
 
         public async void Deposit()
         {
             var response = ApiService.DepositAsync();
             await UpdateShipState();
-            StateManager.UpdateOwnPlanet();
+            await StateManager.UpdateOwnPlanet();
         }
 
     }

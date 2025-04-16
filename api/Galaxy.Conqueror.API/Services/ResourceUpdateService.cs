@@ -1,5 +1,6 @@
 ﻿using Dapper;
 using Galaxy.Conqueror.API.Configuration.Database;
+using Galaxy.Conqueror.API.Utils;
 
 namespace Galaxy.Conqueror.API.Services;
 
@@ -33,7 +34,7 @@ public class ResourceUpdaterService(IServiceScopeFactory scopeFactory) : Backgro
             .Select(e => new
             {
                 e.PlanetId,
-                Amount = e.Level * 10 // TODO Fix rate
+                Amount = Calculations.GetResourceGenAmount(e.Level)
             })
             .ToList();
 
