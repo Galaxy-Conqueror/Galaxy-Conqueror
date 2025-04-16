@@ -60,7 +60,13 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+if (app.Environment.IsDevelopment())
+{
+}
+else
+{
+    app.UseHttpsRedirection();
+}
 
 // Adds endpoints registered in app config
 app.ConfigureApp();

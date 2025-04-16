@@ -30,7 +30,8 @@ resource "aws_iam_policy" "ecs_task_exec_policy" {
           "ecr:BatchGetImage",
           "logs:CreateLogStream",
           "logs:PutLogEvents",
-          "logs:CreateLogGroup"
+          "logs:CreateLogGroup",
+          "secretsmanager:GetSecretValue"
         ],
         Effect = "Allow",
         Resource = "*"

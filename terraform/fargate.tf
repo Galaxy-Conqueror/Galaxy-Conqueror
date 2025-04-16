@@ -41,6 +41,10 @@ resource "aws_ecs_task_definition" "ecs_task_definition" {
         {
           "name": "ASPNETCORE_ENVIRONMENT",
           "value": "Production"
+        },
+        {
+          name  = "GOOGLE_REDIRECT_URI"
+          value = "http://localhost:9090/callback/"
         }
 
       ],
