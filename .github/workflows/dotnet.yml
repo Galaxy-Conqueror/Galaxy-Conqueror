@@ -20,7 +20,8 @@ jobs:
           dotnet-version: '8.0.x'
 
       - name: Restore dependencies
-        run: dotnet restore ./client/Galaxy.Conqueror.Client/Galaxy.Conqueror.Client.csproj
+        working-directory: D:/a/Galaxy-Conqueror/Galaxy-Conqueror/client/Galaxy.Conqueror.Client
+        run: dotnet restore
 
       - name: Build
         run: dotnet build ./client/Galaxy.Conqueror.Client/Galaxy.Conqueror.Client.csproj --configuration Release --no-restore
