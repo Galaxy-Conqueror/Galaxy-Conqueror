@@ -21,19 +21,21 @@ public static class UserInputHandler
         else
             return;
 
-        var ship = EntityManager.Entities.FirstOrDefault(x => x.Id == StateManager.PlayerShipID);
-        if (ship == null) return;
 
-        var prevPosition = new Vector2I(ship.Position);
+        var prevPosition = new Vector2I(StateManager.PlayerSpaceship.Position);
 
         switch (StateManager.State)
         {
             case GameState.MAP_VIEW:
-                HandleMapViewInput(key, ship);
+                HandleMapViewInput(key, StateManager.PlayerSpaceship);
                 break;
 
             case GameState.BATTLE:
                 HandleBattleInput(key);
+                break;
+
+            case GameState.INTRO_VIEW:
+                StateManager.State = GameState.MAP_VIEW;
                 break;
 
             default:

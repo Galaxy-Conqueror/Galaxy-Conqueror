@@ -26,10 +26,11 @@ namespace Galaxy.Conqueror.Client.Managers
                 Entities.Add(newPlanet);
             }
 
-            var playerShip = (await ApiService.GetSpaceshipAsync()).ConvertFromRemoteSpaceship();
+            StateManager.UpdateOwnPlanet();
 
-            Entities.Add(playerShip);
-            StateManager.PlayerShipID = playerShip.Id;
+            StateManager.PlayerSpaceship = (await ApiService.GetSpaceshipAsync()).ConvertFromRemoteSpaceship();
+
+            Entities.Add(StateManager.PlayerSpaceship);
         }
     }
 }
