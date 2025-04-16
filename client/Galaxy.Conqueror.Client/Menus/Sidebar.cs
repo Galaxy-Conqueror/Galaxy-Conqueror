@@ -76,7 +76,8 @@ public static class Sidebar
             {
                 Stale = true;
             }
-        } else
+        }
+        else
         {
             var playerPlanet = EntityManager.Entities.Where((x =>
             {
@@ -138,6 +139,7 @@ public static class Sidebar
 
         WriteMenuTextWithWordWrap(StateManager.MAP_SCREEN_HEIGHT - 17, $"Ship Resource Reserve: {StateManager.PlayerSpaceship.ResourceReserve}");
         WriteMenuTextWithWordWrap(StateManager.MAP_SCREEN_HEIGHT - 16, $"Last Recorded Planet Reserve: {StateManager.PlayerPlanet.ResourceReserve}");
+        WriteMenuTextWithWordWrap(StateManager.MAP_SCREEN_HEIGHT - 14, $"Ship Health: {StateManager.PlayerSpaceship.CurrentHealth}/{StateManager.PlayerSpaceship.MaxHealth}");
 
         if (!StateManager.PlayerSpaceship.Landed)
         {
@@ -160,6 +162,8 @@ public static class Sidebar
                 WriteMenuTextWithWordWrap(StateManager.MAP_SCREEN_HEIGHT - 14, $"Turret level: {StateManager.CurrentTurret.Level}");
                 WriteMenuTextWithWordWrap(StateManager.MAP_SCREEN_HEIGHT - 13, $"Extractor level: {StateManager.CurrentExtractor.Level}");
                 WriteMenuTextWithWordWrap(StateManager.MAP_SCREEN_HEIGHT - 12, $"Extraction rate: {StateManager.CurrentExtractor.ResourceGen}");
+                WriteMenuTextWithWordWrap(StateManager.MAP_SCREEN_HEIGHT - 11, $"Ship Level: {StateManager.PlayerSpaceship.Level}");
+                WriteMenuTextWithWordWrap(StateManager.MAP_SCREEN_HEIGHT - 10, $"Ship Health: {StateManager.PlayerSpaceship.CurrentHealth}/{StateManager.PlayerSpaceship.MaxHealth}");
             }
         }
     }

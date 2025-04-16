@@ -436,7 +436,10 @@ public static class BattleEngine
         if (Turret.IsDestroyed())
             PrintMessageCenterMap("YOU WIN!", ConsoleColor.Green);
         else if (Spaceship.IsDestroyed())
+        {
             PrintMessageCenterMap("YOU LOSE!", ConsoleColor.Red);
+            StateManager.PlayerSpaceship.Position = new Vector2I(StateManager.PlayerPlanet.Position);
+        }
         else
             PrintMessageCenterMap("DRAW!", ConsoleColor.Yellow);
 

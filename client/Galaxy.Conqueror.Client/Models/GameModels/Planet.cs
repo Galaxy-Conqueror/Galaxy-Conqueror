@@ -66,10 +66,6 @@ namespace Galaxy.Conqueror.Client.Models.GameModels
             {
                 menuItems.Add(new MenuItem("Attack", AttackPlanet, ConsoleColor.White));
             }
-            menuItems.Add(new MenuItem("Show planet description", () =>
-            {
-                StateManager.State = GameState.INTRO_VIEW;
-            }, ConsoleColor.White));
 
             return menuItems;
         }
@@ -128,9 +124,11 @@ namespace Galaxy.Conqueror.Client.Models.GameModels
             {
                 if (result == null) return;
 
+                StateManager.PlayerSpaceship.CurrentHealth = Math.Max(BattleEngine.Spaceship.CurrentHealth, 1);
+
                 var logResponse = await BattleService.LogBattleAsync(Id, result);
                 if (logResponse != null)
-                    ship.ResourceReserve += logResponse.ResourcesLooted;
+                    StateManager.PlayerSpaceship.ResourceReserve += logResponse.ResourcesLooted;
 
                 Console.Clear();
                 StateManager.State = GameState.PLANET_VIEW;
