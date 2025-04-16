@@ -47,7 +47,8 @@ namespace Galaxy.Conqueror.Client.Models.GameModels
                 if (ResourceReserve > StateManager.CurrentExtractor.UpgradeCost)
                 {
                     menuItems.Add(new MenuItem($"Upgrade extractor [Cost: {StateManager.CurrentExtractor.UpgradeCost}]", UpgradeResourceExtractor, ConsoleColor.White));
-                } else
+                }
+                else
                 {
                     menuItems.Add(new MenuItem($"Upgrade extractor [Cost: {StateManager.CurrentExtractor.UpgradeCost}]", () => { }, ConsoleColor.Red));
                 }
@@ -60,7 +61,8 @@ namespace Galaxy.Conqueror.Client.Models.GameModels
                 {
                     menuItems.Add(new MenuItem($"Upgrade turret [Cost: {StateManager.CurrentTurret.UpgradeCost}]", () => { }, ConsoleColor.Red));
                 }
-            } else
+            }
+            else
             {
                 menuItems.Add(new MenuItem("Attack", AttackPlanet, ConsoleColor.White));
             }
@@ -76,7 +78,7 @@ namespace Galaxy.Conqueror.Client.Models.GameModels
         {
             await ApiService.UpgradeResourceExtractorAsync();
             await StateManager.UpdateExtractor();
-        
+
             StateManager.UpdateOwnPlanet();
             StateManager.CurrentExtractor = await ApiService.GetOwnExtractor();
         }
@@ -115,8 +117,8 @@ namespace Galaxy.Conqueror.Client.Models.GameModels
             var turret = new Turret(Id, Name, new Glyph('V', ConsoleColor.Red), new Vector2I(0, 0))
             {
                 CurrentHealth = response.TurretHealth,
-                Damage = response.TurretDamage,
-                Level = 20
+                Level = response.TurretDamage / 20,
+                Damage = response.TurretDamage
             };
 
             BattleEngine.Initialise(spaceship, turret, response.PlanetResourceReserve);
