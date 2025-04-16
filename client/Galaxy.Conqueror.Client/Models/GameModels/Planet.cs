@@ -83,7 +83,7 @@ namespace Galaxy.Conqueror.Client.Models.GameModels
 
             var response = await BattleService.GetBattleAsync(Id);
 
-            Spaceship ship = (Spaceship)EntityManager.Entities.FirstOrDefault(x => x.Id == StateManager.PlayerShipID);
+            Spaceship ship = StateManager.PlayerSpaceship;
             if (ship == null) return;
 
             Spaceship spaceship = new Spaceship(ship.Id, ship.Name, new Glyph('⋀', ConsoleColor.Yellow), new Vector2I(0, 0), response.SpaceshipDesign);
