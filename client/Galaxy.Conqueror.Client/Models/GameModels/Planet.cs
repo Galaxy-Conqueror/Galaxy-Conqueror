@@ -100,7 +100,7 @@ namespace Galaxy.Conqueror.Client.Models.GameModels
             {
                 CurrentHealth = response.TurretHealth,
                 Damage = response.TurretDamage,
-                Level = 1
+                Level = 20
             };
 
             BattleEngine.Initialise(spaceship, turret, response.PlanetResourceReserve);
