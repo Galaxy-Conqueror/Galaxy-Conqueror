@@ -8,10 +8,9 @@ namespace Galaxy.Conqueror.API.Handlers.Spaceships;
 public class DetailsHandlers {
     
 public static async Task<IResult> GetSpaceshipDetailsHandler(
-        [FromServices] UserService userService,
+        [FromServices] IUserService userService,
         [FromServices] SpaceshipService spaceshipService,
-        HttpContext context,
-        CancellationToken ct
+        HttpContext context
     )
     {
         try

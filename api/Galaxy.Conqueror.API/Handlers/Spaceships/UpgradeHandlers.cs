@@ -8,10 +8,9 @@ namespace Galaxy.Conqueror.API.Handlers.Spaceships;
 public class UpgradeHandlers {
 
     public static async Task<IResult> GetSpaceshipUpgradeDetailsHandler(
-        [FromServices] UserService userService,
+        [FromServices] IUserService userService,
         [FromServices] SpaceshipService spaceshipService,
-        HttpContext context,
-        CancellationToken ct
+        HttpContext context
     )
     {
         try
@@ -49,11 +48,10 @@ public class UpgradeHandlers {
     }
 
     public static async Task<IResult> UpgradeSpaceshipHandler(
-        [FromServices] UserService userService,
+        [FromServices] IUserService userService,
         [FromServices] SpaceshipService spaceshipService,
         [FromServices] PlanetService planetService,
-        HttpContext context,
-        CancellationToken ct
+        HttpContext context
     )
     {
         try
