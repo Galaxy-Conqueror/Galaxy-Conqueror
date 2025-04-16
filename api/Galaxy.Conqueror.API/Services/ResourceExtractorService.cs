@@ -7,7 +7,6 @@ namespace Galaxy.Conqueror.API.Services;
 
 public class ResourceExtractorService(IDbConnectionFactory connectionFactory)
 {
-    // extension
     public async Task<ResourceExtractor?> GetResourceExtractorById(int id)
     {
         using var connection = connectionFactory.CreateConnection();
