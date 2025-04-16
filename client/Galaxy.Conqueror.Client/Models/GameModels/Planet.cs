@@ -37,21 +37,21 @@ namespace Galaxy.Conqueror.Client.Models.GameModels
             this.ResourceReserve = resourceReserve;
         }
 
-        public List<MenuItem> GetPlanetOperations(List<MenuItem> menuItems)
+        public async Task<List<MenuItem>> GetPlanetOperations(List<MenuItem> menuItems)
         {
+            var extractor = await StateManager.UpdateExtractor();
+            var turret = await StateManager.UpdateTurret();
             var isOwnPlanet = UserId == AuthHelper.UserId;
 
             if (isOwnPlanet)
             {
-                menuItems.Add(new MenuItem("Upgrade extractor [Cost: 100]", UpgradeResourceExtractor));
-                menuItems.Add(new MenuItem("Upgrade turret [Cost: 100]", UpgradeTurret));
+                menuItems.Add(new MenuItem($"Upgrade extractor [Cost: {extractor.UpgradeCost}]", UpgradeResourceExtractor));
+                menuItems.Add(new MenuItem($"Upgrade turret [Cost: {turret.UpgradeCost}]", UpgradeTurret));
             } else
             {
                 menuItems.Add(new MenuItem("Attack", AttackPlanet));
             }
-
-
-                return menuItems;
+            return menuItems;
         }
 
         public async void UpgradeResourceExtractor()

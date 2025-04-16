@@ -7,11 +7,10 @@ namespace Galaxy.Conqueror.API.Handlers.Spaceships;
 public class DepositHandlers {
     
     public static async Task<IResult> DepositResourcesHandler(
-        [FromServices] UserService userService,
+        [FromServices] IUserService userService,
         [FromServices] SpaceshipService spaceshipService,
         [FromServices] PlanetService planetService,
-        HttpContext context,
-        CancellationToken ct
+        HttpContext context
     )
     {
         try

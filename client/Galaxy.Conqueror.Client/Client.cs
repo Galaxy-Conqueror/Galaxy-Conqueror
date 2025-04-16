@@ -11,15 +11,16 @@ namespace Galaxy.Conqueror.Client;
 
 public static class Client
 {
-    static GameState prevGameState = GameState.IDLE;
+    static GameState prevGameState = GameState.INTRO_VIEW;
 
     public static async Task Start()
     {
-
+        StateManager.State = GameState.INTRO_VIEW;
         await AuthHelper.Authenticate();
 
         MapView.Initialise();
         await EntityManager.Initialize();
+        await StateManager.PlayerSpaceship.UpdateShipState();
         Sidebar.MockMenu();
 
         Console.SetWindowSize(StateManager.CanvasWidth, StateManager.CanvasHeight);
@@ -44,7 +45,7 @@ public static class Client
             {
                 case GameState.MAP_VIEW:
                     Renderer.RenderMap();
-                    Renderer.RenderSidebar();
+                    await Renderer.RenderSidebar();
                     break;
 
                 case GameState.BATTLE:
@@ -61,14 +62,23 @@ public static class Client
 
                 case GameState.PLANET_VIEW:
                     Renderer.RenderImage();
-                    Renderer.RenderSidebar();
+                    await Renderer.RenderSidebar();
+                    break;
+
+                case GameState.INTRO_VIEW:
+                    Renderer.RenderImage();
+                    await Renderer.RenderSidebar();
                     break;
 
                 default:
                     break;
             }
 
-            if (stateHasChanged() && StateManager.State != GameState.PLANET_VIEW) Console.Clear();
+            if (stateHasChanged() && StateManager.State != GameState.PLANET_VIEW)
+            {
+                Renderer.ReRender = true;
+                Console.Clear();
+            }
 
             prevGameState = StateManager.State;
         }

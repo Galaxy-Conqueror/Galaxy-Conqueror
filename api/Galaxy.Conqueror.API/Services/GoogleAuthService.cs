@@ -6,11 +6,11 @@ namespace Galaxy.Conqueror.API.Services;
 
 public class GoogleAuthService(
     HttpClient httpClient,
-    UserService userService,
+    IUserService userService,
     IConfiguration configuration, 
     IHostEnvironment env)
 {
-    private readonly HttpClient _httpClient = httpClient;
+    private readonly HttpClient httpClient = httpClient;
     public async Task<LoginResponse> Login (string authCode)
     {
         var tokens = await ExchangeAuthCodeForTokens(authCode);
@@ -45,7 +45,7 @@ public class GoogleAuthService(
 
         var requestContent = new FormUrlEncodedContent(requestData);
 
-        var response = await _httpClient.PostAsync("https://oauth2.googleapis.com/token", requestContent);
+        var response = await httpClient.PostAsync("https://oauth2.googleapis.com/token", requestContent);
 
         var responseContent = await response.Content.ReadAsStringAsync();
 
@@ -60,7 +60,7 @@ public class GoogleAuthService(
 
     private async Task<User> GetUserInfo(string access_token)
     {
-        var userInfoResponse = await _httpClient.GetAsync($"https://www.googleapis.com/oauth2/v3/tokeninfo?access_token={access_token}");
+        var userInfoResponse = await httpClient.GetAsync($"https://www.googleapis.com/oauth2/v3/tokeninfo?access_token={access_token}");
         var userInfoResponseContent = await userInfoResponse.Content.ReadAsStringAsync();
 
         var userInfo = JsonSerializer.Deserialize<UserInfoResponse>(userInfoResponseContent);

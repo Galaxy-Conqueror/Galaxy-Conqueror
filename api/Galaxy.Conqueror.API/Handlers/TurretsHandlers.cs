@@ -8,8 +8,7 @@ namespace Galaxy.Conqueror.API.Handlers;
 public class TurretsHandlers {
     
     public static async Task<IResult> GetTurretDetailsHandler(
-        [FromServices] UserService userService,
-        [FromServices] PlanetService planetService,
+        [FromServices] IUserService userService,
         [FromServices] TurretService turretService,
         HttpContext context
     )
@@ -46,12 +45,11 @@ public class TurretsHandlers {
     }
 
     public static async Task<IResult> UpgradeTurretHandler(
-        [FromServices] UserService userService,
+        [FromServices] IUserService userService,
         [FromServices] SpaceshipService spaceshipService,
         [FromServices] PlanetService planetService,
         [FromServices] TurretService turretService,
-        HttpContext context,
-        CancellationToken ct
+        HttpContext context
     )
     {
         try

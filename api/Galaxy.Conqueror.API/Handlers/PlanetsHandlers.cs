@@ -7,9 +7,7 @@ namespace Galaxy.Conqueror.API.Handlers;
 public class PlanetsHandlers {
     
    public static async Task<IResult> GetAllPlanetDetailsHandler(
-        [FromServices] PlanetService planetService,
-        HttpContext context,
-        CancellationToken ct
+        [FromServices] PlanetService planetService
     )
     {
         try
@@ -25,10 +23,9 @@ public class PlanetsHandlers {
     }
 
     public static async Task<IResult> GetPlanetDetailsHandler(
-        [FromServices] UserService userService,
+        [FromServices] IUserService userService,
         [FromServices] PlanetService planetService,
-        HttpContext context,
-        CancellationToken ct
+        HttpContext context
     )
     {
         try
@@ -52,9 +49,7 @@ public class PlanetsHandlers {
 
     public static async Task<IResult> GetPlanetDetailsByIdHandler(
         [FromRoute] int planetId,
-        [FromServices] PlanetService planetService,
-        HttpContext context,
-        CancellationToken ct
+        [FromServices] PlanetService planetService
     )
     {
         try
@@ -73,8 +68,9 @@ public class PlanetsHandlers {
     }
 
     public static async Task<IResult> UpdatePlanetNameHandler(
-        [FromServices] UserService userService,
+        [FromServices] IUserService userService,
         [FromServices] PlanetService planetService,
+        [FromServices] IAiService aiService,
         [FromBody] PlanetNameRequest request,
         HttpContext context
     )
@@ -85,7 +81,7 @@ public class PlanetsHandlers {
             if (user == null)
                 return Results.NotFound("User not found.");
 
-            var planet = await planetService.UpdatePlanetName(user.Id, request.PlanetName);
+            var planet = await planetService.UpdatePlanetName(user.Id, request.PlanetName, aiService);
 
             return Results.Ok(planet);
         }

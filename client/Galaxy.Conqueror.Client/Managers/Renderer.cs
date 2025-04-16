@@ -32,6 +32,7 @@ public static class Renderer
 
     private static readonly HashSet<int> visibleEntityIds = new();
 
+    public static bool ReRender { get; set; } = true;
 
     public static void ClearAll()
     {
@@ -49,16 +50,16 @@ public static class Renderer
             currentMap.Clear();
         }
 
-        var playerShip = EntityManager.Entities.FirstOrDefault(x => x.Id == StateManager.PlayerShipID);
-
-        if (playerShip == null) return;
+        if (StateManager.PlayerSpaceship == null) return;
 
         previousCameraPosition = new Vector2I(cameraPosition.X, cameraPosition.Y);
-        cameraPosition = new Vector2I(playerShip.Position.X, playerShip.Position.Y);
+        cameraPosition = new Vector2I(StateManager.PlayerSpaceship.Position.X, StateManager.PlayerSpaceship.Position.Y);
 
         bool cameraChanged = !cameraPosition.Equals(previousCameraPosition);
 
-        if (!cameraChanged) return;
+        if (!cameraChanged && !ReRender) return;
+
+        ReRender = false;
 
         int MAP_WIDTH = StateManager.MAP_SCREEN_WIDTH;
         int MAP_HEIGHT = StateManager.MAP_SCREEN_HEIGHT;
@@ -129,9 +130,9 @@ public static class Renderer
         currentMap.Clear();
     }
 
-    public static void RenderSidebar()
+    public async static Task RenderSidebar()
     {
-        Sidebar.CheckSidebarState();
+        await Sidebar.CheckSidebarState();
         Dictionary<Vector2I, Glyph> sidebar = Sidebar.GetSidebar();
         var items = Sidebar.Content.Items;
 
@@ -171,8 +172,11 @@ public static class Renderer
     {
         foreach (var (position, glyph) in previousSidebar)
         {
-            Console.SetCursorPosition(position.X, position.Y);
-            ConsolePrinter.ClearGlyph();
+            if (IsInCanvas(position.X, position.Y))
+            {
+                Console.SetCursorPosition(position.X, position.Y);
+                ConsolePrinter.ClearGlyph();
+            }
         }
 
         previousSidebar = new Dictionary<Vector2I, Glyph>(currentSidebar);
@@ -215,8 +219,6 @@ public static class Renderer
                 ConsolePrinter.PrintGlyph(glyph);
             }
         }
-        //imageRendered = true;
-
         ClearImage();
     }
 

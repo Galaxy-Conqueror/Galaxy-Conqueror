@@ -30,6 +30,38 @@ namespace Galaxy.Conqueror.Client.Handlers
             }
         }
 
+        public static async Task<Planet> GetPlanetAsync()
+        {
+            try
+            {
+                var planetResponse = await RequestHelper.GetRequestAsync("/api/planet");
+
+                var content = await planetResponse.Content.ReadFromJsonAsync<Planet>();
+
+                return content;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Unknown error occurred during the get operation: {ex.Message}", ex);
+            }
+        }
+
+        public static async Task<Planet> GetPlanetByIdAsync(int planetId)
+        {
+            try
+            {
+                var planetResponse = await RequestHelper.GetRequestAsync($"/api/planet/{planetId - 999}");
+
+                var content = await planetResponse.Content.ReadFromJsonAsync<Planet>();
+
+                return content;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Unknown error occurred during the get operation: {ex.Message}", ex);
+            }
+        }
+
         public static async Task<Spaceship> GetSpaceshipAsync()
         {
             try
@@ -94,13 +126,13 @@ namespace Galaxy.Conqueror.Client.Handlers
             }
         }
 
-        public static async Task<SpaceshipUpgradedResponse> UpgradeSpaceshipAsync()
+        public static async Task<SpaceshipUpgradeResponse> UpgradeSpaceshipAsync()
         {
             try
             {
                 var response = await RequestHelper.PutRequestAsync("/api/spaceship/upgrade");
 
-                var data = await response.Content.ReadFromJsonAsync<SpaceshipUpgradedResponse>();
+                var data = await response.Content.ReadFromJsonAsync<SpaceshipUpgradeResponse>();
 
                 return data;
             }
@@ -133,6 +165,38 @@ namespace Galaxy.Conqueror.Client.Handlers
                 var response = await RequestHelper.PutRequestAsync("/api/spaceship/deposit");
 
                 var data = await response.Content.ReadFromJsonAsync<Planet>();
+
+                return data;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Unknown error occurred during the operation: {ex.Message}", ex);
+            }
+        }
+
+        public static async Task<ResourceExtractorDetailResponse> GetOwnExtractor()
+        {
+            try
+            {
+                var response = await RequestHelper.GetRequestAsync("/api/extractor");
+
+                var data = await response.Content.ReadFromJsonAsync<ResourceExtractorDetailResponse>();
+
+                return data;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Unknown error occurred during the operation: {ex.Message}", ex);
+            }
+        }
+
+        public static async Task<TurretDetailResponse> GetOwnTurret()
+        {
+            try
+            {
+                var response = await RequestHelper.GetRequestAsync("/api/turret");
+
+                var data = await response.Content.ReadFromJsonAsync<TurretDetailResponse>();
 
                 return data;
             }
