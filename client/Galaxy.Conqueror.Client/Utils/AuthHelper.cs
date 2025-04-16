@@ -43,7 +43,8 @@ namespace Galaxy.Conqueror.Client.Utils
             }
 
             bool newUser = await GetJwtTokenAsync();
-            if (newUser) {
+            if (newUser)
+            {
                 await SetUsername();
                 await SetPlanetName();
             }
@@ -102,7 +103,8 @@ namespace Galaxy.Conqueror.Client.Utils
 
                                 UserId = loginResponse?.User?.Id ?? Guid.NewGuid();
 
-                                if (loginResponse?.User?.Username?.Length == 0) {
+                                if (loginResponse?.User?.Username?.Length == 0)
+                                {
                                     newUser = true;
                                 }
                             }
@@ -139,15 +141,16 @@ namespace Galaxy.Conqueror.Client.Utils
             return newUser;
         }
 
-        private static async Task SetUsername() {
-            while (true)    
+        private static async Task SetUsername()
+        {
+            while (true)
             {
                 Console.Write("Enter username: ");
                 var username = Console.ReadLine();
 
-                if (string.IsNullOrWhiteSpace(username))
+                if (string.IsNullOrWhiteSpace(username) || username.Length > 255)
                 {
-                    Console.WriteLine("Username cannot be empty, try again.\n");
+                    Console.WriteLine("Username should be between 1 and 255 characters in length, try again.\n");
                     continue;
                 }
 
@@ -165,15 +168,16 @@ namespace Galaxy.Conqueror.Client.Utils
             }
         }
 
-        public static async Task SetPlanetName() {
-            while (true)    
+        public static async Task SetPlanetName()
+        {
+            while (true)
             {
                 Console.Write("Enter planet name: ");
                 var planetName = Console.ReadLine();
 
-                if (string.IsNullOrWhiteSpace(planetName))
+                if (string.IsNullOrWhiteSpace(planetName) || planetName.Length > 255)
                 {
-                    Console.WriteLine("Planet name cannot be empty, try again.\n");
+                    Console.WriteLine("Planet name should be between 1 and 255 characters in length, try again.\n");
                     continue;
                 }
 

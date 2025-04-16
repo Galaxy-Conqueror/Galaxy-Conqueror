@@ -78,7 +78,7 @@ namespace Galaxy.Conqueror.Client.Models.GameModels
         {
             await ApiService.UpgradeResourceExtractorAsync();
             await StateManager.UpdateExtractor();
-       
+
             await StateManager.UpdateOwnPlanet();
 
             StateManager.CurrentExtractor = await ApiService.GetOwnExtractor();
@@ -108,7 +108,7 @@ namespace Galaxy.Conqueror.Client.Models.GameModels
 
             var spaceship = new Spaceship(ship.Id, ship.Name, new Glyph('⋀', ConsoleColor.Yellow), new Vector2I(0, 0), response.SpaceshipDesign)
             {
-                Level = ship.Level,
+                Level = response.SpaceshipLevel,
                 MaxResources = response.SpaceshipMaxResources,
                 ResourceReserve = response.SpaceshipResourceReserve,
                 CurrentHealth = response.SpaceshipHealth,
@@ -118,7 +118,7 @@ namespace Galaxy.Conqueror.Client.Models.GameModels
             var turret = new Turret(Id, Name, new Glyph('V', ConsoleColor.Red), new Vector2I(0, 0))
             {
                 CurrentHealth = response.TurretHealth,
-                Level = response.TurretDamage / 20,
+                Level = response.TurretLevel,
                 Damage = response.TurretDamage
             };
 
