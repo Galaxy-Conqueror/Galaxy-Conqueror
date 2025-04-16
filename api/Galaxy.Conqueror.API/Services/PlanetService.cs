@@ -90,7 +90,7 @@ public class PlanetService(IDbConnectionFactory connectionFactory)
         return planet;
     }
 
-    public async Task<Planet?> UpdatePlanetName(Guid userId, string newName, AiService aiService)
+    public async Task<Planet?> UpdatePlanetName(Guid userId, string newName, IAiService aiService)
     {
 
         Random random = new();
