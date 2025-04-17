@@ -40,7 +40,9 @@ public static class Client
     {
         PlanetView.Initialise();
 
-        while (StateManager.State != GameState.QUIT_REQUESTED)
+        var running = true;
+
+        while (running)
         {
             UserInputHandler.HandleInput();
 
@@ -79,8 +81,31 @@ public static class Client
                 Console.Clear();
             }
 
+            if (StateManager.State == GameState.QUIT_REQUESTED)
+            {
+                Console.Clear();
+                Console.Write("Quit? (Y/N): ");
+                
+                while (running && StateManager.State != prevGameState)
+                {
+                    var response = Console.ReadLine();
+
+                    if (response?.ToUpper() == "Y")
+                    {
+                        running = false;
+                    }
+                    else
+                    {
+                        Console.Clear();
+                        StateManager.State = prevGameState;
+                    }
+                }
+            }
+
             prevGameState = StateManager.State;
         }
+
+
     }
 
     private static bool stateHasChanged()
